@@ -28,7 +28,7 @@ class Server
 		void	new_Connection_Client(void);
 
 	private:
-	long			_port;
-	std::string	_password;
-	std::vector <pollfd>	_fds;
+		long		_port;
+		std::string	_password;
+		std::vector <pollfd>	_fds;
 };
