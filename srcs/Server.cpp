@@ -99,7 +99,7 @@ void Server::start_serv(void)
 		new_Connection_Client();
 	else
 	{
-		sleep(0.2);
+		sleep(1);
 		// std::cout << "No new connection" << std::endl;
 	}
 }
@@ -130,7 +130,8 @@ void	Server::new_Connection_Client(void)
 
 
 
-	User user();
+
+//	User user();
 	_fds.push_back(pollfd());
 	_fds.back().fd = client_socket;
 	_fds.back().events = POLLIN;
