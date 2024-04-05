@@ -10,6 +10,8 @@
 #include <vector>
 #include <poll.h>
 #include "IRC.hpp"
+#include "User.hpp"
+#include <map>
 
 class Server
 {
@@ -20,18 +22,22 @@ class Server
 		Server & operator=(Server const & rhs);
 		~Server();
 
-		void	init_serv(void);
+		void		init_serv(void);
 		long		get_Port(void) const;
 		std::string	get_Password(void) const;
 		std::vector <pollfd>	get_fds(void) const;
-		void	start_serv(void);
+		void		start_serv(void);
 		void	new_Connection_Client(void);
 
 	private:
-		long		_port;
-		std::string	_password;
-		struct sockaddr_in _user_addr;
-		struct	sockaddr_in _server_addr;
+		struct sockaddr_in	_server_addr;
+		long				_port;
+		int					_nb_of_users;
+		std::string			_password;
+		std::vector<pollfd>	_fds;
+		std::map<int, User > _fdusers;		  // users by fds
 
-		std::vector <pollfd>	_fds;
+		// std::map<std::string, User *> _users; // users by nickname
+
+
 };

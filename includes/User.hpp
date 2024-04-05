@@ -15,7 +15,6 @@ SHOULD accept longer strings as they may become used in future
 evolutions of the protocol. */
 class User {
 	private:
-		User( void );
 
 		std::string _nickname;
 		std::string _username;
@@ -23,6 +22,7 @@ class User {
 		int _fd;
 
 	public:
+        User( void );
 		User( const int fd );
 		~User( void );
 
@@ -38,7 +38,7 @@ class User {
 		int get_fd( void ) const;
 };
 
-std::ostream &operator<<( std::ostream &o, const User &src) ; 
+std::ostream &operator<<( std::ostream &o, const User &src) ;
 
 
 // nick ::=  <any characters except NUL, CR, LF, chantype character, and SPACE> <possibly empty sequence of any characters except NUL, CR, LF, and SPACE>

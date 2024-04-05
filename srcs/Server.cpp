@@ -6,19 +6,21 @@ Server::Server()
 {
 	_port = 6667;
 	_password = "default";
+	_nb_of_users = 0;
 }
 
 Server::Server(long port, std::string password) : _port(port), _password(password)
 {
 	std::cout << "Server created with port: " << _port << " and password: " << _password << std::endl;
+	_nb_of_users = 0;
 }
 
-Server::Server(Server const & copy)
+Server::Server(Server const &copy)
 {
 	*this = copy;
 }
 
-Server & Server::operator=(Server const & rhs)
+Server &Server::operator=(Server const &rhs)
 {
 	if (this != &rhs)
 	{
@@ -28,49 +30,54 @@ Server & Server::operator=(Server const & rhs)
 	return (*this);
 }
 
-long	Server::get_Port(void) const { return (_port); }
-std::string	Server::get_Password(void) const { return (_password); }
+long Server::get_Port(void) const { return (_port); }
+std::string Server::get_Password(void) const { return (_password); }
 
-void	Server::init_serv(void)
+void Server::init_serv(void)
 {
-	int	server_socket;
+	int server_socket;
+	int yes = 1;
+	char ip_addr[INET_ADDRSTRLEN];
 
 	// char	msg[1024];
-
-	_server_addr.sin_family = AF_INET;
-	_server_addr.sin_port = htons(_port);
-	_server_addr.sin_addr.s_addr = INADDR_ANY;
 
 	server_socket = socket(AF_INET, SOCK_STREAM, 0);
 
 	if (server_socket == -1)
 	{
 		std::cerr << "Error creating socket" << std::endl;
-		//throw exception("Error creating socket")
+		// throw exception("Error creating socket")
 		exit(1);
 	}
-	//setsockopt(server_socket, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(int));
+	if (setsockopt(server_socket, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(int)) == -1)
+	{
+		std::cerr << "Error Setsockopt" << std::endl;
+	}
 
 	if (fcntl(server_socket, F_SETFL, O_NONBLOCK) == -1)
 	{
 		std::cerr << "Error setting socket to non-blocking" << std::endl;
-		//throw exception("Error setting socket to non-blocking")
+		// throw exception("Error setting socket to non-blocking")
 		exit(1);
 	}
 
-	//inet_ntop ?
+	_server_addr.sin_family = AF_INET;
+	_server_addr.sin_port = htons(_port);
+	_server_addr.sin_addr.s_addr = INADDR_ANY;
+
+	inet_ntop(AF_INET, &(_server_addr.sin_addr), ip_addr, INET_ADDRSTRLEN);
 
 	if (bind(server_socket, (struct sockaddr *)&_server_addr, sizeof(_server_addr)) == -1)
 	{
 		std::cerr << "Error binding socket" << std::endl;
-		//throw exception("Error binding socket")
+		// throw exception("Error binding socket")
 		exit(1);
 	}
 
 	if (listen(server_socket, 200) == -1)
 	{
 		std::cerr << "Error listening on socket" << std::endl;
-		//throw exception("Error listening on socket")
+		// throw exception("Error listening on socket")
 		exit(1);
 	}
 
@@ -104,12 +111,15 @@ void Server::start_serv(void)
 	}
 }
 
-
-void	Server::new_Connection_Client(void)
+void Server::new_Connection_Client(void)
 {
-	socklen_t user_addr_len = sizeof(_user_addr);
+	struct sockaddr_in user_addr;
+	socklen_t user_addr_len = sizeof(user_addr);
 
-	int client_socket = accept(_fds[0].fd, (struct sockaddr *)&_user_addr, &user_addr_len);
+	std::cout << "Socket server juste avant le fcntl :" << _fds[0].fd << std::endl;
+
+	int client_socket = accept(_fds[0].fd, (struct sockaddr *)&user_addr, &user_addr_len);
+	std::cout << "Client socket juste avant le fcntl :" << client_socket << std::endl;
 
 	if (client_socket == -1)
 	{
@@ -124,17 +134,21 @@ void	Server::new_Connection_Client(void)
 		exit(1);
 	}
 	std::cout << "New connection on client_socket: " << client_socket << std::endl;
-	std::cout << "User address: " << inet_ntoa(_user_addr.sin_addr) << std::endl;
-	std::cout << "User port: " << ntohs(_user_addr.sin_port) << std::endl;
-	std::cout << "User test: " << _user_addr.sin_family << std::endl;
+	std::cout << "User address: " << inet_ntoa(user_addr.sin_addr) << std::endl;
+	std::cout << "User port: " << ntohs(user_addr.sin_port) << std::endl;
+	std::cout << "User test: " << user_addr.sin_family << std::endl;
 
+	std::cout << "client socket :" << client_socket << std::endl;
 
-
-
-//	User user();
+	User user(client_socket);
+	std::cout << "Number of users: " << _nb_of_users << std::endl;
+	_fdusers[client_socket] = user;
 	_fds.push_back(pollfd());
 	_fds.back().fd = client_socket;
 	_fds.back().events = POLLIN;
+	_nb_of_users++;
+	std::cout << "Number of users: " << _nb_of_users << std::endl;
+	std::cout << "User : " << _fdusers[client_socket].get_fd() << std::endl;
 }
 
 Server::~Server()
