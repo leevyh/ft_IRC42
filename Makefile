@@ -1,10 +1,13 @@
 NAME = ircserv
 
+
 PATH_SRCS = srcs
 PATH_INCLUDE = includes
 
+
 CXX = c++ -std=c++98
 CXXFLAGS = -Wall -Wextra -Werror -g3
+
 
 HDRS = $(PATH_INCLUDE)/Commands.hpp \
 		$(PATH_INCLUDE)/IRC.hpp \
@@ -32,6 +35,9 @@ $(NAME): $(OBJS)
 	$(CXX) $(CXXFLAGS) -o $(NAME) $(OBJS)
 	@echo "\n Mandatory compilation: OK\n"
 
+
+%.o: %.cpp
+	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 clean:
 	rm -f $(OBJS)
