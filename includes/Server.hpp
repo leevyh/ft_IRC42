@@ -30,5 +30,8 @@ class Server
 	private:
 		long		_port;
 		std::string	_password;
+		struct sockaddr_in _user_addr;
+		struct	sockaddr_in _server_addr;
+
 		std::vector <pollfd>	_fds;
 };

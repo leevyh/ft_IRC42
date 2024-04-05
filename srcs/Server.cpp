@@ -1,4 +1,6 @@
 #include "Server.hpp"
+#include "IRC.hpp"
+#include "User.hpp"
 
 Server::Server()
 {
@@ -33,12 +35,11 @@ void	Server::init_serv(void)
 {
 	int	server_socket;
 
-	struct	sockaddr_in server_addr;
 	// char	msg[1024];
 
-	server_addr.sin_family = AF_INET;
-	server_addr.sin_port = htons(_port);
-	server_addr.sin_addr.s_addr = INADDR_ANY;
+	_server_addr.sin_family = AF_INET;
+	_server_addr.sin_port = htons(_port);
+	_server_addr.sin_addr.s_addr = INADDR_ANY;
 
 	server_socket = socket(AF_INET, SOCK_STREAM, 0);
 
@@ -59,7 +60,7 @@ void	Server::init_serv(void)
 
 	//inet_ntop ?
 
-	if (bind(server_socket, (struct sockaddr *)&server_addr, sizeof(server_addr)) == -1)
+	if (bind(server_socket, (struct sockaddr *)&_server_addr, sizeof(_server_addr)) == -1)
 	{
 		std::cerr << "Error binding socket" << std::endl;
 		//throw exception("Error binding socket")
@@ -76,8 +77,8 @@ void	Server::init_serv(void)
 	std::cout << "End of init_serv" << std::endl;
 	std::cout << "Server listening on port " << _port << std::endl;
 	std::cout << "Socket: " << server_socket << std::endl;
-	std::cout << "Server address: " << inet_ntoa(server_addr.sin_addr) << std::endl;
-	std::cout << "Server port: " << ntohs(server_addr.sin_port) << std::endl;
+	std::cout << "Server address: " << inet_ntoa(_server_addr.sin_addr) << std::endl;
+	std::cout << "Server port: " << ntohs(_server_addr.sin_port) << std::endl;
 	_fds.push_back(pollfd());
 	_fds.back().fd = server_socket;
 	_fds.back().events = POLLIN;
@@ -106,10 +107,9 @@ void Server::start_serv(void)
 
 void	Server::new_Connection_Client(void)
 {
-	struct sockaddr_in user_addr;
-	socklen_t user_addr_len = sizeof(user_addr);
+	socklen_t user_addr_len = sizeof(_user_addr);
 
-	int client_socket = accept(_fds[0].fd, (struct sockaddr *)&user_addr, &user_addr_len);
+	int client_socket = accept(_fds[0].fd, (struct sockaddr *)&_user_addr, &user_addr_len);
 
 	if (client_socket == -1)
 	{
@@ -124,9 +124,13 @@ void	Server::new_Connection_Client(void)
 		exit(1);
 	}
 	std::cout << "New connection on client_socket: " << client_socket << std::endl;
-	std::cout << "User address: " << inet_ntoa(user_addr.sin_addr) << std::endl;
-	std::cout << "User port: " << ntohs(user_addr.sin_port) << std::endl;
-	std::cout << "User test: " << user_addr.sin_family << std::endl;
+	std::cout << "User address: " << inet_ntoa(_user_addr.sin_addr) << std::endl;
+	std::cout << "User port: " << ntohs(_user_addr.sin_port) << std::endl;
+	std::cout << "User test: " << _user_addr.sin_family << std::endl;
+
+
+
+	User user();
 	_fds.push_back(pollfd());
 	_fds.back().fd = client_socket;
 	_fds.back().events = POLLIN;
