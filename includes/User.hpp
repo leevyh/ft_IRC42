@@ -43,9 +43,9 @@ class User {
 		bool				get_status( void ) const;
 		int					get_fd( void ) const;
 
-
 		void joinBuffer( const char* buffer );
 		void receive( Server& server );
+
 };
 
 std::ostream &operator<<( std::ostream& o, const User& src);
