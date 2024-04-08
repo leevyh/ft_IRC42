@@ -6,13 +6,15 @@
 #include "Server.hpp"
 #include "User.hpp"
 
+class Server;
+class User;
 class Commands
 {
 	public:
-		void getcommand(Server& server, User& client, std::vector<std::string>& argument);
+		void getcommand(Server& server, User& user, std::vector<std::string>& argument);
 /* Connection Registration */
 		void pass();
-		void nick();
+		void nick(Server& server, User& user, std::vector<std::string>& nickname);
 		void user();
 		void quit();
 /* Channel operations */
@@ -31,4 +33,7 @@ class Commands
 	private:
 		Commands( void );
 		~Commands( void );
+		typedef void (Commands::*cmdFPtr)(Server& server, User& user, std::vector<std::string>& argument);
+		std::map<std::string, cmdFPtr> cmdMap;
+
 };

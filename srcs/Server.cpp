@@ -160,3 +160,18 @@ void    Server::get_New_Client_Message(void) {
 
 Server::~Server() {
 }
+
+std::map<std::string, User*>	Server::get_usersbynick(void) const {
+	return (_users);
+}
+
+void	Server::sendMsg(Server& server, User& user, std::string message) const {
+	(void)server;
+	std::string msg;
+	msg =  ":" + user.get_nickname() + " " + message + "\r\n";;
+	if (send(user.get_fd(), msg.c_str(), msg.length(), 0) == -1)
+		std::perror("send:");
+	std::cout 	<< "---- SERVER RESPONSE ----\n"
+				<< msg << "\n"
+				<< "-------------------------" << std::endl;
+}

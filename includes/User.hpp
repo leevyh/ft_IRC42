@@ -1,8 +1,9 @@
 #pragma once
 #include <iostream>
-#include <iostream>
 #include <fstream>
 #include <unistd.h>
+#include "Server.hpp"
+#include "Commands.hpp"
 
 class Server;
 /* Each user is distinguished from other users by a unique nickname
@@ -19,14 +20,14 @@ class User {
 		std::string _nickname;
 		std::string _username;
 		std::string _realname;
-        bool        _status; // true = connected, false = disconnected
-		int _fd;
+		bool		_status;
+		int			_fd;
 
 	public:
-        User( void );
+		User( void );
 		User( const int fd );
-        User( const User & src );
-        User & operator=( const User & rhs );
+		User( const User & src );
+		User & operator=( const User & rhs );
 		~User( void );
 
 // SETTERS
@@ -38,12 +39,11 @@ class User {
 		const std::string&	get_nickname( void ) const;
 		const std::string&	get_username( void ) const;
 		const std::string&	get_realname( void ) const;
-        bool	get_status( void ) const { return _status; };
-
+    bool	get_status( void ) const { return _status; };
 		int get_fd( void ) const;
 };
 
-std::ostream &operator<<( std::ostream &o, const User &src) ;
+std::ostream &operator<<( std::ostream &o, const User &src);
 
 
 // nick ::=  <any characters except NUL, CR, LF, chantype character, and SPACE> <possibly empty sequence of any characters except NUL, CR, LF, and SPACE>
