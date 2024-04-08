@@ -52,7 +52,6 @@ int User::get_fd( void ) const {
 	return (this->_fd); 
 }
 
-
 const std::string&	User::get_nickname( void ) const {
 	return (this->_nickname);
 }

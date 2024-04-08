@@ -1,8 +1,9 @@
 #pragma once
 #include <iostream>
-#include <iostream>
 #include <fstream>
 #include <unistd.h>
+#include "Server.hpp"
+#include "Commands.hpp"
 
 class Server;
 /* Each user is distinguished from other users by a unique nickname
@@ -40,7 +41,7 @@ class User {
 		int get_fd( void ) const;
 };
 
-std::ostream &operator<<( std::ostream &o, const User &src) ;
+std::ostream &operator<<( std::ostream &o, const User &src);
 
 
 // nick ::=  <any characters except NUL, CR, LF, chantype character, and SPACE> <possibly empty sequence of any characters except NUL, CR, LF, and SPACE>

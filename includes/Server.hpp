@@ -8,10 +8,13 @@
 #include <sys/socket.h>
 #include <fcntl.h>
 #include <vector>
+#include <map>
 #include <poll.h>
 #include "IRC.hpp"
 #include "User.hpp"
-#include <map>
+
+class User;
+
 
 class Server
 {
@@ -38,6 +41,7 @@ private:
     std::map<int, User > clientmap;		  // users by fds
 
     // std::map<std::string, User *> _users; // users by nickname
-
+		std::map<std::string, User*> get_usersbynick(void) const;
+		void sendMsg(Server& server, User& user, std::string message) const;
 
 };

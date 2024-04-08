@@ -9,7 +9,7 @@
 class Commands
 {
 	public:
-		void getcommand(Server& server, User& client, std::vector<std::string>& argument);
+		void getcommand(Server& server, User& user, std::vector<std::string>& argument);
 /* Connection Registration */
 		void pass();
 		void nick();
