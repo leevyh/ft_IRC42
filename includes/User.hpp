@@ -22,12 +22,13 @@ class User {
 		std::string _realname;
 		bool		_status;
 		int			_fd;
+		std::string _buffer;
 
 	public:
 		User( void );
 		User( const int fd );
-		User( const User & src );
-		User & operator=( const User & rhs );
+		User( const User& src );
+		User & operator=( const User& rhs );
 		~User( void );
 
 // SETTERS
@@ -39,11 +40,15 @@ class User {
 		const std::string&	get_nickname( void ) const;
 		const std::string&	get_username( void ) const;
 		const std::string&	get_realname( void ) const;
-    bool	get_status( void ) const { return _status; };
-		int get_fd( void ) const;
+		bool				get_status( void ) const;
+		int					get_fd( void ) const;
+
+		void joinBuffer( const char* buffer );
+		void receive( Server& server );
+
 };
 
-std::ostream &operator<<( std::ostream &o, const User &src);
+std::ostream &operator<<( std::ostream& o, const User& src);
 
 
 // nick ::=  <any characters except NUL, CR, LF, chantype character, and SPACE> <possibly empty sequence of any characters except NUL, CR, LF, and SPACE>

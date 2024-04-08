@@ -66,6 +66,29 @@ const std::string&	User::get_realname( void ) const {
 	return (this->_realname);
 }
 
-const bool User::get_status( void ) const {
+bool User::get_status( void ) const {
 	return (this->_status);
+}
+
+void User::joinBuffer( const char* buffer ){
+	_buffer += buffer;
+	return;
+}
+
+void User::receive( Server& server ){
+	if (_buffer.find("\n") == std::string::npos)
+		return;
+	size_t pos = _buffer.find("\r\n");
+	if (pos == std::string::npos)
+		pos = _buffer.find("\n");
+	while (pos != std::string::npos)
+	{
+		std::string	line = _buffer.substr(0, pos);
+		if (line.size())
+			// parseClientMessage(server, line);
+		_buffer.erase(0, _buffer.find("\n") + 1);
+		pos = _buffer.find("\r\n");
+		if (pos == std::string::npos)
+			pos = _buffer.find("\n");
+	}
 }
