@@ -20,13 +20,14 @@ class User {
 		std::string _nickname;
 		std::string _username;
 		std::string _realname;
-		int _fd;
+		bool		_status;
+		int			_fd;
 
 	public:
-        User( void );
+		User( void );
 		User( const int fd );
-        User( const User & src );
-        User & operator=( const User & rhs );
+		User( const User & src );
+		User & operator=( const User & rhs );
 		~User( void );
 
 // SETTERS
@@ -38,6 +39,7 @@ class User {
 		const std::string&	get_nickname( void ) const;
 		const std::string&	get_username( void ) const;
 		const std::string&	get_realname( void ) const;
+		const bool get_status( void ) const;
 		int get_fd( void ) const;
 };
 

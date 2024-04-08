@@ -3,11 +3,12 @@
 User::User() : _fd()
 {}
 
-User::User( const int fd ) : _fd(fd) 
+User::User( const int fd ) : _fd(fd)
 {
-    this->_nickname = "";
-    this->_username = "";
-    this->_realname = "";
+	this->_nickname = "";
+	this->_username = "";
+	this->_realname = "";
+	this->_status = true;
 }
 
 User::~User() {
@@ -23,17 +24,18 @@ std::ostream &operator<<(std::ostream &o, const User &src)
 }
 
 User::User( const User & src ) {
-    *this = src;
+	*this = src;
 }
 
 User & User::operator=( const User & rhs ) {
-    if (this != &rhs) {
-        this->_nickname = rhs._nickname;
-        this->_username = rhs._username;
-        this->_realname = rhs._realname;
-        this->_fd = rhs._fd;
-    }
-    return (*this);
+	if (this != &rhs) {
+		this->_nickname = rhs._nickname;
+		this->_username = rhs._username;
+		this->_realname = rhs._realname;
+		this->_status = true;					// A verifier
+		this->_fd = rhs._fd;
+	}
+	return (*this);
 }
 
 void User::set_nickname(const std::string &nickname) {
@@ -62,4 +64,8 @@ const std::string&	User::get_username( void ) const {
 
 const std::string&	User::get_realname( void ) const {
 	return (this->_realname);
+}
+
+const bool User::get_status( void ) const {
+	return (this->_status);
 }

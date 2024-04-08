@@ -138,7 +138,7 @@ std::map<std::string, User*>	Server::get_usersbynick(void) const {
 	return (_users);
 }
 
-void Server::sendMsg(Server& server, User& user, std::string message) const {
+void	Server::sendMsg(Server& server, User& user, std::string message) const {
 	(void)server;
 	std::string msg;
 	msg =  ":" + user.get_nickname() + " " + message + "\r\n";;

@@ -5,6 +5,8 @@
 std::string ERR_NONICKNAMEGIVEN( std::string error );
 std::string ERR_ERRONEUSNICKNAME (std::string name);
 std::string ERR_NICKNAMEINUSE ( std::string name );
+std::string ERR_UNKNOWNCOMMAND( User* user, std::string command );
+
 
 
 std::string ERR_NONICKNAMEGIVEN( std::string name ){
@@ -16,4 +18,9 @@ std::string ERR_ERRONEUSNICKNAME ( std::string name ) {
 }
 std::string ERR_NICKNAMEINUSE ( std::string name ) {
 	return "433 <" + name + "> :Nickname is already in use";
+}
+
+std::string ERR_UNKNOWNCOMMAND( User* user, std::string command ) {
+	return "421 <" + user->get_username() + "> <" + command + " > :Unknown command"; 
+	// Check si c'est le username ou autre chose a afficher car <client> normalement
 }

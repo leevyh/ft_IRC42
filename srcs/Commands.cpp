@@ -1,40 +1,41 @@
 #include "Commands.hpp"
 #include "Errors.hpp"
 
-Commands::Commands( void ){}
+Commands::Commands( void ){
+	cmdMap["NICK"] = &Commands::nick;
+}
 
 Commands::~Commands( void ){}
 
 void	Commands::getcommand(Server& server, User& user, std::vector<std::string>& argument) {
 
 // 	// debug("getCommand", BEGIN);
-// 	bool command = false;
-// 	if ((!argument.empty() && argument.size() > 1)) {
-// 		if (argument[0] == "CAP" && argument[1] == "END") {
-// 			displayWelcome(server, user);
-// 			server.setIrssi(false);
-// 			return;
-// 		}
-// 	}
-// 	if (!argument.empty()) {
-// 		for (std::map<std::string, cmdFunctionPointer>::iterator it = cmdMap.begin(); it != cmdMap.end(); ++it) {
-// 			if (it->first == argument[0]){
-// 				(this->*(it->second))(Server, Client, argument);
-// 				command = true;
-// 			}
-// 		}
-// 		if (command == false)
-// 			Server.sendMsg(Server, Client, ERR_UNKNOWNCOMMAND(argument[0]));
-// 	}
-// 	else
-// 		Server.sendMsg(Server, Client, ERR_UNKNOWNCOMMAND(""));
+	bool command = false;
+	// if ((!argument.empty() && argument.size() > 1)) {
+	// 	if (argument[0] == "CAP" && argument[1] == "END") {
+	// 		displayWelcome(server, user);
+	// 		server.setIrssi(false);
+	// 		return;
+	// 	}
+	// }
+
+// Check si la commande fait partie de notre liste de commandes
+	if (!argument.empty()) {
+		for (std::map<std::string, cmdFPtr>::iterator it = cmdMap.begin(); it != cmdMap.end(); ++it) {
+			if (it->first == argument[0]){
+				(this->*(it->second))(server, user, argument);
+				command = true;
+			}
+		}
+		if (command == false)
+			server.sendMsg(server, user, ERR_UNKNOWNCOMMAND(&user, argument[0]));
+	}
+	else
+		server.sendMsg(server, user, ERR_UNKNOWNCOMMAND(&user, ""));
 // 	debug("getCommand", END);
 
-// 	return;
+	return;
 }
-
-
-
 
 
 /* Command PASS | Parameters: <password>
@@ -68,18 +69,18 @@ where this could lead to confusion or error.
 Numeric Replies: ERR_NONICKNAMEGIVEN; ERR_ERRONEUSNICKNAME;
 				ERR_NICKNAMEINUSE; ERR_NICKCOLLISION;
 				ERR_UNAVAILRESOURCE; ERR_RESTRICTED */
-void nick(Server& server, User& user, std::string nickname)
+void Commands::nick(Server& server, User& user, std::vector<std::string>& nickname)
 {
-	if (!nickname.size())
-		return (server.sendMsg(server, user, ERR_NONICKNAMEGIVEN(nickname)));
-	if (nickname.find_first_not_of("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789")) //ajouter les autres caractères autorisés
-		return (server.sendMsg(server, user, ERR_ERRONEUSNICKNAME(nickname)));
+	if (!nickname[0].size())
+		return (server.sendMsg(server, user, ERR_NONICKNAMEGIVEN(nickname[0])));
+	if (nickname[0].find_first_not_of("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789")) //ajouter les autres caractères autorisés
+		return (server.sendMsg(server, user, ERR_ERRONEUSNICKNAME(nickname[0])));
 
 	std::map<std::string, User*> users = server.get_usersbynick();
 	std::map<std::string, User*>::iterator it;
-	it = users.find(nickname);
+	it = users.find(nickname[0]);
 	if (it != users.end())
-		return (server.sendMsg(server, user, ERR_NICKNAMEINUSE(nickname)));
+		return (server.sendMsg(server, user, ERR_NICKNAMEINUSE(nickname[0])));
 };
 
 
