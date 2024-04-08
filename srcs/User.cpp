@@ -77,6 +77,7 @@ void User::joinBuffer( const char* buffer ){
 
 void User::receive( Server& server ){
     (void)server;
+
 	if (_buffer.find("\n") == std::string::npos)
 		return;
 	size_t pos = _buffer.find("\r\n");
