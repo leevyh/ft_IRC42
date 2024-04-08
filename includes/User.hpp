@@ -19,6 +19,7 @@ class User {
 		std::string _nickname;
 		std::string _username;
 		std::string _realname;
+        bool        _status; // true = connected, false = disconnected
 		int _fd;
 
 	public:
@@ -37,6 +38,8 @@ class User {
 		const std::string&	get_nickname( void ) const;
 		const std::string&	get_username( void ) const;
 		const std::string&	get_realname( void ) const;
+        bool	get_status( void ) const { return _status; };
+
 		int get_fd( void ) const;
 };
 
