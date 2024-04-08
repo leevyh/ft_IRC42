@@ -3,7 +3,7 @@
 User::User() : _fd()
 {}
 
-User::User( const int fd ) : _fd(fd) 
+User::User( const int fd ) : _fd(fd)
 {}
 
 User::~User() {
@@ -33,7 +33,6 @@ void User::set_realname( const std::string &realname ) {
 int User::get_fd( void ) const {
 	return (this->_fd); 
 }
-
 
 const std::string&	User::get_nickname( void ) const {
 	return (this->_nickname);
