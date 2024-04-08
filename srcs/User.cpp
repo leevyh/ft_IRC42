@@ -71,20 +71,29 @@ bool User::get_status( void ) const {
 }
 
 void User::joinBuffer( const char* buffer ){
-	_buffer += buffer;
+	_buffer.append(buffer);
 	return;
 }
 
 void User::receive( Server& server ){
+    (void)server;
 	if (_buffer.find("\n") == std::string::npos)
 		return;
 	size_t pos = _buffer.find("\r\n");
 	if (pos == std::string::npos)
 		pos = _buffer.find("\n");
+   static  int i = 0;
 	while (pos != std::string::npos)
 	{
+        i++;
+        std::cout << "i: " << i << std::endl;
 		std::string	line = _buffer.substr(0, pos);
+        std::cout << "line: " << line << std::endl;
 		if (line.size())
+        {
+            line.clear();
+//            return ;
+        }
 			// parseClientMessage(server, line);
 		_buffer.erase(0, _buffer.find("\n") + 1);
 		pos = _buffer.find("\r\n");
