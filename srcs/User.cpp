@@ -5,10 +5,10 @@ User::User() : _fd()
 
 User::User( const int fd ) : _fd(fd)
 {
-	this->_nickname = "";
-	this->_username = "";
-	this->_realname = "";
-	this->_status = true;
+    this->_nickname = "";
+    this->_username = "";
+    this->_realname = "";
+    this->_status = true;
 }
 
 User::~User() {

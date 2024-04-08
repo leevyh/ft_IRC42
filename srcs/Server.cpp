@@ -75,13 +75,13 @@ void Server::init_serv(void) {
     std::cout << "Server listening on port " << _port << std::endl;
     std::cout << "Server address: " << inet_ntoa(_server_addr.sin_addr) << std::endl;
     std::cout << "Server port: " << ntohs(_server_addr.sin_port) << std::endl;
-    pollfdmap.push_back(pollfd());
-    pollfdmap.back().fd = server_socket;
-    pollfdmap.back().events = POLLIN;
+    _pollfdmap.push_back(pollfd());
+    _pollfdmap.back().fd = server_socket;
+    _pollfdmap.back().events = POLLIN;
 }
 
 void Server::start_serv(void) {
-    if (poll(&pollfdmap[0], pollfdmap.size(), 10000) ==
+    if (poll(&_pollfdmap[0], _pollfdmap.size(), 10000) ==
         -1) // -1 means wait indefinitely, but we can change it to a timeout 1000000 for 1 second
     {
         if (signal_value == false) {
@@ -90,10 +90,11 @@ void Server::start_serv(void) {
             exit(1);
         }
     }
-    if (pollfdmap[0].revents == POLLIN)
+    if (_pollfdmap[0].revents == POLLIN) {
         new_Connection_Client();
+    }
     else {
-        sleep(1);
+        get_New_Client_Message();
     }
 }
 
@@ -101,11 +102,11 @@ void Server::new_Connection_Client(void) {
     struct sockaddr_in user_addr;
     socklen_t user_addr_len = sizeof(user_addr);
 
-    std::cout << "Socket server juste avant le fcntl :" << pollfdmap[0].fd << std::endl;
+    std::cout << "Socket server juste avant le fcntl :" << _pollfdmap[0].fd << std::endl;
 
     int client_socket;
-    std::cout << listen(pollfdmap[0].fd, 10) << std::endl;
-    client_socket = accept(pollfdmap[0].fd, (struct sockaddr *) &user_addr, &user_addr_len);
+    std::cout << listen(_pollfdmap[0].fd, 10) << std::endl;
+    client_socket = accept(_pollfdmap[0].fd, (struct sockaddr *) &user_addr, &user_addr_len);
     if (client_socket == -1) {
         std::cerr << "Error accepting connection" << std::endl;
         // throw exception("Error accepting connection")
@@ -119,16 +120,42 @@ void Server::new_Connection_Client(void) {
     std::cout << "New connection on client_socket: " << client_socket << std::endl;
     std::cout << "User address: " << inet_ntoa(user_addr.sin_addr) << std::endl;
     std::cout << "User port: " << ntohs(user_addr.sin_port) << std::endl;
-    std::cout << "User test: " << user_addr.sin_family << std::endl;
 
 
     User user(client_socket);
-    clientmap[client_socket] = user;
-    pollfdmap.push_back(pollfd());
-    pollfdmap.back().fd = client_socket;
-    pollfdmap.back().events = POLLIN;
+    //set ip for user
+    _clientmap[client_socket] = user;
+    _pollfdmap.push_back(pollfd());
+    _pollfdmap.back().fd = client_socket;
+    _pollfdmap.back().events = POLLIN;
     _nb_of_users++;
     std::cout << "Number of users: " << _nb_of_users << std::endl;
+}
+
+void    Server::get_New_Client_Message(void) {
+    if (_nb_of_users != 0 && _pollfdmap.size() != 1)
+    {
+        char buf[1024];
+        int bytes;
+        std::vector<pollfd>::iterator it;
+        for (it = _pollfdmap.begin(); it != _pollfdmap.end(); it++)
+        {
+            if (it->revents == POLLIN)
+            {
+                bytes = recv(_clientmap[it->fd].get_fd(), buf, 1024, 0);
+                std::cout << bytes << std::endl;
+                if (bytes <= 0)
+                {
+                    //disconnect ???
+                    std::cout <<"deco" <<std::endl;
+                    return ;
+                }
+            }
+
+        }
+    }
+    else
+        return ;
 }
 
 Server::~Server() {

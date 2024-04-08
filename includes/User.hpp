@@ -39,7 +39,7 @@ class User {
 		const std::string&	get_nickname( void ) const;
 		const std::string&	get_username( void ) const;
 		const std::string&	get_realname( void ) const;
-		const bool get_status( void ) const;
+    bool	get_status( void ) const { return _status; };
 		int get_fd( void ) const;
 };
 
