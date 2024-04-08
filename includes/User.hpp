@@ -16,7 +16,6 @@ SHOULD accept longer strings as they may become used in future
 evolutions of the protocol. */
 class User {
 	private:
-		User( void );
 
 		std::string _nickname;
 		std::string _username;
@@ -24,7 +23,10 @@ class User {
 		int _fd;
 
 	public:
+        User( void );
 		User( const int fd );
+        User( const User & src );
+        User & operator=( const User & rhs );
 		~User( void );
 
 // SETTERS

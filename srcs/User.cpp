@@ -3,11 +3,15 @@
 User::User() : _fd()
 {}
 
-User::User( const int fd ) : _fd(fd)
-{}
+User::User( const int fd ) : _fd(fd) 
+{
+    this->_nickname = "";
+    this->_username = "";
+    this->_realname = "";
+}
 
 User::~User() {
-	close(this->_fd);
+//	close(this->_fd);
 }
 
 std::ostream &operator<<(std::ostream &o, const User &src)
@@ -16,6 +20,20 @@ std::ostream &operator<<(std::ostream &o, const User &src)
 	if (src.get_nickname().size())
 		o << ' ' << src.get_nickname() << "|";
 	return (o);
+}
+
+User::User( const User & src ) {
+    *this = src;
+}
+
+User & User::operator=( const User & rhs ) {
+    if (this != &rhs) {
+        this->_nickname = rhs._nickname;
+        this->_username = rhs._username;
+        this->_realname = rhs._realname;
+        this->_fd = rhs._fd;
+    }
+    return (*this);
 }
 
 void User::set_nickname(const std::string &nickname) {
