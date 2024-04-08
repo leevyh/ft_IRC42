@@ -81,7 +81,7 @@ void Server::init_serv(void) {
 }
 
 void Server::start_serv(void) {
-    if (poll(&_pollfdmap[0], _pollfdmap.size(), 10000) ==
+    if (poll(&_pollfdmap[0], _pollfdmap.size(), 2000) ==
         -1) // -1 means wait indefinitely, but we can change it to a timeout 1000000 for 1 second
     {
         if (signal_value == false) {
@@ -150,6 +150,13 @@ void    Server::get_New_Client_Message(void) {
                     std::cout <<"deco" <<std::endl;
                     return ;
                 }
+            }
+            else
+            {
+                buf[bytes] ='\0';
+                _clientmap[it->fd].joinBuffer(buf);
+                _clientmap[it->fd].receive(*this);
+                memset(buf, 0, 1024);
             }
 
         }

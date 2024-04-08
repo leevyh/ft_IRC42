@@ -45,7 +45,6 @@ class User {
 
 		void joinBuffer( const char* buffer );
 		void receive( Server& server );
-
 };
 
 std::ostream &operator<<( std::ostream& o, const User& src);
