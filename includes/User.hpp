@@ -24,6 +24,8 @@ class User {
 	public:
         User( void );
 		User( const int fd );
+        User( const User & src );
+        User & operator=( const User & rhs );
 		~User( void );
 
 // SETTERS
