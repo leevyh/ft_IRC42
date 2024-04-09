@@ -10,7 +10,7 @@ Commands::Commands(void) {
 Commands::~Commands(void) {
 }
 
-void Commands::getcommand(Server &server, User &user, std::vector <std::string> &argument) {
+void Commands::getcommand(Server &server, User &user, std::vector<std::string> &argument) {
 
 // 	// debug("getCommand", BEGIN);
 	bool command = false;
@@ -30,11 +30,13 @@ void Commands::getcommand(Server &server, User &user, std::vector <std::string> 
 				command = true;
 			}
 		}
-		if (command == false)
+		if (command == false) {
 			server.sendMsg(user, ERR_UNKNOWNCOMMAND(user, argument[0]));
+		}
 	}
-	else
+	else {
 		server.sendMsg(user, ERR_UNKNOWNCOMMAND(user, ""));
+	}
 	return;
 }
 
@@ -46,16 +48,20 @@ register the connection is made. Currently this requires that user
 send a PASS command before sending the NICK/USER combination.
 
 Numeric Replies: ERR_NEEDMOREPARAMS; ERR_ALREADYREGISTRED */
-void Commands::pass( Server& server, User& user, std::vector<std::string>& arg ) {
-	if (user.get_status() == true)
-		return (server.sendMsg(user, ERR_ALREADYREGISTRED(user)));;
-	if (arg[1].empty())
+void Commands::pass(Server &server, User &user, std::vector<std::string> &arg) {
+	if (user.get_status() == true) {
+		return (server.sendMsg(user, ERR_ALREADYREGISTRED(user)));
+	};
+	if (arg[1].empty()) {
 		return (server.sendMsg(user, ERR_NEEDMOREPARAMS(user, "PASS")));
+	}
 	if (arg[1] == server.get_Password()) {
-		if (user.get_password().empty())
+		if (user.get_password().empty()) {
 			user.set_password(arg[1]);
-		else
+		}
+		else {
 			return (server.sendMsg(user, ERR_ALREADYREGISTRED(user)));
+		}
 	}
 }
 
@@ -79,19 +85,23 @@ where this could lead to confusion or error.
 Numeric Replies: ERR_NONICKNAMEGIVEN; ERR_ERRONEUSNICKNAME;
 				ERR_NICKNAMEINUSE; ERR_NICKCOLLISION;
 				ERR_UNAVAILRESOURCE; ERR_RESTRICTED */
-void Commands::nick( Server& server, User& user, std::vector<std::string>& arg ) {
-	if (arg[1].empty())
+void Commands::nick(Server &server, User &user, std::vector<std::string> &arg) {
+	if (arg[1].empty()) {
 		return (server.sendMsg(user, ERR_NONICKNAMEGIVEN(arg[1])));
-	if (arg[1].find_first_not_of("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789") != std::string::npos) //ajouter les autres caractères autorisés
+	}
+	if (arg[1].find_first_not_of("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789") !=
+		std::string::npos) { //ajouter les autres caractères autorisés
 		return (server.sendMsg(user, ERR_ERRONEUSNICKNAME(arg[1])));
-
-	std::map<std::string, User*> users = server.get_usersbynick();
-	std::map<std::string, User*>::iterator it;
+	}
+	std::map<std::string, User *> users = server.get_usersbynick();
+	std::map<std::string, User *>::iterator it;
 	it = users.find(arg[1]);
-	if (it != users.end())
+	if (it != users.end()) {
 		return (server.sendMsg(user, ERR_NICKNAMEINUSE(arg[1])));
+	}
 	user.set_nickname(arg[1]);
 };
+
 /* Command USER | Parameters: <user> <mode> <unused> <realname>
 
 The USER command is used at the beginning of connection to specify
@@ -104,28 +114,31 @@ set, the user mode 'i' will be set. (See Section 3.1.5 "User Modes").
 The <realname> may contain space characters.
 
 Numeric Replies: ERR_NEEDMOREPARAMS; ERR_ALREADYREGISTRED */
-void Commands::user( Server& server, User& user, std::vector<std::string>& arg ) {
+void Commands::user(Server &server, User &user, std::vector<std::string> &arg) {
 //			>> USER <user> <mode> <unused> <realname>
 //Example:	>> USER amugnier amugnier 10.24.4.2 :Antoine MUGNIER
-	if (user.get_status() == true)
+	if (user.get_status() == true) {
 		return (server.sendMsg(user, ERR_ALREADYREGISTRED(user)));
-	if (arg.size() < 5)
+	}
+	if (arg.size() < 5) {
 		return (server.sendMsg(user, ERR_NEEDMOREPARAMS(user, "USER")));
+	}
 	user.set_username(arg[1]);
 	// if (arg[2].size()) // Should be numeric ??
 	// 	user.set_mode();
 	user.set_ip(arg[3]);
 	if (arg[4][0] == ':') {
 		std::string realname;
-		arg[4] = arg[4].erase(0,1);
+		arg[4] = arg[4].erase(0, 1);
 		for (size_t i = 4; i < arg.size(); i++) {
 			realname += arg[i];
 			realname += " ";
 		}
 		user.set_realname(realname);
 	}
-	else
+	else {
 		user.set_realname(arg[4]);
+	}
 }
 
 /* Command: QUIT | Parameters: [ <Quit Message> ]
@@ -166,11 +179,9 @@ Numeric Replies: ERR_NEEDMOREPARAMS; ERR_BANNEDFROMCHAN;
 				RPL_TOPIC */
 void join();
 
-
-
-void Commands::capls( Server& server, User& user, std::vector<std::string>& arg ) {
-	(void)server;
-	(void)user;
-	(void)arg;
+void Commands::capls(Server &server, User &user, std::vector<std::string> &arg) {
+	(void) server;
+	(void) user;
+	(void) arg;
 	std::cout << "CAP LS\n";
 }

@@ -4,15 +4,15 @@
 #include "unistd.h"
 
 Server::Server() {
-    _port = 6667;
-    _password = "default";
-    _nb_of_users = 0;
+	_port = 6667;
+	_password = "default";
+	_nb_of_users = 0;
 	_networkname = "IRC_DE_LA_MORT";
 }
 
 Server::Server(long port, std::string password) : _port(port), _password(password) {
-    std::cout << "Server created with port: " << _port << " and password: " << _password << std::endl;
-    _nb_of_users = 0;
+	std::cout << "Server created with port: " << _port << " and password: " << _password << std::endl;
+	_nb_of_users = 0;
 	_networkname = "IRC_DE_LA_MORT";
 }
 
@@ -36,7 +36,9 @@ std::string Server::get_Password(void) const {
 	return (_password);
 }
 
-std::string Server::get_networkname(void) const { return (_networkname); }
+std::string Server::get_networkname(void) const {
+	return (_networkname);
+}
 
 void Server::init_serv(void) {
 	int server_socket;
@@ -150,8 +152,9 @@ void Server::get_New_Client_Message(void) {
 					_clientmap[it->fd].joinBuffer(buf);
 					_clientmap[it->fd].receive(*this);
 					memset(buf, 0, 1024);
-					if (_clientmap[it->fd].get_status() == false)
+					if (_clientmap[it->fd].get_status() == false) {
 						disconnect(_clientmap[it->fd]);
+					}
 				}
 			}
 		}
@@ -161,41 +164,39 @@ void Server::get_New_Client_Message(void) {
 	}
 }
 
-void Server::disconnect(User &user)
-{
-	std::vector <pollfd>::iterator it;
+void Server::disconnect(User &user) {
+	std::vector<pollfd>::iterator it;
 	it = _pollfdmap.begin();
-	std::cout <<"user.get_fd() = " << user.get_fd() << std::endl;
-	std::cout <<"it->fd = " << it->fd << std::endl;
-	if (it != _pollfdmap.end())
+	std::cout << "user.get_fd() = " << user.get_fd() << std::endl;
+	std::cout << "it->fd = " << it->fd << std::endl;
+	if (it != _pollfdmap.end()) {
 		close(user.get_fd());
-
-	std::map <int, User>::iterator it_fd;
+	}
+	std::map<int, User>::iterator it_fd;
 	it_fd = _clientmap.find(user.get_fd());
 	std::cout << "it_fd->first = " << it_fd->first << std::endl;
-	if (it_fd != _clientmap.end())
-	{
+	if (it_fd != _clientmap.end()) {
 		_clientmap.erase(it_fd);
 	}
 	_nb_of_users--;
-	if (_nb_of_users < 1)
+	if (_nb_of_users < 1) {
 		_clientmap.clear();
+	}
 }
-
 
 std::map<std::string, User *> Server::get_usersbynick(void) const {
 	return (_users);
 }
 
-void	Server::sendMsg(User& user, std::string message) const {
+void Server::sendMsg(User &user, std::string message) const {
 	std::string msg;
 	// On utilise le username ou le networkname ?
-	(void)user;
-	msg =  ":" + this->get_networkname() + " " + message + "\r\n";
+	(void) user;
+	msg = ":" + this->get_networkname() + " " + message + "\r\n";
 	// if (send(user.get_fd(), msg.c_str(), msg.length(), 0) == -1)
 	// 	std::perror("send:");
-	std::cout 	<< ">> "
-				<< msg << std::endl;
+	std::cout << ">> "
+			  << msg << std::endl;
 }
 
 Server::~Server() {

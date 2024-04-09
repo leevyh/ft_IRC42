@@ -3,7 +3,6 @@
 #include <iostream>
 #include <fstream>
 #include <unistd.h>
-
 #include "IRC.hpp"
 
 class Server;
@@ -23,8 +22,8 @@ class User {
 		std::string _realname;
 		std::string _password;
 		std::string _ip;
-		bool		_status;
-		int			_fd;
+		bool _status;
+		int _fd;
 		std::string _buffer;
 	public:
 		User(void);
@@ -32,31 +31,27 @@ class User {
 		User(const User &src);
 		User &operator=(const User &rhs);
 		~User(void);
-
 // SETTERS
-		void set_nickname( const std::string& nickname );
-		void set_username( const std::string& username );
-		void set_realname( const std::string& realname );
-		void set_password( const std::string& password );
-		void set_ip( const std::string& ip );
-		void authentication( Server& server, Commands& cmd, std::vector<std::string> arg );
-
+		void set_nickname(const std::string &nickname);
+		void set_username(const std::string &username);
+		void set_realname(const std::string &realname);
+		void set_password(const std::string &password);
+		void set_ip(const std::string &ip);
+		void authentication(Server &server, Commands &cmd, std::vector<std::string> arg);
 // GETTERS
-		const std::string&	get_nickname( void ) const;
-		const std::string&	get_username( void ) const;
-		const std::string&	get_realname( void ) const;
-		const std::string&	get_password( void ) const;
-		const std::string&	get_ip( void ) const;
-		bool				get_status( void ) const;
-		int					get_fd( void ) const;
-
-		void joinBuffer( const char* buffer ); // char * ou std::string ??
-		void receive( Server& server );
-		void parseClientMessage( Server& server, std::string line );
+		const std::string &get_nickname(void) const;
+		const std::string &get_username(void) const;
+		const std::string &get_realname(void) const;
+		const std::string &get_password(void) const;
+		const std::string &get_ip(void) const;
+		bool get_status(void) const;
+		int get_fd(void) const;
+		void joinBuffer(const char *buffer); // char * ou std::string ??
+		void receive(Server &server);
+		void parseClientMessage(Server &server, std::string line);
 };
 std::ostream &operator<<(std::ostream &o, const User &src);
-
-std::vector<std::string>	splitcmd( std::string line );
+std::vector<std::string> splitcmd(std::string line);
 
 // nick ::=  <any characters except NUL, CR, LF, chantype character, and SPACE> <possibly empty sequence of any characters except NUL, CR, LF, and SPACE>
 // user ::=  <sequence of any characters except NUL, CR, LF, and SPACE>
