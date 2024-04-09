@@ -7,11 +7,13 @@ Server::Server() {
     _port = 6667;
     _password = "default";
     _nb_of_users = 0;
+	_networkname = "IRC_DE_LA_MORT";
 }
 
 Server::Server(long port, std::string password) : _port(port), _password(password) {
     std::cout << "Server created with port: " << _port << " and password: " << _password << std::endl;
     _nb_of_users = 0;
+	_networkname = "IRC_DE_LA_MORT";
 }
 
 Server::Server(Server const &copy) {
@@ -29,6 +31,8 @@ Server &Server::operator=(Server const &rhs) {
 long Server::get_Port(void) const { return (_port); }
 
 std::string Server::get_Password(void) const { return (_password); }
+
+std::string Server::get_networkname(void) const { return (_networkname); }
 
 void Server::init_serv(void) {
     int server_socket;
@@ -99,70 +103,70 @@ void Server::start_serv(void) {
 }
 
 void Server::new_Connection_Client(void) {
-    struct sockaddr_in user_addr;
-    socklen_t user_addr_len = sizeof(user_addr);
+	struct sockaddr_in user_addr;
+	socklen_t user_addr_len = sizeof(user_addr);
 
-    std::cout << "Socket server juste avant le fcntl :" << _pollfdmap[0].fd << std::endl;
+	std::cout << "Socket server juste avant le fcntl :" << _pollfdmap[0].fd << std::endl;
 
-    int client_socket;
-    std::cout << listen(_pollfdmap[0].fd, 10) << std::endl;
-    client_socket = accept(_pollfdmap[0].fd, (struct sockaddr *) &user_addr, &user_addr_len);
-    if (client_socket == -1) {
-        std::cerr << "Error accepting connection" << std::endl;
-        // throw exception("Error accepting connection")
-        exit(1);
-    }
-    if (fcntl(client_socket, F_SETFL, O_NONBLOCK) == -1) {
-        std::cerr << "Error setting connection to non-blocking" << std::endl;
-        // throw exception("Error setting connection to non-blocking")
-        exit(1);
-    }
-    std::cout << "New connection on client_socket: " << client_socket << std::endl;
-    std::cout << "User address: " << inet_ntoa(user_addr.sin_addr) << std::endl;
-    std::cout << "User port: " << ntohs(user_addr.sin_port) << std::endl;
+	int client_socket;
+	std::cout << listen(_pollfdmap[0].fd, 10) << std::endl;
+	client_socket = accept(_pollfdmap[0].fd, (struct sockaddr *) &user_addr, &user_addr_len);
+	if (client_socket == -1) {
+		std::cerr << "Error accepting connection" << std::endl;
+		// throw exception("Error accepting connection")
+		exit(1);
+	}
+	if (fcntl(client_socket, F_SETFL, O_NONBLOCK) == -1) {
+		std::cerr << "Error setting connection to non-blocking" << std::endl;
+		// throw exception("Error setting connection to non-blocking")
+		exit(1);
+	}
+	std::cout << "New connection on client_socket: " << client_socket << std::endl;
+	std::cout << "User address: " << inet_ntoa(user_addr.sin_addr) << std::endl;
+	std::cout << "User port: " << ntohs(user_addr.sin_port) << std::endl;
 
 
-    User user(client_socket);
-    //set ip for user
-    _clientmap[client_socket] = user;
-    _pollfdmap.push_back(pollfd());
-    _pollfdmap.back().fd = client_socket;
-    _pollfdmap.back().events = POLLIN;
-    _nb_of_users++;
-    std::cout << "Number of users: " << _nb_of_users << std::endl;
+	User user(client_socket);
+	//set ip for user
+	_clientmap[client_socket] = user;
+	_pollfdmap.push_back(pollfd());
+	_pollfdmap.back().fd = client_socket;
+	_pollfdmap.back().events = POLLIN;
+	_nb_of_users++;
+	std::cout << "Number of users: " << _nb_of_users << std::endl;
 }
 
-void    Server::get_New_Client_Message(void) {
-    if (_nb_of_users != 0 && _pollfdmap.size() != 1)
-    {
-        char buf[1024];
-        int bytes;
-        std::vector<pollfd>::iterator it;
-        for (it = _pollfdmap.begin(); it != _pollfdmap.end(); it++)
-        {
-            if (it->revents == POLLIN)
-            {
-                bytes = recv(_clientmap[it->fd].get_fd(), buf, 1024, 0);
-                std::cout << bytes << std::endl;
-                if (bytes <= 0)
-                {
-                    //disconnect ???
-                    std::cout <<"deco" <<std::endl;
-                    return ;
-                }
-            }
-            else
-            {
-                buf[bytes] ='\0';
-                _clientmap[it->fd].joinBuffer(buf);
-                _clientmap[it->fd].receive(*this);
-                memset(buf, 0, 1024);
-            }
-
-        }
-    }
-    else
-        return ;
+void	Server::get_New_Client_Message(void) {
+	if (_nb_of_users != 0 && _pollfdmap.size() != 1)
+	{
+		char buf[1024];
+		int bytes;
+		std::vector<pollfd>::iterator it;
+		for (it = _pollfdmap.begin(); it != _pollfdmap.end(); it++)
+		{
+			if (it->revents == POLLIN)
+			{
+				bytes = recv(_clientmap[it->fd].get_fd(), buf, 1024, 0);
+				std::cout << bytes << std::endl;
+				std::cout << "get_New_Client_Message: user fd:" << _clientmap[it->fd].get_fd() << std::endl;
+				if (bytes <= 0)
+				{
+					//disconnect ???
+					std::cout <<"deco" <<std::endl;
+					return ;
+				}
+				else
+				{
+					buf[bytes] ='\0';
+					_clientmap[it->fd].joinBuffer(buf);
+					_clientmap[it->fd].receive(*this);
+					memset(buf, 0, 1024);
+				}
+			}
+		}
+	}
+	else
+		return ;
 }
 
 Server::~Server() {
@@ -172,13 +176,13 @@ std::map<std::string, User*>	Server::get_usersbynick(void) const {
 	return (_users);
 }
 
-void	Server::sendMsg(Server& server, User& user, std::string message) const {
-	(void)server;
+void	Server::sendMsg(User& user, std::string message) const {
 	std::string msg;
-	msg =  ":" + user.get_nickname() + " " + message + "\r\n";;
-	if (send(user.get_fd(), msg.c_str(), msg.length(), 0) == -1)
-		std::perror("send:");
-	std::cout 	<< "---- SERVER RESPONSE ----\n"
-				<< msg << "\n"
-				<< "-------------------------" << std::endl;
+	// On utilise le username ou le networkname ?
+	(void)user;
+	msg =  ":" + this->get_networkname() + " " + message + "\r\n";
+	// if (send(user.get_fd(), msg.c_str(), msg.length(), 0) == -1)
+	// 	std::perror("send:");
+	std::cout 	<< ">> "
+				<< msg << std::endl;
 }
