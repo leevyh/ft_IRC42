@@ -1,4 +1,5 @@
 #pragma once
+
 #include <iostream>
 #include <string>
 #include <Server.hpp>
@@ -14,6 +15,5 @@
 #include <sys/types.h>
 
 extern bool signal_value;
-
-void	check_args(int argc, char **argv);
-void	signal_send(int signum);
+void check_args(int argc, char **argv);
+void signal_send(int signum);

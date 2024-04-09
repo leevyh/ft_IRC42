@@ -1,13 +1,14 @@
 #include "Commands.hpp"
 #include "Errors.hpp"
 
-Commands::Commands( void ){
+Commands::Commands(void) {
 	cmdMap["NICK"] = &Commands::nick;
 }
 
-Commands::~Commands( void ){}
+Commands::~Commands(void) {
+}
 
-void	Commands::getcommand(Server& server, User& user, std::vector<std::string>& argument) {
+void Commands::getcommand(Server &server, User &user, std::vector <std::string> &argument) {
 
 // 	// debug("getCommand", BEGIN);
 	bool command = false;
@@ -22,21 +23,22 @@ void	Commands::getcommand(Server& server, User& user, std::vector<std::string>& 
 // Check si la commande fait partie de notre liste de commandes
 	if (!argument.empty()) {
 		for (std::map<std::string, cmdFPtr>::iterator it = cmdMap.begin(); it != cmdMap.end(); ++it) {
-			if (it->first == argument[0]){
+			if (it->first == argument[0]) {
 				(this->*(it->second))(server, user, argument);
 				command = true;
 			}
 		}
-		if (command == false)
+		if (command == false) {
 			server.sendMsg(server, user, ERR_UNKNOWNCOMMAND(&user, argument[0]));
+		}
 	}
-	else
+	else {
 		server.sendMsg(server, user, ERR_UNKNOWNCOMMAND(&user, ""));
+	}
 // 	debug("getCommand", END);
 
 	return;
 }
-
 
 /* Command PASS | Parameters: <password>
 
@@ -47,7 +49,6 @@ send a PASS command before sending the NICK/USER combination.
 
 Numeric Replies: ERR_NEEDMOREPARAMS; ERR_ALREADYREGISTRED */
 void pass();
-
 
 /* Command NICK | Parameters: <nickname>
 
@@ -69,21 +70,21 @@ where this could lead to confusion or error.
 Numeric Replies: ERR_NONICKNAMEGIVEN; ERR_ERRONEUSNICKNAME;
 				ERR_NICKNAMEINUSE; ERR_NICKCOLLISION;
 				ERR_UNAVAILRESOURCE; ERR_RESTRICTED */
-void Commands::nick(Server& server, User& user, std::vector<std::string>& nickname)
-{
-	if (!nickname[0].size())
+void Commands::nick(Server &server, User &user, std::vector <std::string> &nickname) {
+	if (!nickname[0].size()) {
 		return (server.sendMsg(server, user, ERR_NONICKNAMEGIVEN(nickname[0])));
-	if (nickname[0].find_first_not_of("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789")) //ajouter les autres caractères autorisés
+	}
+	if (nickname[0].find_first_not_of(
+			"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789")) { //ajouter les autres caractères autorisés
 		return (server.sendMsg(server, user, ERR_ERRONEUSNICKNAME(nickname[0])));
-
-	std::map<std::string, User*> users = server.get_usersbynick();
-	std::map<std::string, User*>::iterator it;
+	}
+	std::map < std::string, User * > users = server.get_usersbynick();
+	std::map<std::string, User *>::iterator it;
 	it = users.find(nickname[0]);
-	if (it != users.end())
+	if (it != users.end()) {
 		return (server.sendMsg(server, user, ERR_NICKNAMEINUSE(nickname[0])));
+	}
 };
-
-
 /* Command USER | Parameters: <user> <mode> <unused> <realname>
 
 The USER command is used at the beginning of connection to specify
@@ -97,8 +98,6 @@ The <realname> may contain space characters.
 
 Numeric Replies: ERR_NEEDMOREPARAMS; ERR_ALREADYREGISTRED */
 void user();
-
-
 /* Command: QUIT | Parameters: [ <Quit Message> ]
 
 A client session is terminated with a quit message.  The server
@@ -106,8 +105,6 @@ acknowledges this by sending an ERROR message to the client.
 
 Numeric Replies: None. */
 void quit();
-
-
 /* Command: JOIN | Parameters: ( <channel> *( "," <channel> ) [ <key> *( "," <key> ) ] ) / "0"
 
 The JOIN command is used by a user to request to start listening to
