@@ -4,14 +4,16 @@
 #include "unistd.h"
 
 Server::Server() {
-	_port = 6667;
-	_password = "default";
-	_nb_of_users = 0;
+    _port = 6667;
+    _password = "default";
+    _nb_of_users = 0;
+	_networkname = "IRC_DE_LA_MORT";
 }
 
 Server::Server(long port, std::string password) : _port(port), _password(password) {
-	std::cout << "Server created with port: " << _port << " and password: " << _password << std::endl;
-	_nb_of_users = 0;
+    std::cout << "Server created with port: " << _port << " and password: " << _password << std::endl;
+    _nb_of_users = 0;
+	_networkname = "IRC_DE_LA_MORT";
 }
 
 Server::Server(Server const &copy) {
@@ -33,6 +35,8 @@ long Server::get_Port(void) const {
 std::string Server::get_Password(void) const {
 	return (_password);
 }
+
+std::string Server::get_networkname(void) const { return (_networkname); }
 
 void Server::init_serv(void) {
 	int server_socket;
@@ -183,16 +187,15 @@ std::map<std::string, User *> Server::get_usersbynick(void) const {
 	return (_users);
 }
 
-void Server::sendMsg(Server &server, User &user, std::string message) const {
-	(void) server;
+void	Server::sendMsg(User& user, std::string message) const {
 	std::string msg;
-	msg = ":" + user.get_nickname() + " " + message + "\r\n";;
-	if (send(user.get_fd(), msg.c_str(), msg.length(), 0) == -1) {
-		std::perror("send:");
-	}
-	std::cout << "---- SERVER RESPONSE ----\n"
-			  << msg << "\n"
-			  << "-------------------------" << std::endl;
+	// On utilise le username ou le networkname ?
+	(void)user;
+	msg =  ":" + this->get_networkname() + " " + message + "\r\n";
+	// if (send(user.get_fd(), msg.c_str(), msg.length(), 0) == -1)
+	// 	std::perror("send:");
+	std::cout 	<< ">> "
+				<< msg << std::endl;
 }
 
 Server::~Server() {

@@ -11,9 +11,8 @@
 #include <vector>
 #include <map>
 #include <poll.h>
+
 #include "IRC.hpp"
-#include "User.hpp"
-#include "Commands.hpp"
 
 class User;
 class Commands;
@@ -24,23 +23,25 @@ class Server {
 		Server(Server const &copy);
 		Server &operator=(Server const &rhs);
 		~Server();
-		void init_serv(void);
+
+    void init_serv(void);
 		long get_Port(void) const;
 		std::string get_Password(void) const;
-		std::vector <pollfd> get_fds(void) const;
+		std::string get_networkname(void) const;
+		std::vector<pollfd> get_fds(void) const;
 		void start_serv(void);
 		void new_Connection_Client(void);
 		void get_New_Client_Message(void);
-		std::map<std::string, User *> get_usersbynick(void) const;
-		void sendMsg(Server &server, User &user, std::string message) const;
+		std::map<std::string, User*> get_usersbynick(void) const;
+		void sendMsg(User& user, std::string message) const;
 		void disconnect(User &user);
 	private:
 		struct sockaddr_in _server_addr;
 		long _port;
 		int _nb_of_users;
 		std::string _password;
-		std::vector <pollfd> _pollfdmap;
+		std::string _networkname;
+		std::vector<pollfd> _pollfdmap;
 		std::map<int, User> _clientmap;          // users by fds
 		std::map<std::string, User *> _users; // users by nickname
-
 };

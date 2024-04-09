@@ -9,15 +9,17 @@ CXX = c++ -std=c++98
 CXXFLAGS = -Wall -Wextra -Werror -g3
 
 
-HDRS = $(PATH_INCLUDE)/Commands.hpp \
-		$(PATH_INCLUDE)/IRC.hpp \
+HDRS = $(PATH_INCLUDE)/IRC.hpp \
 		$(PATH_INCLUDE)/Server.hpp \
-		$(PATH_INCLUDE)/User.hpp
+		$(PATH_INCLUDE)/User.hpp \
+		$(PATH_INCLUDE)/Commands.hpp \
 
 SRCS = $(PATH_SRCS)/main.cpp \
 		$(PATH_SRCS)/Server.cpp \
 		$(PATH_SRCS)/utils.cpp \
-		$(PATH_SRCS)/User.cpp
+		$(PATH_SRCS)/User.cpp \
+		$(PATH_SRCS)/Commands.cpp \
+		$(PATH_SRCS)/RPL.cpp
 
 
 OBJ_DIR = .objs

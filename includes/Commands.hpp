@@ -3,18 +3,22 @@
 #include <iostream>
 #include <string>
 #include <vector>
-#include "Server.hpp"
-#include "User.hpp"
+#include "IRC.hpp"
 
 class Server;
 class User;
 class Commands {
 	public:
-		void getcommand(Server &server, User &user, std::vector <std::string> &argument);
+		Commands( void );
+		~Commands( void );
+
+		typedef void (Commands::*cmdFPtr)(Server& server, User& user, std::vector<std::string>& arguments);
+
+		void getcommand( Server& server, User& user, std::vector<std::string>& arguments );
 /* Connection Registration */
-		void pass();
-		void nick(Server &server, User &user, std::vector <std::string> &nickname);
-		void user();
+		void pass( Server& server, User& user, std::vector<std::string>& arg );
+		void nick( Server& server, User& user, std::vector<std::string>& arg );
+		void user( Server& server, User& user, std::vector<std::string>& arg );
 		void quit();
 /* Channel operations */
 		void join();
@@ -27,10 +31,8 @@ class Commands {
 		void mode();
 		void pmsg();
 		void ping(); // void pong() ??
+		void capls( Server& server, User& user, std::vector<std::string>& arg );
 
 	private:
-		Commands(void);
-		~Commands(void);
-		typedef void (Commands::*cmdFPtr)(Server &server, User &user, std::vector <std::string> &argument);
-		std::map <std::string, cmdFPtr> cmdMap;
+		std::map<std::string, cmdFPtr> cmdMap;
 };
