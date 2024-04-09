@@ -1,14 +1,13 @@
 #pragma once
+
 #include <iostream>
 #include <string>
 #include <vector>
-
 #include "IRC.hpp"
 
 class Server;
 class User;
-class Commands
-{
+class Commands {
 	public:
 		Commands( void );
 		~Commands( void );
@@ -30,7 +29,6 @@ class Commands
 		void leave();
 		void kick();
 		void mode();
-
 		void pmsg();
 		void ping(); // void pong() ??
 		void capls( Server& server, User& user, std::vector<std::string>& arg );

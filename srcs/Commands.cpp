@@ -1,15 +1,16 @@
 #include "Commands.hpp"
 
-Commands::Commands( void ){
+Commands::Commands(void) {
 	cmdMap["NICK"] = &Commands::nick;
 	cmdMap["PASS"] = &Commands::pass;
 	cmdMap["USER"] = &Commands::user;
 	cmdMap["CAP"] = &Commands::capls;
 }
 
-Commands::~Commands( void ){}
+Commands::~Commands(void) {
+}
 
-void	Commands::getcommand(Server& server, User& user, std::vector<std::string>& argument) {
+void Commands::getcommand(Server &server, User &user, std::vector <std::string> &argument) {
 
 // 	// debug("getCommand", BEGIN);
 	bool command = false;
@@ -24,7 +25,7 @@ void	Commands::getcommand(Server& server, User& user, std::vector<std::string>& 
 // Check si la commande fait partie de notre liste de commandes
 	if (!argument.empty()) {
 		for (std::map<std::string, cmdFPtr>::iterator it = cmdMap.begin(); it != cmdMap.end(); ++it) {
-			if (it->first == argument[0]){
+			if (it->first == argument[0]) {
 				(this->*(it->second))(server, user, argument);
 				command = true;
 			}
@@ -36,7 +37,6 @@ void	Commands::getcommand(Server& server, User& user, std::vector<std::string>& 
 		server.sendMsg(user, ERR_UNKNOWNCOMMAND(user, ""));
 	return;
 }
-
 
 /* Command PASS | Parameters: <password>
 
@@ -58,7 +58,6 @@ void Commands::pass( Server& server, User& user, std::vector<std::string>& arg )
 			return (server.sendMsg(user, ERR_ALREADYREGISTRED(user)));
 	}
 }
-
 
 /* Command NICK | Parameters: <nickname>
 
@@ -93,8 +92,6 @@ void Commands::nick( Server& server, User& user, std::vector<std::string>& arg )
 		return (server.sendMsg(user, ERR_NICKNAMEINUSE(arg[1])));
 	user.set_nickname(arg[1]);
 };
-
-
 /* Command USER | Parameters: <user> <mode> <unused> <realname>
 
 The USER command is used at the beginning of connection to specify
@@ -131,7 +128,6 @@ void Commands::user( Server& server, User& user, std::vector<std::string>& arg )
 		user.set_realname(arg[4]);
 }
 
-
 /* Command: QUIT | Parameters: [ <Quit Message> ]
 
 A client session is terminated with a quit message.  The server
@@ -139,8 +135,6 @@ acknowledges this by sending an ERROR message to the client.
 
 Numeric Replies: None. */
 void quit();
-
-
 /* Command: JOIN | Parameters: ( <channel> *( "," <channel> ) [ <key> *( "," <key> ) ] ) / "0"
 
 The JOIN command is used by a user to request to start listening to

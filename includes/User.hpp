@@ -1,4 +1,5 @@
 #pragma once
+
 #include <iostream>
 #include <fstream>
 #include <unistd.h>
@@ -17,7 +18,6 @@ SHOULD accept longer strings as they may become used in future
 evolutions of the protocol. */
 class User {
 	private:
-
 		std::string _nickname;
 		std::string _username;
 		std::string _realname;
@@ -26,13 +26,12 @@ class User {
 		bool		_status;
 		int			_fd;
 		std::string _buffer;
-
 	public:
-		User( void );
-		User( const int fd );
-		User( const User& src );
-		User & operator=( const User& rhs );
-		~User( void );
+		User(void);
+		User(const int fd);
+		User(const User &src);
+		User &operator=(const User &rhs);
+		~User(void);
 
 // SETTERS
 		void set_nickname( const std::string& nickname );
@@ -55,8 +54,7 @@ class User {
 		void receive( Server& server );
 		void parseClientMessage( Server& server, std::string line );
 };
-
-std::ostream &operator<<( std::ostream& o, const User& src);
+std::ostream &operator<<(std::ostream &o, const User &src);
 
 std::vector<std::string>	splitcmd( std::string line );
 

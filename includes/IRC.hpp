@@ -1,4 +1,5 @@
 #pragma once
+
 #include <iostream>
 #include <string>
 #include <Server.hpp>
@@ -21,7 +22,6 @@ extern bool signal_value;
 
 void	check_args(int argc, char **argv);
 void	signal_send(int signum);
-
 
 // IRC PROTOCOL
 void displayWelcome( Server& server, User& user );

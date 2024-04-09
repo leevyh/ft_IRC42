@@ -1,10 +1,10 @@
 #include "User.hpp"
 
-User::User() : _fd()
-{}
+User::User() : _fd() {
+}
 
-User::User( const int fd ) : _fd(fd)
-{
+
+User::User(const int fd) : _fd(fd) {
 	this->_nickname = "";
 	this->_username = "";
 	this->_realname = "";
@@ -15,19 +15,19 @@ User::~User() {
 //	close(this->_fd);
 }
 
-std::ostream &operator<<(std::ostream &o, const User &src)
-{
+std::ostream &operator<<(std::ostream &o, const User &src) {
 	o << "| " << src.get_fd() << "|";
-	if (src.get_nickname().size())
+	if (src.get_nickname().size()) {
 		o << ' ' << src.get_nickname() << "|";
+	}
 	return (o);
 }
 
-User::User( const User & src ) {
+User::User(const User &src) {
 	*this = src;
 }
 
-User & User::operator=( const User & rhs ) {
+User &User::operator=(const User &rhs) {
 	if (this != &rhs) {
 		this->_nickname = rhs._nickname;
 		this->_username = rhs._username;
@@ -44,11 +44,11 @@ void User::set_nickname(const std::string &nickname) {
 	this->_nickname = nickname;
 }
 
-void User::set_username( const std::string &username ) {
+void User::set_username(const std::string &username) {
 	this->_username = username;
 }
 
-void User::set_realname( const std::string &realname ) {
+void User::set_realname(const std::string &realname) {
 	this->_realname = realname;
 }
 
@@ -66,11 +66,11 @@ const std::string&	User::get_nickname( void ) const {
 	return (this->_nickname);
 }
 
-const std::string&	User::get_username( void ) const {
+const std::string &User::get_username(void) const {
 	return (this->_username);
 }
 
-const std::string&	User::get_realname( void ) const {
+const std::string &User::get_realname(void) const {
 	return (this->_realname);
 }
 
@@ -90,7 +90,7 @@ bool User::get_status( void ) const {
 	return (this->_status);
 }
 
-void User::joinBuffer( const char* buffer ){
+void User::joinBuffer(const char *buffer) {
 	_buffer.append(buffer);
 	return;
 }
@@ -119,8 +119,9 @@ void User::receive( Server& server ){
 		}
 		_buffer.erase(0, _buffer.find("\n") + 1);
 		pos = _buffer.find("\r\n");
-		if (pos == std::string::npos)
+		if (pos == std::string::npos) {
 			pos = _buffer.find("\n");
+		}
 	}
 }
 
