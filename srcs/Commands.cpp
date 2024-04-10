@@ -8,6 +8,7 @@ Commands::Commands(void) {
 	cmdMap["QUIT"] = &Commands::quit;
 	cmdMap["MODE"] = &Commands::mode;
 	cmdMap["PING"] = &Commands::ping;
+	cmdMap["PRIVMSG"] = &Commands::privmsg;
 }
 
 Commands::~Commands(void) {
@@ -178,10 +179,10 @@ void Commands::quit(Server &server, User &user, std::vector<std::string> &arg) {
 // Command Example:   QUIT :Gone to have lunch         ; Client exiting from the network
 // Message Example:  :dan-!d@localhost QUIT :Quit: Bye for now!
 // 					; dan- is exiting the network with the message: "Quit: Bye for now!"
-(void)server;
-(void)user;
-(void)arg;
-std::cout << "QUIT à coder\n";
+	(void)server;
+	(void)user;
+	(void)arg;
+	std::cout << "QUIT à coder\n";
 }
 
 
@@ -287,9 +288,18 @@ Numeric Replies: ERR_NOSUCHNICK (401); ERR_NOSUCHSERVER (402);
 					ERR_NORECIPIENT (411); ERR_NOTEXTTOSEND (412);
 					ERR_NOTOPLEVEL (413); ERR_WILDTOPLEVEL (414);
 					RPL_AWAY (301)*/
-void privmsg(Server &server, User &user, std::vector<std::string> &arg) {
-	(void)server;
+void Commands::privmsg(Server &server, User &user, std::vector<std::string> &arg) {
+	short type = 0;
+	(void)type;
+//	(void)server;
 	(void)user;
-	(void)arg;
-	std::cout << "PRIVMSG à coder\n";
+	std::string msg_send;
+	for(std::map<int, User>::iterator it = server.get_clientmap().begin(); it != server.get_clientmap().end(); ++it)
+	{
+		if (arg[1] == it->second.get_nickname())
+		{
+			std::cout<< "Message to " << it->second.get_nickname() << " : " << arg[2] << std::endl;
+		}
+	}
+
 }

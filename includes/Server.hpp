@@ -28,7 +28,8 @@ class Server {
 		std::string get_Password(void) const;
 		std::string get_networkname(void) const;
 		std::vector<pollfd> get_fds(void) const;
-		std::map<std::string, User *> get_usersbynick(void) const;
+		std::map<std::string, User *>& get_usersbynick(void);
+		std::map<int, User> &get_clientmap();
 // FUNCTIONS
 		void init_serv(void);
 		void start_serv(void);
