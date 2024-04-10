@@ -17,6 +17,14 @@ Server::Server(long port, std::string password) : _port(port), _password(passwor
 }
 
 Server::~Server() {
+	for (size_t i = 0; i < _clientmap.size(); i++) {
+		disconnect(_clientmap.begin()->second);
+	}
+	_clientmap.clear();
+	for (std::vector<pollfd>::iterator it = _pollfdmap.begin(); it != _pollfdmap.end(); it++) {
+		close(it->fd);
+	}
+	_pollfdmap.clear();
 }
 
 Server::Server(Server const &copy) {
@@ -205,3 +213,5 @@ void Server::sendMsg(User &user, std::string message) const {
 	std::cout << ">> "
 			  << msg << std::endl;
 }
+
+

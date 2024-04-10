@@ -16,6 +16,7 @@
 #include "Server.hpp"
 #include "User.hpp"
 #include "Commands.hpp"
+#include "Channel.hpp"
 
 extern bool signal_value;
 void check_args(int argc, char **argv);

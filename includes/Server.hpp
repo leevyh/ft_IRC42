@@ -15,6 +15,7 @@
 
 class User;
 class Commands;
+//class Channel;
 class Server {
 	public:
 		Server();
@@ -35,6 +36,7 @@ class Server {
 		void get_New_Client_Message(void);
 		void sendMsg(User &user, std::string message) const;
 		void disconnect(User &user);
+		void timeout_disconnect(User &user);
 	private:
 		struct sockaddr_in _server_addr;
 		long _port;
@@ -44,4 +46,5 @@ class Server {
 		std::vector<pollfd> _pollfdmap;
 		std::map<int, User> _clientmap;          // users by fds
 		std::map<std::string, User *> _users; // users by nickname
+//		std::map<std::string, Channel> _channels;
 };
