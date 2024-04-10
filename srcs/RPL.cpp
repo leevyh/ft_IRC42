@@ -12,20 +12,17 @@ void displayWelcome(Server &server, User &user) {
 	}
 }
 
-// "<client> :Welcome to the <networkname> Network, <nick>[!<user>@<host>]"
 std::string RPL_WELCOME(Server &server, User &user) {
 	return ("001 " + user.get_nickname() + " :Welcome to the "
 			+ server.get_networkname() + " Network, " + user.get_nickname()
 			+ "!~" + user.get_username() + "@" + user.get_ip() + "\r\n");
 }
 
-// "<client> :Your host is <servername>, running version <version>"
 std::string RPL_YOURHOST(Server &server, User &user) {
 	return ("002 " + user.get_nickname() + " :Your host is "
 			+ server.get_networkname() + ", Network, running v0.1\r\n");
 }
 
-// "<client> :This server was created <datetime>"
 std::string RPL_CREATED(User &user) {
 	return ("003 " + user.get_nickname() + " :This server was created Sun 20 Apr 2042 during the total eclipse\r\n");
 }
@@ -65,35 +62,35 @@ std::string ERR_ALREADYREGISTRED(User &user) {
 
 /* ************************************************************************** */
 
-//   "<client> <nickname> :No such nick/channel"
-std::string ERR_NOSUCHNICK(User &user, std::string nickname) // (401)
-{
+std::string ERR_NOSUCHNICK(User &user, std::string nickname) {
 	return ("401 " + user.get_username() + " " + nickname + " :No suck nick/channel\r\n");
 }
 
-//   "<client> <server name> :No such server"
-std::string ERR_NOSUCHSERVER(User &user, std::string server_name) // (402)
-{
+std::string ERR_NOSUCHSERVER(User &user, std::string server_name) {
 	return ("402 " + user.get_username() + " " + server_name + " :No such server\r\n");
 }
 
+std::string ERR_NOSUCHCHANNEL(User &user, std::string channel) {
+	return ("403 " + user.get_username() + " " + channel + " :No such channel\r\n");
+}
+
+// Returned by the PRIVMSG command to indicate the message wasn’t delivered because there was no recipient given.
+std::string ERR_NORECIPIENT(User &user, std::string command) {
+	return ("411 " + user.get_username() + " :No recipient given (" + command + ")\r\n");
+}
+
+// Returned by the PRIVMSG command to indicate the message wasn’t delivered because there was no text to send.
+std::string ERR_NOTEXTTOSEND(User &user) {
+	return ("412 " + user.get_username() + " :No text to send\r\n");
+}
+
+// "<client> <nick> :<message>"
+// Indicates that the user with the nickname <nick> is currently away and sends the away message that they set.
+// std::string RPL_AWAY(User &user, std::string message) // (301)
+// {
+// 	return ("301 " + user.get_username() + " " + NICKNAME DE LA PERSONNE PARTIE " :" + MESSAGE DE LA PERSONNE PARTIE + "\r\n");
+// }
 
 
 // ERR_NOTOPLEVEL (413); 
 // ERR_WILDTOPLEVEL (414);
-
-
-/*
-
-ERR_NOSUCHCHANNEL (403) 
-  "<client> <channel> :No such channel"
-ERR_NORECIPIENT (411) 
-  "<client> :No recipient given (<command>)"
-Returned by the PRIVMSG command to indicate the message wasn’t delivered because there was no recipient given.
-ERR_NOTEXTTOSEND (412) 
-  "<client> :No text to send"
-Returned by the PRIVMSG command to indicate the message wasn’t delivered because there was no text to send.
-RPL_AWAY (301) 
-  "<client> <nick> :<message>"
-Indicates that the user with the nickname <nick> is currently away and sends the away message that they set.
-*/

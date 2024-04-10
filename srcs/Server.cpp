@@ -212,10 +212,9 @@ void Server::sendMsg(User &user, std::string message) const {
 	// On utilise le username ou le networkname ?
 	(void) user;
 	msg = ":" + this->get_networkname() + " " + message + "\r\n";
-	// if (send(user.get_fd(), msg.c_str(), msg.length(), 0) == -1)
-	// 	std::perror("send:");
-	std::cout << ">> "
-			  << msg << std::endl;
+	if (send(user.get_fd(), msg.c_str(), msg.length(), 0) == -1)
+		std::perror("send:");
+	// std::cout << ">> " << msg << std::endl;
 }
 
 
