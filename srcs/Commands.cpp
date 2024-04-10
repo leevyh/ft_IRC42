@@ -298,7 +298,10 @@ void Commands::privmsg(Server &server, User &user, std::vector<std::string> &arg
 	{
 		if (arg[1] == it->second.get_nickname())
 		{
-			std::cout<< "Message to " << it->second.get_nickname() << " : " << arg[2] << std::endl;
+			msg_send = ":" + user.get_nickname() + "!~" + user.get_username() + "@" + user.get_ip() + " PRIVMSG " + arg[1] + " :" + arg[2] + "\r\n";
+			if (send(it->second.get_fd(), msg_send.c_str(), msg_send.length(), 0) == -1)
+				std::perror("send:");
+			std::cout << "Message sent to " << it->second.get_nickname() << std::endl;
 		}
 	}
 
