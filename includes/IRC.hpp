@@ -23,10 +23,14 @@ void signal_send(int signum);
 
 // IRC PROTOCOL
 void displayWelcome(Server &server, User &user);
-std::string RPL_WELCOME(Server &server, User &user);                    // 001
+std::string RPL_WELCOME(Server &server, User &user);                   // 001
+std::string RPL_YOURHOST(Server &server, User &user);                  // 002
+std::string RPL_CREATED(User &user);                                   // 003
+std::string RPL_MYINFO(Server &server, User &user);                    // 004
+
 std::string ERR_NONICKNAMEGIVEN(std::string error);                    // 431
 std::string ERR_ERRONEUSNICKNAME(std::string name);                    // 432
-std::string ERR_NICKNAMEINUSE(std::string name);                        // 433
-std::string ERR_UNKNOWNCOMMAND(User &user, std::string command);        // 421
-std::string ERR_NEEDMOREPARAMS(User &user, std::string command);        // 461
-std::string ERR_ALREADYREGISTRED(User &user);                            // 462
+std::string ERR_NICKNAMEINUSE(std::string name);                       // 433
+std::string ERR_UNKNOWNCOMMAND(User &user, std::string command);       // 421
+std::string ERR_NEEDMOREPARAMS(User &user, std::string command);       // 461
+std::string ERR_ALREADYREGISTRED(User &user);                          // 462

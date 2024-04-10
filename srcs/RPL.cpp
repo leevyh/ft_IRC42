@@ -4,20 +4,39 @@
 #include "Commands.hpp"
 
 void displayWelcome(Server &server, User &user) {
-	if (send(user.get_fd(), RPL_WELCOME(server, user).c_str(), RPL_WELCOME(server, user).size(), 0) == -1) {
-		// send(user.getfd(), RPL_YOURHOST(server, client).c_str(), RPL_YOURHOST(server, client).length(), 0) == -1 ||
-		// send(user.getfd(), RPL_CREATED(server, client).c_str(), RPL_CREATED(server, client).length(), 0) == -1 ||
-		// send(user.getfd(), RPL_MYINFO(server, client).c_str(), RPL_MYINFO(server, client).length(), 0) == -1)
+	if (send(user.get_fd(), RPL_WELCOME(server, user).c_str(), RPL_WELCOME(server, user).size(), 0) == -1 ||
+		send(user.get_fd(), RPL_YOURHOST(server, user).c_str(), RPL_YOURHOST(server, user).length(), 0) == -1 ||
+		send(user.get_fd(), RPL_CREATED(user).c_str(), RPL_CREATED(user).length(), 0) == -1 ||
+		send(user.get_fd(), RPL_MYINFO(server, user).c_str(), RPL_MYINFO(server, user).length(), 0) == -1) {
 		std::perror("send:");
 	}
 }
 
-// 001 Neoblack :Welcome to the DALnet IRC Network Neoblack!~amugnier@62.210.33.34
+// "<client> :Welcome to the <networkname> Network, <nick>[!<user>@<host>]"
 std::string RPL_WELCOME(Server &server, User &user) {
 	return ("001 " + user.get_nickname() + " :Welcome to the "
 			+ server.get_networkname() + " Network, " + user.get_nickname()
 			+ "!~" + user.get_username() + "@" + user.get_ip() + "\r\n");
 }
+
+// "<client> :Your host is <servername>, running version <version>"
+std::string RPL_YOURHOST(Server &server, User &user) {
+	return ("002 " + user.get_nickname() + " :Your host is "
+			+ server.get_networkname() + ", Network, running v0.1\r\n");
+}
+
+// "<client> :This server was created <datetime>"
+std::string RPL_CREATED(User &user) {
+	return ("003 " + user.get_nickname() + " :This server was created Sun 20 Apr 2042 during the total eclipse\r\n");
+}
+
+// "<client> <servername> <version> <available user modes>
+// <available channel modes> [<channel modes with a parameter>]"
+std::string RPL_MYINFO(Server &server, User &user) {
+	return ("004 " + user.get_nickname() + " " + server.get_networkname() + \
+	" v0.1 <available user modes> <available channel modes>\r\n");
+}
+
 
 std::string ERR_NONICKNAMEGIVEN(std::string name) {
 	return ("431 " + name + " :No nickname given");
