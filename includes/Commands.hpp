@@ -18,7 +18,6 @@ class Commands {
 		void pass(Server &server, User &user, std::vector<std::string> &arg);
 		void nick(Server &server, User &user, std::vector<std::string> &arg);
 		void user(Server &server, User &user, std::vector<std::string> &arg);
-		void mode(Server &server, User &user, std::vector<std::string> &arg);
 		void quit(Server &server, User &user, std::vector<std::string> &arg);
 /* Channel operations */
 		void join();
@@ -28,7 +27,8 @@ class Commands {
 		void invite();
 		void leave();
 		void kick();
-		void pmsg();
+		void mode(Server &server, User &user, std::vector<std::string> &arg);
+		void privmsg(Server &server, User &user, std::vector<std::string> &arg);
 
 		void ping(Server &server, User &user, std::vector<std::string> &arg); // void pong() ??
 	private:

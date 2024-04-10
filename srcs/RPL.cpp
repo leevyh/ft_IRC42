@@ -37,27 +37,63 @@ std::string RPL_MYINFO(Server &server, User &user) {
 	" v0.1 <available user modes> <available channel modes>\r\n");
 }
 
+/* ************************************************************************** */
 
 std::string ERR_NONICKNAMEGIVEN(std::string name) {
-	return ("431 " + name + " :No nickname given");
+	return ("431 " + name + " :No nickname given\r\n");
 }
 
 std::string ERR_ERRONEUSNICKNAME(std::string name) {
-	return ("432 " + name + " :Erroneus nickname");
+	return ("432 " + name + " :Erroneus nickname\r\n");
 }
 
 std::string ERR_NICKNAMEINUSE(std::string name) {
-	return ("433 " + name + " :Nickname is already in use");
+	return ("433 " + name + " :Nickname is already in use\r\n");
 }
 
 std::string ERR_UNKNOWNCOMMAND(User &user, std::string command) {
-	return ("421 " + user.get_username() + " " + command + " :Unknown command");
+	return ("421 " + user.get_username() + " " + command + " :Unknown command\r\n");
 }
 
 std::string ERR_NEEDMOREPARAMS(User &user, std::string command) {
-	return ("461 " + user.get_username() + " " + command + " :Not enough parameters");
+	return ("461 " + user.get_username() + " " + command + " :Not enough parameters\r\n");
 }
 
 std::string ERR_ALREADYREGISTRED(User &user) {
-	return ("462 " + user.get_username() + " :You may not reregister");
+	return ("462 " + user.get_username() + " :You may not reregister\r\n");
 }
+
+/* ************************************************************************** */
+
+//   "<client> <nickname> :No such nick/channel"
+std::string ERR_NOSUCHNICK(User &user, std::string nickname) // (401)
+{
+	return ("401 " + user.get_username() + " " + nickname + " :No suck nick/channel\r\n");
+}
+
+//   "<client> <server name> :No such server"
+std::string ERR_NOSUCHSERVER(User &user, std::string server_name) // (402)
+{
+	return ("402 " + user.get_username() + " " + server_name + " :No such server\r\n");
+}
+
+
+
+// ERR_NOTOPLEVEL (413); 
+// ERR_WILDTOPLEVEL (414);
+
+
+/*
+
+ERR_NOSUCHCHANNEL (403) 
+  "<client> <channel> :No such channel"
+ERR_NORECIPIENT (411) 
+  "<client> :No recipient given (<command>)"
+Returned by the PRIVMSG command to indicate the message wasn’t delivered because there was no recipient given.
+ERR_NOTEXTTOSEND (412) 
+  "<client> :No text to send"
+Returned by the PRIVMSG command to indicate the message wasn’t delivered because there was no text to send.
+RPL_AWAY (301) 
+  "<client> <nick> :<message>"
+Indicates that the user with the nickname <nick> is currently away and sends the away message that they set.
+*/
