@@ -4,9 +4,6 @@
 #include "Commands.hpp"
 
 void displayWelcome(Server &server, User &user) {
-	std::cout << "display welcome \nuser fd:" << user.get_fd() << std::endl;
-	std::cout << "String :" << RPL_WELCOME(server, user).c_str() << std::endl;
-	std::cout << "Size:" << RPL_WELCOME(server, user).size() << std::endl;
 	if (send(user.get_fd(), RPL_WELCOME(server, user).c_str(), RPL_WELCOME(server, user).size(), 0) == -1) {
 		// send(user.getfd(), RPL_YOURHOST(server, client).c_str(), RPL_YOURHOST(server, client).length(), 0) == -1 ||
 		// send(user.getfd(), RPL_CREATED(server, client).c_str(), RPL_CREATED(server, client).length(), 0) == -1 ||

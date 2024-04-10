@@ -14,10 +14,12 @@ class Commands {
 		typedef void (Commands::*cmdFPtr)(Server &server, User &user, std::vector<std::string> &arguments);
 		void getcommand(Server &server, User &user, std::vector<std::string> &arguments);
 /* Connection Registration */
+		void capls(Server &server, User &user, std::vector<std::string> &arg);
 		void pass(Server &server, User &user, std::vector<std::string> &arg);
 		void nick(Server &server, User &user, std::vector<std::string> &arg);
 		void user(Server &server, User &user, std::vector<std::string> &arg);
-		void quit();
+		void mode(Server &server, User &user, std::vector<std::string> &arg);
+		void quit(Server &server, User &user, std::vector<std::string> &arg);
 /* Channel operations */
 		void join();
 		void part();
@@ -26,10 +28,8 @@ class Commands {
 		void invite();
 		void leave();
 		void kick();
-		void mode();
 		void pmsg();
-		void ping(); // void pong() ??
-		void capls(Server &server, User &user, std::vector<std::string> &arg);
+		void ping(Server &server, User &user, std::vector<std::string> &arg); // void pong() ??
 	private:
 		std::map<std::string, cmdFPtr> cmdMap;
 };

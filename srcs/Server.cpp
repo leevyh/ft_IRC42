@@ -16,6 +16,9 @@ Server::Server(long port, std::string password) : _port(port), _password(passwor
 	_networkname = "IRC_DE_LA_MORT";
 }
 
+Server::~Server() {
+}
+
 Server::Server(Server const &copy) {
 	*this = copy;
 }
@@ -28,6 +31,8 @@ Server &Server::operator=(Server const &rhs) {
 	return (*this);
 }
 
+/* ************************************************************************** */
+
 long Server::get_Port(void) const {
 	return (_port);
 }
@@ -39,6 +44,12 @@ std::string Server::get_Password(void) const {
 std::string Server::get_networkname(void) const {
 	return (_networkname);
 }
+
+std::map<std::string, User *> Server::get_usersbynick(void) const {
+	return (_users);
+}
+
+/* ************************************************************************** */
 
 void Server::init_serv(void) {
 	int server_socket;
@@ -167,14 +178,14 @@ void Server::get_New_Client_Message(void) {
 void Server::disconnect(User &user) {
 	std::vector<pollfd>::iterator it;
 	it = _pollfdmap.begin();
-	std::cout << "user.get_fd() = " << user.get_fd() << std::endl;
-	std::cout << "it->fd = " << it->fd << std::endl;
+	// std::cout << "user.get_fd() = " << user.get_fd() << std::endl;
+	// std::cout << "it->fd = " << it->fd << std::endl;
 	if (it != _pollfdmap.end()) {
 		close(user.get_fd());
 	}
 	std::map<int, User>::iterator it_fd;
 	it_fd = _clientmap.find(user.get_fd());
-	std::cout << "it_fd->first = " << it_fd->first << std::endl;
+	// std::cout << "it_fd->first = " << it_fd->first << std::endl;
 	if (it_fd != _clientmap.end()) {
 		_clientmap.erase(it_fd);
 	}
@@ -182,10 +193,6 @@ void Server::disconnect(User &user) {
 	if (_nb_of_users < 1) {
 		_clientmap.clear();
 	}
-}
-
-std::map<std::string, User *> Server::get_usersbynick(void) const {
-	return (_users);
 }
 
 void Server::sendMsg(User &user, std::string message) const {
@@ -198,7 +205,3 @@ void Server::sendMsg(User &user, std::string message) const {
 	std::cout << ">> "
 			  << msg << std::endl;
 }
-
-Server::~Server() {
-}
-

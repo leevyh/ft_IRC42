@@ -1,10 +1,13 @@
 #include "Commands.hpp"
 
 Commands::Commands(void) {
-	cmdMap["NICK"] = &Commands::nick;
+	cmdMap["CAP LS"] = &Commands::capls;
 	cmdMap["PASS"] = &Commands::pass;
+	cmdMap["NICK"] = &Commands::nick;
 	cmdMap["USER"] = &Commands::user;
-	cmdMap["CAP"] = &Commands::capls;
+	cmdMap["QUIT"] = &Commands::quit;
+	cmdMap["MODE"] = &Commands::mode;
+	cmdMap["PING"] = &Commands::ping;
 }
 
 Commands::~Commands(void) {
@@ -39,6 +42,14 @@ void Commands::getcommand(Server &server, User &user, std::vector<std::string> &
 	}
 	return;
 }
+
+void Commands::capls(Server &server, User &user, std::vector<std::string> &arg) {
+	(void) server;
+	(void) user;
+	(void) arg;
+	std::cout << "CAP LS à coder\n";
+}
+
 
 /* Command PASS | Parameters: <password>
 
@@ -147,7 +158,14 @@ A client session is terminated with a quit message.  The server
 acknowledges this by sending an ERROR message to the client.
 
 Numeric Replies: None. */
-void quit();
+void Commands::quit(Server &server, User &user, std::vector<std::string> &arg) {
+(void)server;
+(void)user;
+(void)arg;
+std::cout << "QUIT à coder\n";
+}
+
+
 /* Command: JOIN | Parameters: ( <channel> *( "," <channel> ) [ <key> *( "," <key> ) ] ) / "0"
 
 The JOIN command is used by a user to request to start listening to
@@ -179,9 +197,19 @@ Numeric Replies: ERR_NEEDMOREPARAMS; ERR_BANNEDFROMCHAN;
 				RPL_TOPIC */
 void join();
 
-void Commands::capls(Server &server, User &user, std::vector<std::string> &arg) {
-	(void) server;
-	(void) user;
-	(void) arg;
-	std::cout << "CAP LS\n";
+
+
+
+void Commands::mode(Server &server, User &user, std::vector<std::string> &arg) {
+	(void)server;
+	(void)user;
+	(void)arg;
+	std::cout << "MODE à coder\n";
+}
+
+void Commands::ping(Server &server, User &user, std::vector<std::string> &arg) {
+	(void)server;
+	(void)user;
+	(void)arg;
+	std::cout << "PING à coder\n";
 }

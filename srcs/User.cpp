@@ -14,14 +14,6 @@ User::~User() {
 //	close(this->_fd);
 }
 
-std::ostream &operator<<(std::ostream &o, const User &src) {
-	o << "| " << src.get_fd() << "|";
-	if (src.get_nickname().size()) {
-		o << ' ' << src.get_nickname() << "|";
-	}
-	return (o);
-}
-
 User::User(const User &src) {
 	*this = src;
 }
@@ -35,6 +27,14 @@ User &User::operator=(const User &rhs) {
 		this->_fd = rhs._fd;
 	}
 	return (*this);
+}
+
+std::ostream &operator<<(std::ostream &o, const User &src) {
+	o << "| " << src.get_fd() << "|";
+	if (src.get_nickname().size()) {
+		o << ' ' << src.get_nickname() << "|";
+	}
+	return (o);
 }
 
 /* ************************************************************************** */
@@ -89,6 +89,8 @@ bool User::get_status(void) const {
 	return (this->_status);
 }
 
+/* ************************************************************************** */
+
 void User::joinBuffer(const char *buffer) {
 	_buffer.append(buffer);
 	return;
@@ -110,7 +112,6 @@ void User::receive(Server &server) {
 		std::string line = _buffer.substr(0, pos);
 		// std::cout << "line: " << line << std::endl;
 		if (line.size()) {
-			std::cout << "receive: user fd:" << this->get_fd() << std::endl;
 			parseClientMessage(server, line);
 			line.clear();
 //			return ;
@@ -135,43 +136,37 @@ std::vector<std::string> splitcmd(std::string line) {
 }
 
 void User::authentication(Server &server, Commands &cmd, std::vector<std::string> arg) {
-	// if (!arg.empty() && arg.size() > 1) {
-	// 	if (arg[0] == "CAP" && arg[1] == "LS") {
-	// 		arg[0] = "CAP LS";
-	// 		arg.erase(arg.begin() + 1);
-	// 	}
-	// }
-	// for (size_t i = 0; i < arg.size(); i++)
-	// 	std::cout << arg[i] << "#" << std::endl;
+	if (!arg.empty() && arg.size() > 1) {
+		if (arg[0] == "CAP" && arg[1] == "LS") {
+			arg[0] = "CAP LS";
+			arg.erase(arg.begin() + 1);
+		}
+	}
 	if (!arg.empty()) {
-		std::string cmds[] = {"PASS", "NICK", "USER", "CAP"};
+		std::string cmds[] = {"PASS", "NICK", "USER", "CAP LS"};
 		int i = 0;
 		while (i < 4 && cmds[i].compare(arg[0]))
 			i++;
 		switch (i) {
-			case 0:
-				cmd.getcommand(server, *this, arg);
-				break;
-			case 1:
-				cmd.getcommand(server, *this, arg);
-				break;
-			case 2:
-				cmd.getcommand(server, *this, arg);
-				break;
-			case 3:
+			case 0: case 1: case 2: case 3:
 				cmd.getcommand(server, *this, arg);
 				break;
 			default:
-				std::cout << "A CODER\n";
-				break;
+				server.sendMsg(*this, "You are not connected to the server.");
+				if (!(this->get_password().empty()))
+					server.sendMsg(*this, "Password: OK");
+				else {
+					server.sendMsg(*this, "You need to use /PASS to connect first.");
+					break;
+				}
+				!(this->get_nickname().empty()) ? server.sendMsg(*this, "Nickname: " + this->get_nickname()) \
+				: server.sendMsg(*this, "You need to use /NICK to set your nickname first.");
+				!(this->get_username().empty()) ? server.sendMsg(*this, "Username: " + this->get_username()) \
+				: server.sendMsg(*this, "You need to use /USER to set your username first.");
 		}
 	}
-	std::cout << "Authentication: user fd:" << this->get_fd() << std::endl;
 	if (!_nickname.empty() && !_username.empty() && !_realname.empty() && !_password.empty()) {
-		std::cout << "_nickname: " << get_nickname() << " | _username: " << get_username() \
- << " | _realname: " << get_realname() << std::endl;
 		_status = true;
-		// WELCOME MESSAGE
 		displayWelcome(server, *this);
 	}
 }
@@ -179,7 +174,6 @@ void User::authentication(Server &server, Commands &cmd, std::vector<std::string
 void User::parseClientMessage(Server &server, std::string line) {
 	std::vector<std::string> splited_cmd = splitcmd(line);
 	Commands cmd;
-	std::cout << "parseClientMessage: user fd:" << this->get_fd() << std::endl;
 	get_status() == true ? cmd.getcommand(server, *this, splited_cmd) : authentication(server, cmd, splited_cmd);
 	line.clear();
 	return;

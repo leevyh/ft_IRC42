@@ -22,15 +22,17 @@ class Server {
 		Server(Server const &copy);
 		Server &operator=(Server const &rhs);
 		~Server();
-		void init_serv(void);
+// GETTERS
 		long get_Port(void) const;
 		std::string get_Password(void) const;
 		std::string get_networkname(void) const;
 		std::vector<pollfd> get_fds(void) const;
+		std::map<std::string, User *> get_usersbynick(void) const;
+// FUNCTIONS
+		void init_serv(void);
 		void start_serv(void);
 		void new_Connection_Client(void);
 		void get_New_Client_Message(void);
-		std::map<std::string, User *> get_usersbynick(void) const;
 		void sendMsg(User &user, std::string message) const;
 		void disconnect(User &user);
 	private:

@@ -46,6 +46,7 @@ class User {
 		const std::string &get_ip(void) const;
 		bool get_status(void) const;
 		int get_fd(void) const;
+// FUNCTIONS
 		void joinBuffer(const char *buffer); // char * ou std::string ??
 		void receive(Server &server);
 		void parseClientMessage(Server &server, std::string line);

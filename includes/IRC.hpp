@@ -20,6 +20,7 @@
 extern bool signal_value;
 void check_args(int argc, char **argv);
 void signal_send(int signum);
+
 // IRC PROTOCOL
 void displayWelcome(Server &server, User &user);
 std::string RPL_WELCOME(Server &server, User &user);                    // 001
