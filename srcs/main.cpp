@@ -5,15 +5,9 @@ bool signal_value = false;
 
 int main(int argc, char **argv) {
 	//try {
-	std::cout << "argv[0]" << argv[0] << std::endl;
-	std::cout << "argv[1]" << argv[1] << std::endl;
-	std::cout << "argv[2]" << argv[2] << std::endl;
 	check_args(argc, argv);
 	std::signal(SIGINT, &signal_send);
 	Server serv(strtol(argv[1], NULL, 10), argv[2]);
-	long port = serv.get_Port();
-	std::string password = serv.get_Password();
-	std::cout << "Port: " << port << " Password: " << password << std::endl;
 	serv.init_serv();
 	while (!signal_value)
 		serv.start_serv();
