@@ -29,6 +29,7 @@ class Commands {
 		void leave();
 		void kick();
 		void pmsg();
+
 		void ping(Server &server, User &user, std::vector<std::string> &arg); // void pong() ??
 	private:
 		std::map<std::string, cmdFPtr> cmdMap;

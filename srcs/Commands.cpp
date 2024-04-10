@@ -110,6 +110,13 @@ void Commands::nick(Server &server, User &user, std::vector<std::string> &arg) {
 	if (it != users.end()) {
 		return (server.sendMsg(user, ERR_NICKNAMEINUSE(arg[1])));
 	}
+	if (!user.get_nickname().empty()) {
+		server.sendMsg(user, user.get_nickname() + " changed his nickname to " + arg[1]);
+		std::string resp = ":" + user.get_nickname() + "!~" + user.get_username() + "@" + user.get_ip() \
+		+ " NICK :" + arg[1] + "\r\n";
+		if (send(user.get_fd(), resp.c_str(), resp.length(), 0) == -1)
+			std::perror("send:");
+	}
 	user.set_nickname(arg[1]);
 };
 
@@ -152,13 +159,33 @@ void Commands::user(Server &server, User &user, std::vector<std::string> &arg) {
 	}
 }
 
+
+void Commands::mode(Server &server, User &user, std::vector<std::string> &arg) {
+	(void)server;
+	(void)user;
+	(void)arg;
+	std::cout << "MODE à coder\n";
+}
+
+
 /* Command: QUIT | Parameters: [ <Quit Message> ]
 
 A client session is terminated with a quit message.  The server
 acknowledges this by sending an ERROR message to the client.
 
+If a client connection is closed without the client issuing a QUIT command 
+to the server, the server MUST distribute a QUIT message to other clients informing 
+them of this, distributed in the same was an ordinary QUIT message. Servers MUST 
+fill <reason> with a message reflecting the nature of the event which caused it to happen. 
+For instance, "Ping timeout: 120 seconds", "Excess Flood", and "Too many connections from 
+this IP" are examples of relevant reasons for closing or for a connection with a client 
+to have been closed.
+
 Numeric Replies: None. */
 void Commands::quit(Server &server, User &user, std::vector<std::string> &arg) {
+// Command Example:   QUIT :Gone to have lunch         ; Client exiting from the network
+// Message Example:  :dan-!d@localhost QUIT :Quit: Bye for now!
+// 					; dan- is exiting the network with the message: "Quit: Bye for now!"
 (void)server;
 (void)user;
 (void)arg;
@@ -198,15 +225,21 @@ Numeric Replies: ERR_NEEDMOREPARAMS; ERR_BANNEDFROMCHAN;
 void join();
 
 
+/* Command: PING | Parameters: <token>
 
+The PING command is sent by either clients or servers to check the other side of 
+the connection is still connected and/or to check for connection latency, 
+at the application layer.
 
-void Commands::mode(Server &server, User &user, std::vector<std::string> &arg) {
-	(void)server;
-	(void)user;
-	(void)arg;
-	std::cout << "MODE à coder\n";
-}
+The <token> may be any non-empty string.
+When receiving a PING message, clients or servers must reply to it with a PONG 
+message with the same <token> value. This allows either to match PONG with the 
+PING they reply to, for example to compute latency.
 
+Clients should not send PING during connection registration, though servers may accept it.
+Servers may send PING during connection registration and clients must reply to them.
+
+Numeric Replies: ERR_NEEDMOREPARAMS (461); ERR_NOORIGIN (409)*/
 void Commands::ping(Server &server, User &user, std::vector<std::string> &arg) {
 	(void)server;
 	(void)user;
