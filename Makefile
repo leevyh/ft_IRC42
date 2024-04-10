@@ -48,6 +48,7 @@ clean:
 
 fclean: clean
 	rm -f $(NAME)
+	rm  -rf $(OBJ_DIR)
 
 re: fclean
 	@$(MAKE) --no-print-dir
