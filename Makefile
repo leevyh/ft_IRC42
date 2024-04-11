@@ -53,4 +53,7 @@ fclean: clean
 re: fclean
 	@$(MAKE) --no-print-dir
 
+log: fclean
+	rm -f *.log
+
 .PHONY: all clean fclean re
