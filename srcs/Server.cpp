@@ -60,6 +60,10 @@ std::map<int, User> &Server::get_clientmap(void) {
 	return (_clientmap);
 }
 
+
+std::map<std::string, Channel> &Server::get_channels(void) {
+	return (_channels);
+
 bool Server::get_Irssi(void) {
 	return (_irssi);
 }
@@ -68,6 +72,7 @@ bool Server::get_Irssi(void) {
 
 void Server::set_Irssi(bool status) {
 	this->_irssi = status;
+
 }
 
 /* ************************************************************************** */

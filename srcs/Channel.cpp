@@ -2,13 +2,12 @@
 
 Channel::Channel() {
 	_nameChannel = "";
-	_topic = "";
 	_pass = "";
 }
 
 Channel::Channel(std::string name) : _nameChannel(name) {
-	_topic = "";
 	_pass = "";
+	_limitUser = 0;
 }
 
 Channel::Channel(Channel const &copy) {
@@ -24,11 +23,13 @@ Channel &Channel::operator=(Channel const &rhs) {
 	return (*this);
 }
 
+void	Channel::set_UserChannel(User &user) {
+	_chanUsers.push_back(user);
+}
+
 std::string Channel::get_ChannelName() const {
 	return (_nameChannel);
 }
-
-
 
 Channel::~Channel() {
 }

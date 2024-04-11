@@ -9,6 +9,7 @@ Commands::Commands(void) {
 	cmdMap["MODE"] = &Commands::mode;
 	cmdMap["PING"] = &Commands::ping;
 	cmdMap["PRIVMSG"] = &Commands::privmsg;
+	cmdMap["JOIN"] = &Commands::join;
 }
 
 Commands::~Commands(void) {
@@ -232,7 +233,63 @@ Numeric Replies: ERR_NEEDMOREPARAMS; ERR_BANNEDFROMCHAN;
 				ERR_NOSUCHCHANNEL; ERR_TOOMANYCHANNELS;
 				ERR_TOOMANYTARGETS; ERR_UNAVAILRESOURCE;
 				RPL_TOPIC */
-void join();
+
+std::vector<std::string> split(const std::string& str)
+{
+	std::vector<std::string> channels_result;
+	std::string delimiter = ",";
+	char *args = strtok((char *)str.c_str(), ",");
+	while (args != NULL)
+	{
+		channels_result.push_back(args);
+		args = strtok(NULL, ",");
+	}
+	return (channels_result);
+}
+
+int	check_channelName(Server &server, User &user, std::vector<std::string> &channel)
+{
+	(void)server;
+	(void)user;
+	for (size_t i = 0; i < channel.size(); i++)
+	{
+		if (channel[i][0] != '#')
+		{
+//			server.sendMsg(user, ERR_BADCHANMASK(user, channel[i]));
+			std::cout << "ERR_BADCHANMASK aa coder" << std::endl;
+			return (-6969);
+		}
+		if (channel[i].find_first_not_of("#abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789") !=
+			std::string::npos) {
+//			server.sendMsg(user, ERR_BADCHANMASK(user, channel[i]));
+			std::cout << "ERR_BADCHANMASK a coder" << std::endl;
+			return (-6969);
+		}
+	}
+	return (0);
+}
+
+void Commands::join(Server &server, User &user, std::vector<std::string> &arg) {
+	std::vector<std::string> channels;
+	channels = split(arg[1]);
+	std::string msg_send;
+	if (check_channelName(server, user, channels) == -6969)
+		return;
+	for (size_t i = 0; i < channels.size(); i++)
+	{
+		if (server.get_channels().empty()) {
+			Channel channel(channels[i]);
+			std::cout << "Channel created: " << channel.get_ChannelName() << std::endl;
+			channel.set_UserChannel(user);
+			server.get_channels()[channels[i]] = channel;
+			msg_send = ":" + user.get_nickname() + "!~" + user.get_username() + "@localhost.ip JOIN :" + channels[i] +
+					   "\r\n";
+			std::cout << "Message sent: " << msg_send << std::endl;
+//			server.sendMsg(user, msg_send);
+			send(user.get_fd(), msg_send.c_str(), msg_send.length(), 0);
+		}
+	}
+}
 
 
 void Commands::mode(Server &server, User &user, std::vector<std::string> &arg) {
@@ -307,18 +364,26 @@ Numeric Replies: ERR_NOSUCHNICK (401); ERR_NOSUCHSERVER (402);
 					ERR_NOTOPLEVEL (413); ERR_WILDTOPLEVEL (414);
 					RPL_AWAY (301)*/
 void Commands::privmsg(Server &server, User &user, std::vector<std::string> &arg) {
-	short type = 0;
-	(void)type;
 	std::string msg_send;
-	for(std::map<int, User>::iterator it = server.get_clientmap().begin(); \
-		it != server.get_clientmap().end(); ++it) {
-		if (arg[1] == it->second.get_nickname()) {
-			msg_send = ":" + user.get_nickname() + "!~" + user.get_username() + "@" + user.get_ip() \
-			+ " PRIVMSG " + arg[1] + " :" + arg[2] + "\r\n";
-			server.sendMsg(it->second, msg_send);
-			std::cout << "Message sent to " << it->second.get_nickname() << std::endl;
+//	if (arg.size() < 3) {
+//		return (server.sendMsg(user, ERR_NORECIPIENT(user)));
+//	}
+	if (arg[1][0] != '#')
+	{
+		for(std::map<int, User>::iterator it = server.get_clientmap().begin(); it != server.get_clientmap().end(); ++it) {
+			if (arg[1] == it->second.get_nickname()) {
+				msg_send = ":" + user.get_nickname() + "!~" + user.get_username() + "@" + user.get_ip() + " PRIVMSG " +
+						   arg[1] + " :" + arg[2] + "\r\n";
+				server.sendMsg(it->second, msg_send);
+				std::cout << "Message sent to " << it->second.get_nickname() << std::endl;
+			}
+			else
+				server.sendMsg(user, ERR_NOSUCHNICK(user, arg[1]));
 		}
-		else
-			server.sendMsg(user, ERR_NOSUCHNICK(user, arg[1]));
+	}
+	else
+	{
+			std::cout << "Send message to channel" << std::endl;
+//			server.sendMsg(user, ERR_CANNOTSENDTOCHAN(user, arg[1]));
 	}
 }

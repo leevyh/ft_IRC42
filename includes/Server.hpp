@@ -15,7 +15,7 @@
 
 class User;
 class Commands;
-//class Channel;
+class Channel;
 class Server {
 	public:
 		Server();
@@ -41,6 +41,7 @@ class Server {
 		void sendMsg(User &user, std::string message) const;
 		void disconnect(User &user);
 		void timeout_disconnect(User &user);
+		std::map<std::string, Channel> &get_channels(void);
 	private:
 		struct sockaddr_in _server_addr;
 		long _port;
@@ -49,7 +50,9 @@ class Server {
 		std::string _networkname;
 		std::vector<pollfd> _pollfdmap;
 		std::map<int, User> _clientmap;          // users by fds
+		std::map<std::string, User *> _users; // users by nickname
+		std::map<std::string, Channel> _channels;
+    bool _irssi;
 		// std::map<std::string, User *> _users; // users by nickname
-		bool _irssi;
 //		std::map<std::string, Channel> _channels;
 };
