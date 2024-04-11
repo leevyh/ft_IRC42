@@ -61,6 +61,10 @@ std::map<int, User> &Server::get_clientmap(void) {
 	return (_clientmap);
 }
 
+std::map<std::string, Channel> &Server::get_channels(void) {
+	return (_channels);
+}
+
 /* ************************************************************************** */
 
 void Server::init_serv(void) {

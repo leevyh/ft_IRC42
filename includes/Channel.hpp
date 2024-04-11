@@ -16,4 +16,5 @@ class Channel
 		std::string _nameChannel;
 		std::string _topic;
 		std::string _pass;
+		int 		_limitUser;
 };

@@ -20,7 +20,7 @@ class Commands {
 		void user(Server &server, User &user, std::vector<std::string> &arg);
 		void quit(Server &server, User &user, std::vector<std::string> &arg);
 /* Channel operations */
-		void join();
+		void join(Server &server, User &user, std::vector<std::string> &arg);
 		void part();
 		void topic();
 		void names();
@@ -34,3 +34,5 @@ class Commands {
 	private:
 		std::map<std::string, cmdFPtr> cmdMap;
 };
+
+std::vector<std::string> split(const std::string& str);
