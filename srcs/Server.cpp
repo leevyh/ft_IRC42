@@ -8,12 +8,14 @@ Server::Server() {
 	_password = "default";
 	_nb_of_users = 0;
 	_networkname = "IRC_DE_LA_MORT";
+	_irssi = false;
 }
 
 Server::Server(long port, std::string password) : _port(port), _password(password) {
 	std::cout << "Server created with port: " << _port << " and password: " << _password << std::endl;
 	_nb_of_users = 0;
 	_networkname = "IRC_DE_LA_MORT";
+	_irssi = false;
 }
 
 Server::~Server() {
@@ -35,6 +37,7 @@ Server &Server::operator=(Server const &rhs) {
 	if (this != &rhs) {
 		_port = rhs._port;
 		_password = rhs._password;
+		_irssi = false;
 	}
 	return (*this);
 }
@@ -53,16 +56,23 @@ std::string Server::get_networkname(void) const {
 	return (_networkname);
 }
 
-std::map<std::string, User *>& Server::get_usersbynick(void) {
-	return (_users);
-}
-
 std::map<int, User> &Server::get_clientmap(void) {
 	return (_clientmap);
 }
 
+
 std::map<std::string, Channel> &Server::get_channels(void) {
 	return (_channels);
+
+bool Server::get_Irssi(void) {
+	return (_irssi);
+}
+
+/* ************************************************************************** */
+
+void Server::set_Irssi(bool status) {
+	this->_irssi = status;
+
 }
 
 /* ************************************************************************** */

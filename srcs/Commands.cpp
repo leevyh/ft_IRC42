@@ -1,7 +1,7 @@
 #include "Commands.hpp"
 
 Commands::Commands(void) {
-	cmdMap["CAP LS"] = &Commands::capls;
+	cmdMap["CAP"] = &Commands::capls;
 	cmdMap["PASS"] = &Commands::pass;
 	cmdMap["NICK"] = &Commands::nick;
 	cmdMap["USER"] = &Commands::user;
@@ -19,13 +19,6 @@ void Commands::getcommand(Server &server, User &user, std::vector<std::string> &
 
 // 	// debug("getCommand", BEGIN);
 	bool command = false;
-	// if ((!argument.empty() && argument.size() > 1)) {
-	// 	if (argument[0] == "CAP" && argument[1] == "END") {
-	// 		displayWelcome(server, user);
-	// 		server.setIrssi(false);
-	// 		return;
-	// 	}
-	// }
 
 // Check si la commande fait partie de notre liste de commandes
 	if (!argument.empty()) {
@@ -35,21 +28,24 @@ void Commands::getcommand(Server &server, User &user, std::vector<std::string> &
 				command = true;
 			}
 		}
-		if (command == false) {
+		if (command == false)
 			server.sendMsg(user, ERR_UNKNOWNCOMMAND(user, argument[0]));
-		}
 	}
-	else {
+	else
 		server.sendMsg(user, ERR_UNKNOWNCOMMAND(user, ""));
-	}
 	return;
 }
 
+
 void Commands::capls(Server &server, User &user, std::vector<std::string> &arg) {
-	(void) server;
-	(void) user;
-	(void) arg;
-	std::cout << "CAP LS à coder\n";
+	if (arg.size() > 1 && arg[1] == "LS") {
+		server.sendMsg(user, "CAP * LS :none");
+		server.set_Irssi(true);
+	}
+	if (arg.size() > 1 && arg[1] == "END") {
+		displayWelcome(server, user);
+		server.set_Irssi(false);
+	}
 }
 
 
@@ -102,15 +98,36 @@ void Commands::nick(Server &server, User &user, std::vector<std::string> &arg) {
 	if (arg[1].empty()) {
 		return (server.sendMsg(user, ERR_NONICKNAMEGIVEN(arg[1])));
 	}
-	if (arg[1].find_first_not_of("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789") !=
-		std::string::npos) { //ajouter les autres caractères autorisés
+	std::cout << "user->nickname: " << arg[1] << std::endl;
+	if (arg[1].find_first_not_of("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789") \
+		!= std::string::npos) { //ajouter les autres caractères autorisés
 		return (server.sendMsg(user, ERR_ERRONEUSNICKNAME(arg[1])));
 	}
-	std::map<std::string, User *> users = server.get_usersbynick();
-	std::map<std::string, User *>::iterator it;
-	it = users.find(arg[1]);
-	if (it != users.end()) {
-		return (server.sendMsg(user, ERR_NICKNAMEINUSE(arg[1])));
+	std::map<int, User> users = server.get_clientmap();
+	for(std::map<int, User>::iterator it = server.get_clientmap().begin(); \
+		it != server.get_clientmap().end(); ++it) {
+		if (arg[1] == it->second.get_nickname()) {
+			server.sendMsg(user, ERR_NICKNAMEINUSE(arg[1]));
+	
+			// Est-ce que le server lui attribue un nouveau NICK ?
+			int i = 48;
+			std::string new_nick = arg[1] + (char)i;
+			for(it = server.get_clientmap().begin(); it != server.get_clientmap().end(); ++it) {
+				if (new_nick == it->second.get_nickname()) {
+					server.sendMsg(user, ERR_NICKNAMEINUSE(new_nick));
+					i++;
+					new_nick = arg[1]+ (char)i;
+				}
+				else {
+					server.sendMsg(user, arg[1] + " changed his nickname to " + new_nick);
+					std::string resp1 = ":" + arg[1] + "!~" + arg[1] + "@" + user.get_ip() \
+					+ " NICK :" + new_nick + "\r\n";
+					if (send(user.get_fd(), resp1.c_str(), resp1.length(), 0) == -1)
+						std::perror("send:");
+				}
+			}
+
+		}
 	}
 	if (!user.get_nickname().empty()) {
 		server.sendMsg(user, user.get_nickname() + " changed his nickname to " + arg[1]);
@@ -305,6 +322,7 @@ void Commands::ping(Server &server, User &user, std::vector<std::string> &arg) {
 	(void)user;
 	(void)arg;
 	std::cout << "PING à coder\n";
+	
 }
 
 
@@ -368,6 +386,4 @@ void Commands::privmsg(Server &server, User &user, std::vector<std::string> &arg
 			std::cout << "Send message to channel" << std::endl;
 //			server.sendMsg(user, ERR_CANNOTSENDTOCHAN(user, arg[1]));
 	}
-
-
 }

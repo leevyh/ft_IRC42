@@ -28,8 +28,11 @@ class Server {
 		std::string get_Password(void) const;
 		std::string get_networkname(void) const;
 		std::vector<pollfd> get_fds(void) const;
-		std::map<std::string, User *>& get_usersbynick(void);
+		// std::map<std::string, User *>& get_usersbynick(void);
 		std::map<int, User> &get_clientmap();
+		bool get_Irssi(void);
+// SETTERS
+		void set_Irssi(bool status);
 // FUNCTIONS
 		void init_serv(void);
 		void start_serv(void);
@@ -49,5 +52,7 @@ class Server {
 		std::map<int, User> _clientmap;          // users by fds
 		std::map<std::string, User *> _users; // users by nickname
 		std::map<std::string, Channel> _channels;
-
+    bool _irssi;
+		// std::map<std::string, User *> _users; // users by nickname
+//		std::map<std::string, Channel> _channels;
 };
