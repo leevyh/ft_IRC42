@@ -28,7 +28,7 @@ class Server {
 		std::string get_Password(void) const;
 		std::string get_networkname(void) const;
 		std::vector<pollfd> get_fds(void) const;
-		std::map<std::string, User *>& get_usersbynick(void);
+		// std::map<std::string, User *>& get_usersbynick(void);
 		std::map<int, User> &get_clientmap();
 		bool get_Irssi(void);
 // SETTERS
@@ -49,7 +49,7 @@ class Server {
 		std::string _networkname;
 		std::vector<pollfd> _pollfdmap;
 		std::map<int, User> _clientmap;          // users by fds
-		std::map<std::string, User *> _users; // users by nickname
+		// std::map<std::string, User *> _users; // users by nickname
 		bool _irssi;
 //		std::map<std::string, Channel> _channels;
 };

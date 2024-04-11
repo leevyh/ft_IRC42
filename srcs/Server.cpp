@@ -56,10 +56,6 @@ std::string Server::get_networkname(void) const {
 	return (_networkname);
 }
 
-std::map<std::string, User *>& Server::get_usersbynick(void) {
-	return (_users);
-}
-
 std::map<int, User> &Server::get_clientmap(void) {
 	return (_clientmap);
 }
