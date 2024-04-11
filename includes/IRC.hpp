@@ -44,3 +44,14 @@ std::string ERR_NICKNAMEINUSE(std::string name);                       // 433
 std::string ERR_UNKNOWNCOMMAND(User &user, std::string command);       // 421
 std::string ERR_NEEDMOREPARAMS(User &user, std::string command);       // 461
 std::string ERR_ALREADYREGISTRED(User &user);                          // 462
+
+
+struct IsClientFDPredicate {
+	int clientFD;
+
+	IsClientFDPredicate(int fd) : clientFD(fd) {}
+
+	bool operator()(const pollfd& pfd) const {
+		return pfd.fd == clientFD;
+	}
+};

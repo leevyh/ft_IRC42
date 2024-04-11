@@ -2,6 +2,8 @@
 #include "IRC.hpp"
 #include "User.hpp"
 #include "unistd.h"
+#include <algorithm>
+
 
 Server::Server() {
 	_port = 6667;
@@ -63,6 +65,7 @@ std::map<int, User> &Server::get_clientmap(void) {
 
 std::map<std::string, Channel> &Server::get_channels(void) {
 	return (_channels);
+}
 
 bool Server::get_Irssi(void) {
 	return (_irssi);
@@ -90,7 +93,7 @@ void Server::init_serv(void) {
 		// throw exception("Error creating socket")
 		exit(1);
 	}
-	if (setsockopt(server_socket, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(int)) == -1) {
+	if (setsockopt(server_socket, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(yes)) == -1) {
 		std::cerr << "Error Setsockopt" << std::endl;
 	}
 	if (fcntl(server_socket, F_SETFL, O_NONBLOCK) == -1) {
@@ -172,14 +175,14 @@ void Server::new_Connection_Client(void) {
 
 void Server::get_New_Client_Message(void) {
 	if (_nb_of_users != 0 && _pollfdmap.size() != 1) {
-		char buf[1024];
-		int bytes;
 		std::vector<pollfd>::iterator it;
 		for (it = _pollfdmap.begin(); it != _pollfdmap.end(); it++) {
 			if (it->revents == POLLIN) {
-				bytes = recv(_clientmap[it->fd].get_fd(), buf, 1024, 0);
-//				std::cout << bytes << std::endl;
+				char buf[1024];
+				int bytes = recv(_clientmap[it->fd].get_fd(), buf, 1024, 0);
+				std::cout << bytes << std::endl;
 				if (bytes <= 0) {
+					memset(buf, 0, 1024);
 					disconnect(_clientmap[it->fd]);
 					std::cout << "deco" << std::endl;
 					return;
@@ -202,16 +205,13 @@ void Server::get_New_Client_Message(void) {
 }
 
 void Server::disconnect(User &user) {
-	std::vector<pollfd>::iterator it;
-	it = _pollfdmap.begin();
-	// std::cout << "user.get_fd() = " << user.get_fd() << std::endl;
-	// std::cout << "it->fd = " << it->fd << std::endl;
+	std::vector<pollfd>::iterator it = std::find_if(_pollfdmap.begin(), _pollfdmap.end(), IsClientFDPredicate(user.get_fd()));
 	if (it != _pollfdmap.end()) {
-		close(user.get_fd());
+		_pollfdmap.erase(it);
 	}
+	close(user.get_fd());
 	std::map<int, User>::iterator it_fd;
 	it_fd = _clientmap.find(user.get_fd());
-	// std::cout << "it_fd->first = " << it_fd->first << std::endl;
 	if (it_fd != _clientmap.end()) {
 		_clientmap.erase(it_fd);
 	}
@@ -220,6 +220,21 @@ void Server::disconnect(User &user) {
 		_clientmap.clear();
 	}
 }
+
+//	std::vector<pollfd>::iterator it = std::find_if(_pollfdmap.begin(), _pollfdmap.end(), IsClientFDPredicate(user.get_fd()));
+//	if (it != _pollfdmap.end()){
+//		_pollfdmap.erase(it);
+//	}
+//	close(user.get_fd());
+//	std::map<int, User>::iterator it_fd = _clientmap.find(user.get_fd());
+//	if (it_fd != _clientmap.end()) {
+//		_clientmap.erase(it_fd);
+//	}
+//	_nb_of_users--;
+//	if (_nb_of_users < 1) {
+//		_clientmap.clear();
+//	}
+//}
 
 void Server::sendMsg(User &user, std::string message) const {
 	std::string msg;

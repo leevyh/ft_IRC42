@@ -40,6 +40,7 @@ void Commands::getcommand(Server &server, User &user, std::vector<std::string> &
 void Commands::capls(Server &server, User &user, std::vector<std::string> &arg) {
 	if (arg.size() > 1 && arg[1] == "LS") {
 		server.sendMsg(user, "CAP * LS :none");
+		std::cout << "CAP * LS :none\n";
 		server.set_Irssi(true);
 	}
 	if (arg.size() > 1 && arg[1] == "END") {

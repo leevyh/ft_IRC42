@@ -6,7 +6,7 @@ PATH_INCLUDE = includes
 
 
 CXX = c++ -std=c++98
-CXXFLAGS = -Wall -Wextra -Werror -g3
+CXXFLAGS = -Wall -Wextra -Werror -fsanitize=address -g3
 
 
 HDRS = $(PATH_INCLUDE)/IRC.hpp \
