@@ -97,15 +97,36 @@ void Commands::nick(Server &server, User &user, std::vector<std::string> &arg) {
 	if (arg[1].empty()) {
 		return (server.sendMsg(user, ERR_NONICKNAMEGIVEN(arg[1])));
 	}
-	if (arg[1].find_first_not_of("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789") !=
-		std::string::npos) { //ajouter les autres caractères autorisés
+	std::cout << "user->nickname: " << arg[1] << std::endl;
+	if (arg[1].find_first_not_of("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789") \
+		!= std::string::npos) { //ajouter les autres caractères autorisés
 		return (server.sendMsg(user, ERR_ERRONEUSNICKNAME(arg[1])));
 	}
-	std::map<std::string, User *> users = server.get_usersbynick();
-	std::map<std::string, User *>::iterator it;
-	it = users.find(arg[1]);
-	if (it != users.end()) {
-		return (server.sendMsg(user, ERR_NICKNAMEINUSE(arg[1])));
+	std::map<int, User> users = server.get_clientmap();
+	for(std::map<int, User>::iterator it = server.get_clientmap().begin(); \
+		it != server.get_clientmap().end(); ++it) {
+		if (arg[1] == it->second.get_nickname()) {
+			server.sendMsg(user, ERR_NICKNAMEINUSE(arg[1]));
+	
+			// Est-ce que le server lui attribue un nouveau NICK ?
+			int i = 48;
+			std::string new_nick = arg[1] + (char)i;
+			for(it = server.get_clientmap().begin(); it != server.get_clientmap().end(); ++it) {
+				if (new_nick == it->second.get_nickname()) {
+					server.sendMsg(user, ERR_NICKNAMEINUSE(new_nick));
+					i++;
+					new_nick = arg[1]+ (char)i;
+				}
+				else {
+					server.sendMsg(user, arg[1] + " changed his nickname to " + new_nick);
+					std::string resp1 = ":" + arg[1] + "!~" + arg[1] + "@" + user.get_ip() \
+					+ " NICK :" + new_nick + "\r\n";
+					if (send(user.get_fd(), resp1.c_str(), resp1.length(), 0) == -1)
+						std::perror("send:");
+				}
+			}
+
+		}
 	}
 	if (!user.get_nickname().empty()) {
 		server.sendMsg(user, user.get_nickname() + " changed his nickname to " + arg[1]);
@@ -244,6 +265,7 @@ void Commands::ping(Server &server, User &user, std::vector<std::string> &arg) {
 	(void)user;
 	(void)arg;
 	std::cout << "PING à coder\n";
+	
 }
 
 
