@@ -136,14 +136,8 @@ std::vector<std::string> splitcmd(std::string line) {
 }
 
 void User::authentication(Server &server, Commands &cmd, std::vector<std::string> arg) {
-	if (!arg.empty() && arg.size() > 1) {
-		if (arg[0] == "CAP" && arg[1] == "LS") {
-			arg[0] = "CAP LS";
-			arg.erase(arg.begin() + 1);
-		}
-	}
 	if (!arg.empty()) {
-		std::string cmds[] = {"PASS", "NICK", "USER", "CAP LS"};
+		std::string cmds[] = {"PASS", "NICK", "USER", "CAP"};
 		int i = 0;
 		while (i < 4 && cmds[i].compare(arg[0]))
 			i++;
@@ -167,14 +161,18 @@ void User::authentication(Server &server, Commands &cmd, std::vector<std::string
 	}
 	if (!_nickname.empty() && !_username.empty() && !_realname.empty() && !_password.empty()) {
 		_status = true;
-		displayWelcome(server, *this);
+		if (server.get_Irssi() == false)
+			displayWelcome(server, *this);
 	}
 }
 
 void User::parseClientMessage(Server &server, std::string line) {
 	std::vector<std::string> splited_cmd = splitcmd(line);
 	Commands cmd;
-	get_status() == true ? cmd.getcommand(server, *this, splited_cmd) : authentication(server, cmd, splited_cmd);
+	if (get_status() == true)
+		cmd.getcommand(server, *this, splited_cmd);
+	else
+		authentication(server, cmd, splited_cmd);
 	line.clear();
 	return;
 }
