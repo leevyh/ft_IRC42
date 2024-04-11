@@ -23,6 +23,10 @@ Channel &Channel::operator=(Channel const &rhs) {
 	return (*this);
 }
 
+void	Channel::set_UserChannel(User &user) {
+	_chanUsers.push_back(user);
+}
+
 std::string Channel::get_ChannelName() const {
 	return (_nameChannel);
 }

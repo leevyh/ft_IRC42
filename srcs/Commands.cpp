@@ -255,15 +255,21 @@ int	check_channelName(Server &server, User &user, std::vector<std::string> &chan
 void Commands::join(Server &server, User &user, std::vector<std::string> &arg) {
 	std::vector<std::string> channels;
 	channels = split(arg[1]);
-	(void)user;
-	(void)server;
+	std::string msg_send;
 	if (check_channelName(server, user, channels) == -6969)
 		return;
 	for (size_t i = 0; i < channels.size(); i++)
 	{
-		if (server.get_channels().empty())
-		{
+		if (server.get_channels().empty()) {
 			Channel channel(channels[i]);
+			std::cout << "Channel created: " << channel.get_ChannelName() << std::endl;
+			channel.set_UserChannel(user);
+			server.get_channels()[channels[i]] = channel;
+			msg_send = ":" + user.get_nickname() + "!~" + user.get_username() + "@localhost.ip JOIN :" + channels[i] +
+					   "\r\n";
+			std::cout << "Message sent: " << msg_send << std::endl;
+//			server.sendMsg(user, msg_send);
+			send(user.get_fd(), msg_send.c_str(), msg_send.length(), 0);
 		}
 	}
 }
