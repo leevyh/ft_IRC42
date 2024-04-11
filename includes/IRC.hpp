@@ -35,8 +35,9 @@ std::string ERR_NICKNAMEINUSE(std::string name);                       // 433
 std::string ERR_UNKNOWNCOMMAND(User &user, std::string command);       // 421
 std::string ERR_NEEDMOREPARAMS(User &user, std::string command);       // 461
 std::string ERR_ALREADYREGISTRED(User &user);                          // 462
-std::string ERR_NOSUCHNICK(User &user, std::string nickname);          // (401)
-std::string ERR_NOSUCHSERVER(User &user, std::string server_name);     // (402)
-std::string ERR_NOSUCHCHANNEL(User &user, std::string channel);        // (403)
-std::string ERR_NORECIPIENT(User &user, std::string command);          // (411)
-std::string ERR_NOTEXTTOSEND(User &user);                              // (412)
+std::string ERR_NOSUCHNICK(User &user, std::string nickname);          // 401
+std::string ERR_NOSUCHSERVER(User &user, std::string server_name);     // 402
+std::string ERR_NOSUCHCHANNEL(User &user, std::string channel);        // 403
+std::string ERR_CANNOTSENDTOCHAN(User &user, std::string channel);     // 404
+std::string ERR_NORECIPIENT(User &user, std::string command);          // 411
+std::string ERR_NOTEXTTOSEND(User &user);                              // 412
