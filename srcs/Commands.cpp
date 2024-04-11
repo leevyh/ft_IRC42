@@ -299,9 +299,17 @@ void Commands::privmsg(Server &server, User &user, std::vector<std::string> &arg
 		if (arg[1] == it->second.get_nickname())
 		{
 			msg_send = ":" + user.get_nickname() + "!~" + user.get_username() + "@" + user.get_ip() + " PRIVMSG " + arg[1] + " :" + arg[2] + "\r\n";
-			if (send(it->second.get_fd(), msg_send.c_str(), msg_send.length(), 0) == -1)
-				std::perror("send:");
+//			if (send(it->second.get_fd(), msg_send.c_str(), msg_send.length(), 0) == -1)
+//				std::perror("send:");
+			server.sendMsg(it->second, msg_send);
 			std::cout << "Message sent to " << it->second.get_nickname() << std::endl;
+		}
+		else
+		{
+			msg_send = ": 401 " + user.get_nickname() + " " + arg[1] + " : No such nickname/channel\n";
+			if (send(user.get_fd(), msg_send.c_str(), msg_send.length(), 0) == -1)
+				std::perror("send:");
+			std::cout << msg_send;
 		}
 	}
 
