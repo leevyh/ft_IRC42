@@ -47,6 +47,10 @@ void User::set_username(const std::string &username) {
 	this->_username = username;
 }
 
+void	User::set_status(bool status) {
+	this->_status = status;
+}
+
 void User::set_realname(const std::string &realname) {
 	this->_realname = realname;
 }

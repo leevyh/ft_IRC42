@@ -37,6 +37,7 @@ class User {
 		void set_realname(const std::string &realname);
 		void set_password(const std::string &password);
 		void set_ip(const std::string &ip);
+		void set_status(bool status);
 		void authentication(Server &server, Commands &cmd, std::vector<std::string> arg);
 // GETTERS
 		const std::string &get_nickname(void) const;

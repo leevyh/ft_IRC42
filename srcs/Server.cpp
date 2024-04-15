@@ -126,8 +126,7 @@ void Server::init_serv(void) {
 }
 
 void Server::start_serv(void) {
-	if (poll(&_pollfdmap[0], _pollfdmap.size(), 2000) ==
-		-1) // -1 means wait indefinitely, but we can change it to a timeout 1000000 for 1 second
+	if (poll(&_pollfdmap[0], _pollfdmap.size(), 2000) == -1) // -1 means wait indefinitely, but we can change it to a timeout 1000000 for 1 second
 	{
 		if (signal_value == false) {
 			std::cerr << "Signal" << std::endl;
@@ -173,27 +172,77 @@ void Server::new_Connection_Client(void) {
 	std::cout << "Number of users: " << _nb_of_users << std::endl;
 }
 
+//void Server::get_New_Client_Message(void) {
+//	if (_nb_of_users != 0 && _pollfdmap.size() != 1) {
+//		std::vector<pollfd>::iterator it;
+//		int j = 0;
+//		for (it = _pollfdmap.begin(); it->fd != _pollfdmap.end()->fd; it++) {
+//			std::cout << j << " : " << it->fd << std::endl;
+//			std::cout << "Adresse pollfdend : " << _pollfdmap.end()->fd << std::endl;
+//			j++;
+//			if (it->revents == POLLIN) {
+//				char buf[1024];
+//				int bytes = recv(_clientmap[it->fd].get_fd(), buf, 1024, 0);
+//				std::cout <<"bytes :" << bytes << std::endl;
+//				if (bytes <= 0) {
+//					memset(buf, 0, 1024);
+//					disconnect(_clientmap[it->fd]);
+//					std::cout << "deco" << std::endl;
+//					return;
+//				}
+//				else {
+//					buf[bytes] = '\0';
+//					_clientmap[it->fd].joinBuffer(buf);
+//					_clientmap[it->fd].receive(*this);
+//					memset(buf, 0, 1024);
+//					if (_clientmap[it->fd].get_status() == false) {
+//						disconnect(_clientmap[it->fd]);
+//					}
+//				}
+//			}
+//		}
+//	}
+//	else {
+//		return;
+//	}
+//}
+
+
+
+
+
+
+
+
 void Server::get_New_Client_Message(void) {
 	if (_nb_of_users != 0 && _pollfdmap.size() != 1) {
 		std::vector<pollfd>::iterator it;
-		for (it = _pollfdmap.begin(); it != _pollfdmap.end(); it++) {
-			if (it->revents == POLLIN) {
+		size_t i;
+		int j = 0;
+		for (i = 0; i < _pollfdmap.size(); i++) {
+//			std::cout << j << " : " << _pollfdmap[i].fd << std::endl;
+//			std::cout << "Adresse pollfdend : " << _pollfdmap[_pollfdmap.size() - 1].fd << std::endl;
+			j++;
+			if (_pollfdmap[i].revents == POLLIN) {
 				char buf[1024];
-				int bytes = recv(_clientmap[it->fd].get_fd(), buf, 1024, 0);
-				std::cout << bytes << std::endl;
+//				int bytes = recv(_clientmap[it->fd].get_fd(), buf, 1024, 0);
+				ssize_t bytes = recv(_clientmap[_pollfdmap[i].fd].get_fd(), buf, 1024, 0);
+//				std::cout <<"bytes :" << bytes << std::endl;
+//				std::cout << "buffer : " << buf << std::endl;
 				if (bytes <= 0) {
 					memset(buf, 0, 1024);
-					disconnect(_clientmap[it->fd]);
+					disconnect(_clientmap[_pollfdmap[i].fd]);
 					std::cout << "deco" << std::endl;
 					return;
 				}
 				else {
 					buf[bytes] = '\0';
-					_clientmap[it->fd].joinBuffer(buf);
-					_clientmap[it->fd].receive(*this);
+					_clientmap[_pollfdmap[i].fd].joinBuffer(buf);
+					_clientmap[_pollfdmap[i].fd].receive(*this);
 					memset(buf, 0, 1024);
-					if (_clientmap[it->fd].get_status() == false) {
-						disconnect(_clientmap[it->fd]);
+					if (_clientmap[_pollfdmap[i].fd].get_status() == false) {
+						std::cout << "je passe ici ?" << std::endl;
+						disconnect(_clientmap[_pollfdmap[i].fd]);
 					}
 				}
 			}
@@ -203,6 +252,17 @@ void Server::get_New_Client_Message(void) {
 		return;
 	}
 }
+
+
+
+
+
+
+
+
+
+
+
 
 void Server::disconnect(User &user) {
 	std::vector<pollfd>::iterator it = std::find_if(_pollfdmap.begin(), _pollfdmap.end(), IsClientFDPredicate(user.get_fd()));
