@@ -24,7 +24,7 @@ class Commands {
 /* Channel operations */
 		void join(Server &server, User &user, std::vector<std::string> &arg);
 		void part();
-		void topic();
+		void topic(Server &server, User &user, std::vector<std::string> &arg);
 		void names();
 		void invite();
 		void leave();

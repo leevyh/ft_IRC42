@@ -11,6 +11,7 @@ Commands::Commands(void) {
 	cmdMap["PONG"] = &Commands::pong;
 	cmdMap["PRIVMSG"] = &Commands::privmsg;
 	cmdMap["JOIN"] = &Commands::join;
+	cmdMap["TOPIC"] = &Commands::topic;
 }
 
 Commands::~Commands(void) {
@@ -228,8 +229,6 @@ void	channel_BroadcastJoin(Server &server, User &user, std::string const &channe
 	}
 }
 
-
-
 void Commands::join(Server &server, User &user, std::vector<std::string> &arg) {
 	std::vector<std::string> channels;
 	channels = split(arg[1]);
@@ -297,6 +296,7 @@ void	create_NewChannel(Server &server, User &user, std::string const &channel_na
 	std::string msg_send;
 	Channel channel(channel_name);
 	channel.set_UserChannel(user);
+	channel.set_opChannel(user.get_username());
 	server.get_channels()[channel_name] = channel;
 	msg_send = ":" + user.get_nickname() + "!~" + user.get_username() + "@localhost.ip JOIN :" + channel_name +
 			   "\r\n";
@@ -315,6 +315,40 @@ void	add_UserInChannel(User &user, std::string const &channel_name, std::map<std
 
 
 /* --------------------------------------------------END JOIN-------------------------------------------------- */
+
+
+/* --------------------------------------------------TOPIC-------------------------------------------------- */
+
+void Commands::topic(Server &server, User &user, std::vector<std::string> &arg) {
+	(void)user;
+	if (arg.size() == 3)
+	{
+		if (!server.get_channels().empty())
+		{
+			for (std::map<std::string, Channel>::iterator it = server.get_channels().begin(); it != server.get_channels().end(); ++it)
+			{
+				if (arg[1] == it->second.get_ChannelName())
+				{
+					std::cout << "user.get_username() = " << user.get_username() << std::endl;
+					if (it->second.is_opChannel(user.get_username()))
+					{
+						it->second.set_ChannelTopic(arg[2]);
+						std::string msg_send = ":" + user.get_nickname() + "!~" + user.get_username() + "@localhost.ip TOPIC " + arg[1] + " :" + arg[2];
+						server.sendMsg(user, msg_send, 2);
+					}
+					else
+					{
+						std::cout << "Err no OP" << std::endl;
+					}
+				}
+			}
+		}
+	}
+}
+
+
+
+
 
 void Commands::mode(Server &server, User &user, std::vector<std::string> &arg) {
 	(void)server;
@@ -447,20 +481,12 @@ void Commands::privmsg(Server &server, User &user, std::vector<std::string> &arg
 		}
 		for (std::map<std::string, Channel>::iterator it = server.get_channels().begin();
 			 it != server.get_channels().end(); it++) {
-			std::cout << "Channel: " << it->first << std::endl;
-			std::cout << "Channel: " << it->second.get_ChannelName() << std::endl;
-			std::cout << "Arg 1: " << arg[1] << std::endl;
 			if (arg[1] == it->second.get_ChannelName()) {
 				std::vector<User> user_list = it->second.get_UserChannel();
-				std::cout <<"User list size: " << user_list.size() << std::endl;
 				for (std::vector<User>::iterator ita = user_list.begin(); ita != user_list.end(); ++ita) {
-					std::cout << "ita_fd: " << ita->get_fd() << std::endl;
-					std::cout << "User fd: " << user.get_fd() << std::endl;
 					if (ita->get_fd() == user.get_fd()) {
 						for (std::vector<User>::iterator itb = user_list.begin(); itb != user_list.end(); ++itb) {
 							if (itb->get_fd() != user.get_fd()) {
-								std::cout << "Itb_fd: " << itb->get_fd() << std::endl;
-								std::cout << "User fd: " << user.get_fd() << std::endl;
 								std::string msg_send =
 										":" + user.get_nickname() + "!~" + user.get_username() + "@" + user.get_ip() +
 										" PRIVMSG " +
