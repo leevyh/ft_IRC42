@@ -59,6 +59,10 @@ void User::set_ip(const std::string &ip) {
 	this->_ip = ip;
 }
 
+void User::set_lastping(const int &ping) {
+	this->_lastping = ping;
+}
+
 /* ************************************************************************** */
 
 const std::string &User::get_nickname(void) const {

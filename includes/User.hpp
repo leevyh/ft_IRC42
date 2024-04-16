@@ -25,6 +25,7 @@ class User {
 		bool _status;
 		int _fd;
 		std::string _buffer;
+		int _lastping;
 	public:
 		User(void);
 		User(const int fd);
@@ -37,7 +38,7 @@ class User {
 		void set_realname(const std::string &realname);
 		void set_password(const std::string &password);
 		void set_ip(const std::string &ip);
-		void authentication(Server &server, Commands &cmd, std::vector<std::string> arg);
+		void set_lastping(const int &ping);
 // GETTERS
 		const std::string &get_nickname(void) const;
 		const std::string &get_username(void) const;
@@ -50,6 +51,7 @@ class User {
 		void joinBuffer(const char *buffer); // char * ou std::string ??
 		void receive(Server &server);
 		void parseClientMessage(Server &server, std::string line);
+		void authentication(Server &server, Commands &cmd, std::vector<std::string> arg);
 };
 std::ostream &operator<<(std::ostream &o, const User &src);
 std::vector<std::string> splitcmd(std::string line);

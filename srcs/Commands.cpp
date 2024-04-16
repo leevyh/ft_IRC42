@@ -109,23 +109,23 @@ void Commands::nick(Server &server, User &user, std::vector<std::string> &arg) {
 		if (arg[1] == it->second.get_nickname()) {
 			server.sendMsg(user, ERR_NICKNAMEINUSE(arg[1]));
 	
-			// Est-ce que le server lui attribue un nouveau NICK ?
-			int i = 48;
-			std::string new_nick = arg[1] + (char)i;
-			for(it = server.get_clientmap().begin(); it != server.get_clientmap().end(); ++it) {
-				if (new_nick == it->second.get_nickname()) {
-					server.sendMsg(user, ERR_NICKNAMEINUSE(new_nick));
-					i++;
-					new_nick = arg[1]+ (char)i;
-				}
-				else {
-					server.sendMsg(user, arg[1] + " changed his nickname to " + new_nick);
-					std::string resp1 = ":" + arg[1] + "!~" + arg[1] + "@" + user.get_ip() \
-					+ " NICK :" + new_nick + "\r\n";
-					if (send(user.get_fd(), resp1.c_str(), resp1.length(), 0) == -1)
-						std::perror("send:");
-				}
-			}
+			// // Est-ce que le server lui attribue un nouveau NICK ?
+			// int i = 48;
+			// std::string new_nick = arg[1] + (char)i;
+			// for(it = server.get_clientmap().begin(); it != server.get_clientmap().end(); ++it) {
+			// 	if (new_nick == it->second.get_nickname()) {
+			// 		server.sendMsg(user, ERR_NICKNAMEINUSE(new_nick));
+			// 		i++;
+			// 		new_nick = arg[1]+ (char)i;
+			// 	}
+			// 	else {
+			// 		server.sendMsg(user, arg[1] + " changed his nickname to " + new_nick);
+			// 		std::string resp1 = ":" + arg[1] + "!~" + arg[1] + "@" + user.get_ip() \
+			// 		+ " NICK :" + new_nick + "\r\n";
+			// 		if (send(user.get_fd(), resp1.c_str(), resp1.length(), 0) == -1)
+			// 			std::perror("send:");
+			// 	}
+			// }
 
 		}
 	}
@@ -282,8 +282,8 @@ void Commands::join(Server &server, User &user, std::vector<std::string> &arg) {
 			std::cout << "Channel created: " << channel.get_ChannelName() << std::endl;
 			channel.set_UserChannel(user);
 			server.get_channels()[channels[i]] = channel;
-			msg_send = ":" + user.get_nickname() + "!~" + user.get_username() + "@localhost.ip JOIN :" + channels[i] +
-					   "\r\n";
+			msg_send = ":" + user.get_nickname() + "!~" + user.get_username() \
+			+ "@localhost.ip JOIN :" + channels[i] + "\r\n";
 			std::cout << "Message sent: " << msg_send << std::endl;
 //			server.sendMsg(user, msg_send);
 			send(user.get_fd(), msg_send.c_str(), msg_send.length(), 0);
@@ -302,27 +302,41 @@ void Commands::mode(Server &server, User &user, std::vector<std::string> &arg) {
 
 
 
-/* Command: PING | Parameters: <token>
+/* Command: PING | Parameters: <server1> [ <server2> ]
 
-The PING command is sent by either clients or servers to check the other side of 
-the connection is still connected and/or to check for connection latency, 
-at the application layer.
+The PING command is used to test the presence of an active client or
+server at the other end of the connection.  Servers send a PING
+message at regular intervals if no other activity detected coming
+from a connection.  If a connection fails to respond to a PING
+message within a set amount of time, that connection is closed.  A
+PING message MAY be sent even if the connection is active.
 
-The <token> may be any non-empty string.
-When receiving a PING message, clients or servers must reply to it with a PONG 
-message with the same <token> value. This allows either to match PONG with the 
-PING they reply to, for example to compute latency.
+When a PING message is received, the appropriate PONG message MUST be
+sent as reply to <server1> (server which sent the PING message out)
+as soon as possible.  If the <server2> parameter is specified, it
+represents the target of the ping, and the message gets forwarded
+there.
 
-Clients should not send PING during connection registration, though servers may accept it.
-Servers may send PING during connection registration and clients must reply to them.
-
-Numeric Replies: ERR_NEEDMOREPARAMS (461); ERR_NOORIGIN (409)*/
+Numeric Replies: ERR_NOORIGIN (409); ERR_NOSUCHSERVER (402)*/
 void Commands::ping(Server &server, User &user, std::vector<std::string> &arg) {
-	(void)server;
-	(void)user;
-	(void)arg;
-	std::cout << "PING à coder\n";
-	
+	if (arg[1].empty() || !arg[1].size())
+		return (server.sendMsg(user, ERR_NOORIGIN(user)));
+	std::string msg_send = "PONG :" + arg[1];
+	send(user.get_fd(), msg_send.c_str(), msg_send.length(), 0);
+}
+
+/* Command: PONG | Parameters: <server> [ <server2> ]
+
+PONG message is a reply to ping message.  If parameter <server2> is
+given, this message MUST be forwarded to given target.  The <server>
+parameter is the name of the entity who has responded to PING message
+and generated this message.
+
+Numeric Replies: ERR_NOORIGIN (409); ERR_NOSUCHSERVER (402)*/
+void Commands::pong(Server &server, User &user, std::vector<std::string> &arg) {
+	if (arg[1].empty() || !arg[1].size())
+		return (server.sendMsg(user, ERR_NOORIGIN(user)));
+	user.set_lastping(time(NULL));
 }
 
 
