@@ -10,14 +10,14 @@ Server::Server() {
 	_password = "default";
 	_nb_of_users = 0;
 	_networkname = "IRC_DE_LA_MORT";
-	_irssi = false;
+	// _irssi = false;
 }
 
 Server::Server(long port, std::string password) : _port(port), _password(password) {
 	std::cout << "Server created with port: " << _port << " and password: " << _password << std::endl;
 	_nb_of_users = 0;
 	_networkname = "IRC_DE_LA_MORT";
-	_irssi = false;
+	// _irssi = false;
 }
 
 Server::~Server() {
@@ -39,7 +39,7 @@ Server &Server::operator=(Server const &rhs) {
 	if (this != &rhs) {
 		_port = rhs._port;
 		_password = rhs._password;
-		_irssi = false;
+		// _irssi = false;
 	}
 	return (*this);
 }
@@ -75,7 +75,6 @@ bool Server::get_Irssi(void) {
 
 void Server::set_Irssi(bool status) {
 	this->_irssi = status;
-
 }
 
 /* ************************************************************************** */
@@ -298,14 +297,29 @@ void Server::disconnect(User &user) {
 //	}
 //}
 
-void Server::sendMsg(User &user, std::string message) const {
+void Server::sendMsg(User &user, std::string message, int code) const {
 	std::string msg;
 	// On utilise le username ou le networkname ?
 	(void) user;
-	msg = ":" + this->get_networkname() + " " + message + "\r\n";
-	if (send(user.get_fd(), msg.c_str(), msg.length(), 0) == -1)
-		std::perror("send:");
+	// msg = ":" + this->get_networkname() + " " + message + "\r\n";
+	// if (send(user.get_fd(), msg.c_str(), msg.length(), 0) == -1)
+	// 	std::perror("send:");
 	// std::cout << ">> " << msg << std::endl;
+
+	switch (code) {
+		case 1:
+			msg = ":" + this->get_networkname() + " " + message + "\r\n";
+			if (send(user.get_fd(), msg.c_str(), msg.length(), 0) == -1)
+				std::perror("send:");
+			break;
+		case 2:
+			msg = message + "\r\n";
+			if (send(user.get_fd(), msg.c_str(), msg.length(), 0) == -1)
+				std::perror("send:");
+			break;
+		default:
+			break;;
+	}
 }
 
 

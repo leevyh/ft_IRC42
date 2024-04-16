@@ -7,7 +7,8 @@ User::User(const int fd) : _fd(fd) {
 	this->_nickname = "";
 	this->_username = "";
 	this->_realname = "";
-	this->_status = false;
+	this->_status = true;
+	this->_authenticated = false;
 }
 
 User::~User() {
@@ -23,7 +24,8 @@ User &User::operator=(const User &rhs) {
 		this->_nickname = rhs._nickname;
 		this->_username = rhs._username;
 		this->_realname = rhs._realname;
-		this->_status = false;
+		this->_status = true;
+		this->_authenticated = false;
 		this->_fd = rhs._fd;
 	}
 	return (*this);
@@ -49,6 +51,10 @@ void User::set_username(const std::string &username) {
 
 void	User::set_status(bool status) {
 	this->_status = status;
+}
+
+void	User::set_authenticated(bool status) {
+	this->_authenticated = status;
 }
 
 void User::set_realname(const std::string &realname) {
@@ -97,6 +103,10 @@ bool User::get_status(void) const {
 	return (this->_status);
 }
 
+bool User::get_authenticated(void) const {
+	return (this->_authenticated);
+}
+
 /* ************************************************************************** */
 
 void User::joinBuffer(const char *buffer) {
@@ -134,8 +144,7 @@ void User::receive(Server &server) {
 
 std::vector<std::string> splitcmd(std::string line) {
 	std::vector<std::string> cmd;
-	char *arg = strtok((char *) line.c_str(),
-					   "\r\n ");  // /!\ La string ne doit pas être constante avec utilisation de strtok
+	char *arg = strtok((char *) line.c_str(), "\r\n "); // /!\ La string ne doit pas être constante avec utilisation de strtok
 	while (arg != NULL && !line.empty()) {
 		cmd.push_back(arg);
 		arg = strtok(NULL, "\r\n ");
@@ -154,23 +163,22 @@ void User::authentication(Server &server, Commands &cmd, std::vector<std::string
 				cmd.getcommand(server, *this, arg);
 				break;
 			default:
-				server.sendMsg(*this, "You are not connected to the server.");
+				server.sendMsg(*this, "You are not connected to the server.", 1);
 				if (!(this->get_password().empty()))
-					server.sendMsg(*this, "Password: OK");
+					server.sendMsg(*this, "Password: OK", 1);
 				else {
-					server.sendMsg(*this, "You need to use /PASS to connect first.");
+					server.sendMsg(*this, "You need to use /PASS to connect first.", 1);
 					break;
 				}
-				!(this->get_nickname().empty()) ? server.sendMsg(*this, "Nickname: " + this->get_nickname()) \
-				: server.sendMsg(*this, "You need to use /NICK to set your nickname first.");
-				!(this->get_username().empty()) ? server.sendMsg(*this, "Username: " + this->get_username()) \
-				: server.sendMsg(*this, "You need to use /USER to set your username first.");
+				!(this->get_nickname().empty()) ? server.sendMsg(*this, "Nickname: " + this->get_nickname(), 1) \
+				: server.sendMsg(*this, "You need to use /NICK to set your nickname first.", 1);
+				!(this->get_username().empty()) ? server.sendMsg(*this, "Username: " + this->get_username(), 1) \
+				: server.sendMsg(*this, "You need to use /USER to set your username first.", 1);
 		}
 	}
 	if (!_nickname.empty() && !_username.empty() && !_realname.empty() && !_password.empty()) {
-		_status = true;
-		if (server.get_Irssi() == false)
-			displayWelcome(server, *this);
+		_authenticated = true;
+		displayWelcome(server, *this);
 	}
 }
 

@@ -8,6 +8,7 @@ Commands::Commands(void) {
 	cmdMap["QUIT"] = &Commands::quit;
 	cmdMap["MODE"] = &Commands::mode;
 	cmdMap["PING"] = &Commands::ping;
+	cmdMap["PONG"] = &Commands::pong;
 	cmdMap["PRIVMSG"] = &Commands::privmsg;
 	cmdMap["JOIN"] = &Commands::join;
 }
@@ -16,11 +17,8 @@ Commands::~Commands(void) {
 }
 
 void Commands::getcommand(Server &server, User &user, std::vector<std::string> &argument) {
-
-// 	// debug("getCommand", BEGIN);
 	bool command = false;
 
-// Check si la commande fait partie de notre liste de commandes
 	if (!argument.empty()) {
 		for (std::map<std::string, cmdFPtr>::iterator it = cmdMap.begin(); it != cmdMap.end(); ++it) {
 			if (it->first == argument[0]) {
@@ -29,19 +27,17 @@ void Commands::getcommand(Server &server, User &user, std::vector<std::string> &
 			}
 		}
 		if (command == false)
-			server.sendMsg(user, ERR_UNKNOWNCOMMAND(user, argument[0]));
+			server.sendMsg(user, ERR_UNKNOWNCOMMAND(user, argument[0]), 1);
 	}
 	else
-		server.sendMsg(user, ERR_UNKNOWNCOMMAND(user, ""));
+		server.sendMsg(user, ERR_UNKNOWNCOMMAND(user, ""), 1);
 	return;
 }
 
 
 void Commands::capls(Server &server, User &user, std::vector<std::string> &arg) {
 	if (arg.size() > 1 && arg[1] == "LS") {
-		server.sendMsg(user, "CAP * LS :none");
-		std::cout << "CAP * LS :none\n";
-		user.set_status(true);
+		server.sendMsg(user, "CAP * LS :none", 1);
 		server.set_Irssi(true);
 	}
 	if (arg.size() > 1 && arg[1] == "END") {
@@ -58,20 +54,20 @@ The optional password can and MUST be set before any attempt to
 register the connection is made. Currently this requires that user 
 send a PASS command before sending the NICK/USER combination.
 
-Numeric Replies: ERR_NEEDMOREPARAMS; ERR_ALREADYREGISTRED */
+Numeric Replies: ERR_NEEDMOREPARAMS (461); ERR_ALREADYREGISTRED (462)*/
 void Commands::pass(Server &server, User &user, std::vector<std::string> &arg) {
-	if (user.get_status() == true) {
-		return (server.sendMsg(user, ERR_ALREADYREGISTRED(user)));
+	if (user.get_authenticated() == true) {
+		return (server.sendMsg(user, ERR_ALREADYREGISTRED(user), 1));
 	};
 	if (arg[1].empty()) {
-		return (server.sendMsg(user, ERR_NEEDMOREPARAMS(user, "PASS")));
+		return (server.sendMsg(user, ERR_NEEDMOREPARAMS(user, "PASS"), 1));
 	}
 	if (arg[1] == server.get_Password()) {
 		if (user.get_password().empty()) {
 			user.set_password(arg[1]);
 		}
 		else {
-			return (server.sendMsg(user, ERR_ALREADYREGISTRED(user)));
+			return (server.sendMsg(user, ERR_ALREADYREGISTRED(user), 1));
 		}
 	}
 }
@@ -93,46 +89,25 @@ Servers MAY have additional implementation-specific nickname restrictions and SH
 the use of nicknames which are ambiguous with commands or command parameters 
 where this could lead to confusion or error.
 
-Numeric Replies: ERR_NONICKNAMEGIVEN; ERR_ERRONEUSNICKNAME;
-				ERR_NICKNAMEINUSE; ERR_NICKCOLLISION;
-				ERR_UNAVAILRESOURCE; ERR_RESTRICTED */
+Numeric Replies: ERR_NONICKNAMEGIVEN (431); ERR_ERRONEUSNICKNAME (432);
+				ERR_NICKNAMEINUSE (433); ERR_NICKCOLLISION (436);
+				ERR_UNAVAILRESOURCE (437); ERR_RESTRICTED (484)*/
 void Commands::nick(Server &server, User &user, std::vector<std::string> &arg) {
 	if (arg[1].empty()) {
-		return (server.sendMsg(user, ERR_NONICKNAMEGIVEN(arg[1])));
+		return (server.sendMsg(user, ERR_NONICKNAMEGIVEN(arg[1]), 1));
 	}
-	std::cout << "user->nickname: " << arg[1] << std::endl;
 	if (arg[1].find_first_not_of("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789") \
 		!= std::string::npos) { //ajouter les autres caractères autorisés
-		return (server.sendMsg(user, ERR_ERRONEUSNICKNAME(arg[1])));
+		return (server.sendMsg(user, ERR_ERRONEUSNICKNAME(arg[1]), 1));
 	}
 	std::map<int, User> users = server.get_clientmap();
 	for(std::map<int, User>::iterator it = server.get_clientmap().begin(); \
 		it != server.get_clientmap().end(); ++it) {
-		if (arg[1] == it->second.get_nickname()) {
-			server.sendMsg(user, ERR_NICKNAMEINUSE(arg[1]));
-	
-			// // Est-ce que le server lui attribue un nouveau NICK ?
-			// int i = 48;
-			// std::string new_nick = arg[1] + (char)i;
-			// for(it = server.get_clientmap().begin(); it != server.get_clientmap().end(); ++it) {
-			// 	if (new_nick == it->second.get_nickname()) {
-			// 		server.sendMsg(user, ERR_NICKNAMEINUSE(new_nick));
-			// 		i++;
-			// 		new_nick = arg[1]+ (char)i;
-			// 	}
-			// 	else {
-			// 		server.sendMsg(user, arg[1] + " changed his nickname to " + new_nick);
-			// 		std::string resp1 = ":" + arg[1] + "!~" + arg[1] + "@" + user.get_ip() \
-			// 		+ " NICK :" + new_nick + "\r\n";
-			// 		if (send(user.get_fd(), resp1.c_str(), resp1.length(), 0) == -1)
-			// 			std::perror("send:");
-			// 	}
-			// }
-
-		}
+		if (arg[1] == it->second.get_nickname())
+			server.sendMsg(user, ERR_NICKNAMEINUSE(arg[1]), 1);
 	}
 	if (!user.get_nickname().empty()) {
-		server.sendMsg(user, user.get_nickname() + " changed his nickname to " + arg[1]);
+		server.sendMsg(user, user.get_nickname() + " changed his nickname to " + arg[1], 1);
 		std::string resp = ":" + user.get_nickname() + "!~" + user.get_username() + "@" + user.get_ip() \
 		+ " NICK :" + arg[1] + "\r\n";
 		if (send(user.get_fd(), resp.c_str(), resp.length(), 0) == -1)
@@ -152,21 +127,19 @@ the bit 2 is set, the user mode 'w' will be set and if the bit 3 is
 set, the user mode 'i' will be set. (See Section 3.1.5 "User Modes").
 The <realname> may contain space characters.
 
-Numeric Replies: ERR_NEEDMOREPARAMS; ERR_ALREADYREGISTRED */
+Numeric Replies: ERR_NEEDMOREPARAMS (461); ERR_ALREADYREGISTRED (462)*/
 void Commands::user(Server &server, User &user, std::vector<std::string> &arg) {
 //			>> USER <user> <mode> <unused> <realname>
 //Example:	>> USER amugnier amugnier 10.24.4.2 :Antoine MUGNIER
-//	if (user.get_status() == true) {
-//		return (server.sendMsg(user, ERR_ALREADYREGISTRED(user)));
-//	} //TODO TEMPORAIRE EN COMMENTAIRE POUR TESTER LES MP
-	if (arg.size() < 5) {
-		return (server.sendMsg(user, ERR_NEEDMOREPARAMS(user, "USER")));
-	}
+	if (user.get_authenticated() == true)
+		return (server.sendMsg(user, ERR_ALREADYREGISTRED(user), 1));
+	if (arg.size() < 5)
+		return (server.sendMsg(user, ERR_NEEDMOREPARAMS(user, "USER"), 1));
 	user.set_username(arg[1]);
 	// if (arg[2].size()) // Should be numeric ??
 	// 	user.set_mode();
 	user.set_ip(arg[3]);
-	std::cout << "user->ip: " << arg[3] << std::endl;
+	// std::cout << "user->ip: " << arg[3] << std::endl;
 	if (arg[4][0] == ':') {
 		std::string realname;
 		arg[4] = arg[4].erase(0, 1);
@@ -230,20 +203,19 @@ a special request to leave all channels the user is currently a member
 of. The server will process this message as if the user had sent
 a PART command (See Section 3.2.2) for each channel he is a member of.
 
-Numeric Replies: ERR_NEEDMOREPARAMS; ERR_BANNEDFROMCHAN;
-				ERR_INVITEONLYCHAN; ERR_BADCHANNELKEY;
-				ERR_CHANNELISFULL; ERR_BADCHANMASK;
-				ERR_NOSUCHCHANNEL; ERR_TOOMANYCHANNELS;
-				ERR_TOOMANYTARGETS; ERR_UNAVAILRESOURCE;
-				RPL_TOPIC */
+Numeric Replies: ERR_NEEDMOREPARAMS (461); ERR_BANNEDFROMCHAN (474);
+				ERR_INVITEONLYCHAN (473); ERR_BADCHANNELKEY (475);
+				ERR_CHANNELISFULL (471); ERR_BADCHANMASK (476);
+				ERR_NOSUCHCHANNEL (403); ERR_TOOMANYCHANNELS (405);
+				ERR_TOOMANYTARGETS (407); ERR_UNAVAILRESOURCE;
+				RPL_TOPIC (332) */
 
 std::vector<std::string> split(const std::string& str)
 {
 	std::vector<std::string> channels_result;
 	std::string delimiter = ",";
 	char *args = strtok((char *)str.c_str(), ",");
-	while (args != NULL)
-	{
+	while (args != NULL) {
 		channels_result.push_back(args);
 		args = strtok(NULL, ",");
 	}
@@ -328,42 +300,50 @@ void Commands::mode(Server &server, User &user, std::vector<std::string> &arg) {
 }
 
 
+/* Command: PING | Parameters: <token>
 
+The PING command is sent by either clients or servers to check the other side 
+of the connection is still connected and/or to check for connection latency, 
+at the application layer.
 
-/* Command: PING | Parameters: <server1> [ <server2> ]
+The <token> may be any non-empty string.
 
-The PING command is used to test the presence of an active client or
-server at the other end of the connection.  Servers send a PING
-message at regular intervals if no other activity detected coming
-from a connection.  If a connection fails to respond to a PING
-message within a set amount of time, that connection is closed.  A
-PING message MAY be sent even if the connection is active.
+When receiving a PING message, clients or servers must reply to it with a PONG 
+message with the same <token> value. This allows either to match PONG with the 
+PING they reply to, for example to compute latency.
 
-When a PING message is received, the appropriate PONG message MUST be
-sent as reply to <server1> (server which sent the PING message out)
-as soon as possible.  If the <server2> parameter is specified, it
-represents the target of the ping, and the message gets forwarded
-there.
+Clients should not send PING during connection registration, though servers may 
+accept it. Servers may send PING during connection registration and clients must 
+reply to them.
+
+Older versions of the protocol gave specific semantics to the <token> and allowed 
+an extra parameter; but these features are not consistently implemented and 
+should not be relied on. Instead, the <token> should be treated as an opaque value 
+by the receiver.
 
 Numeric Replies: ERR_NOORIGIN (409); ERR_NOSUCHSERVER (402)*/
 void Commands::ping(Server &server, User &user, std::vector<std::string> &arg) {
 	if (arg[1].empty() || !arg[1].size())
-		return (server.sendMsg(user, ERR_NOORIGIN(user)));
+		return (server.sendMsg(user, ERR_NOORIGIN(user), 1));
 	std::string msg_send = "PONG :" + arg[1];
-	send(user.get_fd(), msg_send.c_str(), msg_send.length(), 0);
+	server.sendMsg(user, msg_send, 1);
 }
 
-/* Command: PONG | Parameters: <server> [ <server2> ]
 
-PONG message is a reply to ping message.  If parameter <server2> is
-given, this message MUST be forwarded to given target.  The <server>
-parameter is the name of the entity who has responded to PING message
-and generated this message.
+/* Command: PONG | Parameters: [<server>] <token>
+The PONG command is used as a reply to PING commands, by both clients and servers. 
+The <token> should be the same as the one in the PING message that triggered this PONG.
 
-Numeric Replies: ERR_NOORIGIN (409); ERR_NOSUCHSERVER (402)*/
+Servers MUST send a <server> parameter, and clients SHOULD ignore it. It exists for 
+historical reasons, and indicates the name of the server sending the PONG. Clients 
+MUST NOT send a <server> parameter.
+
+Numeric Replies: none*/
 void Commands::pong(Server &server, User &user, std::vector<std::string> &arg) {
 	if (arg[1].empty() || !arg[1].size())
-		return (server.sendMsg(user, ERR_NOORIGIN(user)));
+		return (server.sendMsg(user, ERR_NOORIGIN(user), 1));
+
+	// CHECK si le token recu correspond a ce qu'on a envoyé == STOCKER celui envoyé ?
 	user.set_lastping(time(NULL));
 }
 
@@ -431,7 +411,7 @@ void Commands::privmsg(Server &server, User &user, std::vector<std::string> &arg
 				return;
 			}
 		}
-		server.sendMsg(user, ERR_NOSUCHNICK(user, arg[1]));
+		server.sendMsg(user, ERR_NOSUCHNICK(user, arg[1]), 1);
 	}
 	else {
 		for (std::vector<std::string>::iterator it = arg.begin() + 2;

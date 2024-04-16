@@ -4,14 +4,10 @@
 #include "Commands.hpp"
 
 void displayWelcome(Server &server, User &user) {
-	server.sendMsg(user, RPL_WELCOME(server, user));
-	server.sendMsg(user, RPL_YOURHOST(server, user));
-	server.sendMsg(user, RPL_CREATED(user));
-	server.sendMsg(user, RPL_MYINFO(server, user));
-	std::cout << RPL_WELCOME(server, user) << std::endl;
-	std::cout << RPL_YOURHOST(server, user) << std::endl;
-	std::cout << RPL_CREATED(user) << std::endl;
-	std::cout << RPL_MYINFO(server, user) << std::endl;
+	server.sendMsg(user, RPL_WELCOME(server, user), 1);
+	server.sendMsg(user, RPL_YOURHOST(server, user), 1);
+	server.sendMsg(user, RPL_CREATED(user), 1);
+	server.sendMsg(user, RPL_MYINFO(server, user), 1);
 }
 
 std::string RPL_WELCOME(Server &server, User &user) {
