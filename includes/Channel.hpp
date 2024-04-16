@@ -15,6 +15,8 @@ class Channel
 		~Channel();
 		std::string	get_ChannelName() const;
 		void		set_UserChannel(User &user);
+		std::vector<User> & get_UserChannel();
+
 
 	private:
 		std::string _nameChannel;
