@@ -3,6 +3,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <time.h>
 #include "IRC.hpp"
 
 class Server;
@@ -30,7 +31,8 @@ class Commands {
 		void mode(Server &server, User &user, std::vector<std::string> &arg);
 		void privmsg(Server &server, User &user, std::vector<std::string> &arg);
 
-		void ping(Server &server, User &user, std::vector<std::string> &arg); // void pong() ??
+		void ping(Server &server, User &user, std::vector<std::string> &arg);
+		void pong(Server &server, User &user, std::vector<std::string> &arg);
 	private:
 		std::map<std::string, cmdFPtr> cmdMap;
 };
