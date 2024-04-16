@@ -16,6 +16,7 @@ class Channel
 		std::string	get_ChannelName() const;
 		void		set_UserChannel(User &user);
 		std::vector<User> & get_UserChannel();
+		std::string get_ChannelTopic() const;
 
 
 	private:

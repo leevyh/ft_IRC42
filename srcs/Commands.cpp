@@ -180,6 +180,9 @@ void Commands::quit(Server &server, User &user, std::vector<std::string> &arg) {
 }
 
 
+
+/* --------------------------------------------------JOIN-------------------------------------------------- */
+
 /* Command: JOIN | Parameters: ( <channel> *( "," <channel> ) [ <key> *( "," <key> ) ] ) / "0"
 
 The JOIN command is used by a user to request to start listening to
@@ -209,6 +212,51 @@ Numeric Replies: ERR_NEEDMOREPARAMS (461); ERR_BANNEDFROMCHAN (474);
 				ERR_NOSUCHCHANNEL (403); ERR_TOOMANYCHANNELS (405);
 				ERR_TOOMANYTARGETS (407); ERR_UNAVAILRESOURCE;
 				RPL_TOPIC (332) */
+
+void	channel_BroadcastJoin(Server &server, User &user, std::string const &channel_name)
+{
+	std::string msg_send;
+	std::vector<User> user_list = server.get_channels()[channel_name].get_UserChannel();
+	for (std::vector<User>::iterator it = user_list.begin(); it != user_list.end(); ++it)
+	{
+		if (it->get_fd() != user.get_fd())
+		{
+			msg_send = ":" + user.get_nickname() + "!~" + user.get_username() + "@localhost.ip JOIN :" + channel_name +
+					   "\r\n";
+			send(it->get_fd(), msg_send.c_str(), msg_send.length(), 0);
+		}
+	}
+}
+
+
+
+void Commands::join(Server &server, User &user, std::vector<std::string> &arg) {
+	std::vector<std::string> channels;
+	channels = split(arg[1]);
+	std::string msg_send;
+	if (check_channelName(server, user, channels) == -6969)
+		return;
+	for (size_t i = 0; i < channels.size(); i++)
+	{
+		if (server.get_channels().empty())
+			create_NewChannel(server, user, channels[i]);
+		else
+		{
+			for (std::map<std::string, Channel>::iterator it = server.get_channels().begin(); it != server.get_channels().end(); ++it)
+			{
+				if (channels[i] == it->second.get_ChannelName())
+				{
+						add_UserInChannel(user, channels[i], it);
+						channel_BroadcastJoin(server, user, channels[i]);
+						if (!it->second.get_ChannelTopic().empty())
+							server.sendMsg(user, RPL_TOPIC(user, channels[i], it->second.get_ChannelTopic()), 1);
+				}
+			}
+			//channel not found
+		}
+	}
+	return;
+}
 
 std::vector<std::string> split(const std::string& str)
 {
@@ -244,53 +292,29 @@ int	check_channelName(Server &server, User &user, std::vector<std::string> &chan
 	return (0);
 }
 
-void Commands::join(Server &server, User &user, std::vector<std::string> &arg) {
-	std::vector<std::string> channels;
-	channels = split(arg[1]);
+void	create_NewChannel(Server &server, User &user, std::string const &channel_name)
+{
 	std::string msg_send;
-	if (check_channelName(server, user, channels) == -6969)
-		return;
-	for (size_t i = 0; i < channels.size(); i++)
-	{
-		if (server.get_channels().empty()) {
-			Channel channel(channels[i]);
-			std::cout << "Channel created: " << channel.get_ChannelName() << std::endl;
-			channel.set_UserChannel(user);
-			std::vector<User> user_list = channel.get_UserChannel();
-			for (std::vector<User>::iterator it = user_list.begin(); it != user_list.end(); ++it)
-			{
-				std::cout << "User in channel: " << it->get_nickname() << std::endl;
-			}
-			server.get_channels()[channels[i]] = channel;
-			msg_send = ":" + user.get_nickname() + "!~" + user.get_username() \
-			+ "@localhost.ip JOIN :" + channels[i] + "\r\n";
-			std::cout << "Message sent: " << msg_send << std::endl;
-//			server.sendMsg(user, msg_send);
-			send(user.get_fd(), msg_send.c_str(), msg_send.length(), 0);
-		}
-		else
-		{
-			for (std::map<std::string, Channel>::iterator it = server.get_channels().begin(); it != server.get_channels().end(); ++it)
-			{
-				if (channels[i] == it->second.get_ChannelName())
-				{
-					std::cout << "Find :" << channels[i] << std::endl;
-					it->second.set_UserChannel(user);
-					std::vector<User> user_list = it->second.get_UserChannel();
-					for (std::vector<User>::iterator it = user_list.begin(); it != user_list.end(); ++it)
-					{
-						std::cout << "User in channel: " << it->get_nickname() << std::endl;
-					}
-					msg_send = ":" + user.get_nickname() + "!~" + user.get_username() + "@localhost.ip JOIN :" + channels[i] +
-							   "\r\n";
-					send(user.get_fd(), msg_send.c_str(), msg_send.length(), 0);
-				}
-			}
-		}
-	}
-	return;
+	Channel channel(channel_name);
+	channel.set_UserChannel(user);
+	server.get_channels()[channel_name] = channel;
+	msg_send = ":" + user.get_nickname() + "!~" + user.get_username() + "@localhost.ip JOIN :" + channel_name +
+			   "\r\n";
+	std::cout << "Message sent: " << msg_send << std::endl;
+	send(user.get_fd(), msg_send.c_str(), msg_send.length(), 0);
 }
 
+void	add_UserInChannel(User &user, std::string const &channel_name, std::map<std::string, Channel>::iterator it)
+{
+	it->second.set_UserChannel(user);
+	std::string msg_send;
+	msg_send = ":" + user.get_nickname() + "!~" + user.get_username() + "@localhost.ip JOIN :" + channel_name +
+			   "\r\n";
+	send(user.get_fd(), msg_send.c_str(), msg_send.length(), 0);
+}
+
+
+/* --------------------------------------------------END JOIN-------------------------------------------------- */
 
 void Commands::mode(Server &server, User &user, std::vector<std::string> &arg) {
 	(void)server;
@@ -302,14 +326,13 @@ void Commands::mode(Server &server, User &user, std::vector<std::string> &arg) {
 
 /* Command: PING | Parameters: <token>
 
-The PING command is sent by either clients or servers to check the other side 
-of the connection is still connected and/or to check for connection latency, 
+The PING command is sent by either clients or servers to check the other side of
+the connection is still connected and/or to check for connection latency,
 at the application layer.
 
 The <token> may be any non-empty string.
-
-When receiving a PING message, clients or servers must reply to it with a PONG 
-message with the same <token> value. This allows either to match PONG with the 
+When receiving a PING message, clients or servers must reply to it with a PONG
+message with the same <token> value. This allows either to match PONG with the
 PING they reply to, for example to compute latency.
 
 Clients should not send PING during connection registration, though servers may 
@@ -350,34 +373,34 @@ void Commands::pong(Server &server, User &user, std::vector<std::string> &arg) {
 
 /* Command: PRIVMSG | Parameters: <target>{,<target>} <text to be sent>
 
-The PRIVMSG command is used to send private messages between users, 
-as well as to send messages to channels. <target> is the nickname of a 
+The PRIVMSG command is used to send private messages between users,
+as well as to send messages to channels. <target> is the nickname of a
 client or the name of a channel.
 
-If <target> is a channel name and the client is banned and not covered by 
-a ban exception, the message will not be delivered and the command will silently fail. 
-Channels with the moderated mode active may block messages from certain users. 
-Other channel modes may affect the delivery of the message or cause the message 
-to be modified before delivery, and these modes are defined by the server software 
+If <target> is a channel name and the client is banned and not covered by
+a ban exception, the message will not be delivered and the command will silently fail.
+Channels with the moderated mode active may block messages from certain users.
+Other channel modes may affect the delivery of the message or cause the message
+to be modified before delivery, and these modes are defined by the server software
 and configuration being used.
 
-If a message cannot be delivered to a channel, the server SHOULD respond with 
+If a message cannot be delivered to a channel, the server SHOULD respond with
 an ERR_CANNOTSENDTOCHAN (404) numeric to let the user know that this message could not be delivered.
 
-If <target> is a channel name, it may be prefixed with one or more channel membership 
-prefix character (@, +, etc) and the message will be delivered only to the members of 
-that channel with the given or higher status in the channel. Servers that support this feature 
-will list the prefixes which this is supported for in the STATUSMSG RPL_ISUPPORT parameter, 
+If <target> is a channel name, it may be prefixed with one or more channel membership
+prefix character (@, +, etc) and the message will be delivered only to the members of
+that channel with the given or higher status in the channel. Servers that support this feature
+will list the prefixes which this is supported for in the STATUSMSG RPL_ISUPPORT parameter,
 and this SHOULD NOT be attempted by clients unless the prefix has been advertised in this token.
 
-If <target> is a user and that user has been set as away, the server may reply with 
+If <target> is a user and that user has been set as away, the server may reply with
 an RPL_AWAY (301) numeric and the command will continue.
 
-The PRIVMSG message is sent from the server to client to deliver a message to that client. 
-The <source> of the message represents the user or server that sent the message, and the <target> 
+The PRIVMSG message is sent from the server to client to deliver a message to that client.
+The <source> of the message represents the user or server that sent the message, and the <target>
 represents the target of that PRIVMSG (which may be the client, a channel, etc).
 
-When the PRIVMSG message is sent from a server to a client and <target> starts with a dollar 
+When the PRIVMSG message is sent from a server to a client and <target> starts with a dollar
 character ('$', 0x24), the message is a broadcast sent to all clients on one or multiple servers.
 
 Numeric Replies: ERR_NOSUCHNICK (401); ERR_NOSUCHSERVER (402);
