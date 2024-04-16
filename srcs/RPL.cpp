@@ -4,14 +4,10 @@
 #include "Commands.hpp"
 
 void displayWelcome(Server &server, User &user) {
-	server.sendMsg(user, RPL_WELCOME(server, user));
-	server.sendMsg(user, RPL_YOURHOST(server, user));
-	server.sendMsg(user, RPL_CREATED(user));
-	server.sendMsg(user, RPL_MYINFO(server, user));
-	std::cout << RPL_WELCOME(server, user) << std::endl;
-	std::cout << RPL_YOURHOST(server, user) << std::endl;
-	std::cout << RPL_CREATED(user) << std::endl;
-	std::cout << RPL_MYINFO(server, user) << std::endl;
+	server.sendMsg(user, RPL_WELCOME(server, user), 1);
+	server.sendMsg(user, RPL_YOURHOST(server, user), 1);
+	server.sendMsg(user, RPL_CREATED(user), 1);
+	server.sendMsg(user, RPL_MYINFO(server, user), 1);
 }
 
 std::string RPL_WELCOME(Server &server, User &user) {
@@ -64,9 +60,9 @@ std::string ERR_CANNOTSENDTOCHAN(User &user, std::string channel) {
 	return ("404 " + user.get_username() + " " + channel + " :Cannot send to channel");
 }
 
-//  PING or PONG message missing the originator parameter.
-// ":No origin specified" - 409
-// std::string ERR_NOORIGIN(void) {}
+std::string ERR_NOORIGIN(User &user) {
+	return ("409 " + user.get_username() + ":No origin specified");
+}
 
 // Returned by the PRIVMSG command to indicate the message wasn’t delivered because there was no recipient given. -> Recipient = destinataire
 std::string ERR_NORECIPIENT(User &user, std::string command) {

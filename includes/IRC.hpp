@@ -37,7 +37,7 @@ std::string ERR_NOSUCHNICK(User &user, std::string nickname);          // 401
 std::string ERR_NOSUCHSERVER(User &user, std::string server_name);     // 402
 std::string ERR_NOSUCHCHANNEL(User &user, std::string channel);        // 403
 std::string ERR_CANNOTSENDTOCHAN(User &user, std::string channel);     // 404
-// std::string ERR_NOORIGIN(void);                                        // 409
+std::string ERR_NOORIGIN(User &user);                                  // 409
 std::string ERR_NORECIPIENT(User &user, std::string command);          // 411
 std::string ERR_NOTEXTTOSEND(User &user);                              // 412
 std::string ERR_NONICKNAMEGIVEN(std::string error);                    // 431

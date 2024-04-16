@@ -22,9 +22,11 @@ class User {
 		std::string _realname;
 		std::string _password;
 		std::string _ip;
-		bool _status;
+		bool _status;				// connected or not (/connect)
+		bool _authenticated;		// authenticated or not (PASS + NICK + USER)
 		int _fd;
 		std::string _buffer;
+		int _lastping;
 	public:
 		User(void);
 		User(const int fd);
@@ -38,7 +40,8 @@ class User {
 		void set_password(const std::string &password);
 		void set_ip(const std::string &ip);
 		void set_status(bool status);
-		void authentication(Server &server, Commands &cmd, std::vector<std::string> arg);
+		void set_authenticated(bool status);
+		void set_lastping(const int &ping);
 // GETTERS
 		const std::string &get_nickname(void) const;
 		const std::string &get_username(void) const;
@@ -46,11 +49,13 @@ class User {
 		const std::string &get_password(void) const;
 		const std::string &get_ip(void) const;
 		bool get_status(void) const;
+		bool get_authenticated(void) const;
 		int get_fd(void) const;
 // FUNCTIONS
 		void joinBuffer(const char *buffer); // char * ou std::string ??
 		void receive(Server &server);
 		void parseClientMessage(Server &server, std::string line);
+		void authentication(Server &server, Commands &cmd, std::vector<std::string> arg);
 };
 std::ostream &operator<<(std::ostream &o, const User &src);
 std::vector<std::string> splitcmd(std::string line);
