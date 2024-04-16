@@ -19,12 +19,17 @@ Channel &Channel::operator=(Channel const &rhs) {
 		_nameChannel = rhs._nameChannel;
 		_topic = rhs._topic;
 		_pass = rhs._pass;
+		_chanUsers = rhs._chanUsers;
 	}
 	return (*this);
 }
 
 void	Channel::set_UserChannel(User &user) {
 	_chanUsers.push_back(user);
+}
+
+std::vector<User> &Channel::get_UserChannel() {
+	return (_chanUsers);
 }
 
 std::string Channel::get_ChannelName() const {

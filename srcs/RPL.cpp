@@ -8,6 +8,10 @@ void displayWelcome(Server &server, User &user) {
 	server.sendMsg(user, RPL_YOURHOST(server, user));
 	server.sendMsg(user, RPL_CREATED(user));
 	server.sendMsg(user, RPL_MYINFO(server, user));
+	std::cout << RPL_WELCOME(server, user) << std::endl;
+	std::cout << RPL_YOURHOST(server, user) << std::endl;
+	std::cout << RPL_CREATED(user) << std::endl;
+	std::cout << RPL_MYINFO(server, user) << std::endl;
 }
 
 std::string RPL_WELCOME(Server &server, User &user) {

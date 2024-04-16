@@ -38,7 +38,8 @@ class User {
 		void set_realname(const std::string &realname);
 		void set_password(const std::string &password);
 		void set_ip(const std::string &ip);
-		void set_lastping(const int &ping);
+		void set_status(bool status);
+  	void set_lastping(const int &ping);
 // GETTERS
 		const std::string &get_nickname(void) const;
 		const std::string &get_username(void) const;
