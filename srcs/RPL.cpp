@@ -44,6 +44,10 @@ std::string RPL_AWAY(User &user, std::string recipient, std::string away_msg) {
 	return ("301 " + user.get_username() + " " + recipient + " :" + away_msg);
 }
 
+std::string RPL_TOPIC(User &user, std::string channel, std::string topic) {
+	return ("332 " + user.get_username() + " " + channel + " :" + topic);
+}
+
 std::string ERR_NOSUCHNICK(User &user, std::string nickname) {
 	return ("401 " + user.get_username() + " " + nickname + " :No suck nick/channel");
 }

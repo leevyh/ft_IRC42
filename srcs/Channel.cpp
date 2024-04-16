@@ -36,5 +36,9 @@ std::string Channel::get_ChannelName() const {
 	return (_nameChannel);
 }
 
+std::string Channel::get_ChannelTopic() const {
+	return (_topic);
+}
+
 Channel::~Channel() {
 }

@@ -31,6 +31,8 @@ std::string RPL_MYINFO(Server &server, User &user);                    // 004
 
 std::string RPL_AWAY(User &user, std::string recipient, std::string message); // 301
 
+std::string RPL_TOPIC(User &user, std::string channel, std::string topic); // 332
+
 std::string ERR_NOSUCHNICK(User &user, std::string nickname);          // 401
 std::string ERR_NOSUCHSERVER(User &user, std::string server_name);     // 402
 std::string ERR_NOSUCHCHANNEL(User &user, std::string channel);        // 403
