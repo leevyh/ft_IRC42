@@ -111,8 +111,9 @@ void Commands::nick(Server &server, User &user, std::vector<std::string> &arg) {
 		server.sendMsg(user, user.get_nickname() + " changed his nickname to " + arg[1], 1);
 		std::string resp = ":" + user.get_nickname() + "!~" + user.get_username() + "@" + user.get_ip() \
 		+ " NICK :" + arg[1] + "\r\n";
-		if (send(user.get_fd(), resp.c_str(), resp.length(), 0) == -1)
-			std::perror("send:");
+		// if (send(user.get_fd(), resp.c_str(), resp.length(), 0) == -1)
+		// 	std::perror("send:");
+		server.sendMsg(user, resp, 2);
 	}
 	user.set_nickname(arg[1]);
 };
@@ -281,10 +282,10 @@ int	check_channelName(Server &server, User &user, std::vector<std::string> &chan
 			std::cout << "ERR_BADCHANMASK aa coder" << std::endl;
 			return (-6969);
 		}
-		if (channel[i].find_first_not_of("#abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789") !=
-			std::string::npos) {
-//			server.sendMsg(user, ERR_BADCHANMASK(user, channel[i]));
-			std::cout << "ERR_BADCHANMASK a coder" << std::endl;
+		if (channel[i].find_first_not_of("#abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789") 
+			!= std::string::npos) {
+			server.sendMsg(user, ERR_BADCHANMASK(channel[i]), 1);
+			// std::cout << "ERR_BADCHANMASK a coder" << std::endl;
 			return (-6969);
 		}
 	}
@@ -344,17 +345,6 @@ void Commands::topic(Server &server, User &user, std::vector<std::string> &arg) 
 			}
 		}
 	}
-}
-
-
-
-
-
-void Commands::mode(Server &server, User &user, std::vector<std::string> &arg) {
-	(void)server;
-	(void)user;
-	(void)arg;
-	std::cout << "MODE à coder\n";
 }
 
 
@@ -503,3 +493,45 @@ void Commands::privmsg(Server &server, User &user, std::vector<std::string> &arg
 		//NO SUCH CHANNEL
 	}
 }
+
+
+
+
+/*	∗ KICK - Eject a client from the channel
+	∗ INVITE - Invite a client to a channel
+	∗ TOPIC - Change or view the channel topic
+	∗ MODE - Change the channel’s mode:
+		· i: Set/remove Invite-only channel
+		· t: Set/remove the restrictions of the TOPIC command to channel operators
+		· k: Set/remove the channel key (password)
+		· o: Give/take channel operator privilege
+		· l: Set/remove the user limit to channel*/
+
+
+/*Command: MODE | Parameters: <channel> *( ( "-" / "+" ) *<modes> *<modeparams> )
+
+The MODE command is provided so that users may query and change the
+characteristics of a channel.  For more details on available modes
+and their uses, see "Internet Relay Chat: Channel Management" [IRC-
+CHAN].  Note that there is a maximum limit of three (3) changes per
+command for modes that take a parameter.
+
+Numeric Replies: ERR_NEEDMOREPARAMS; ERR_KEYSET;
+				ERR_NOCHANMODES; ERR_CHANOPRIVSNEEDED;
+				ERR_USERNOTINCHANNEL; ERR_UNKNOWNMODE;
+				RPL_CHANNELMODEIS;
+				RPL_BANLIST; RPL_ENDOFBANLIST;
+				RPL_EXCEPTLIST; RPL_ENDOFEXCEPTLIST;
+				RPL_INVITELIST; RPL_ENDOFINVITELIST;
+				RPL_UNIQOPIS */
+void Commands::mode(Server &server, User &user, std::vector<std::string> &arg) {
+	(void)user;
+	if (arg.size() == 3 && arg[2] == "+i") // MODE <user> +i
+		return;
+
+}
+
+
+// Parameters: <channel> *( ( "-" / "+" ) *<modes> *<modeparams>
+// If <modeparams> is not given, the RPL_CHANNELMODEIS (324) numeric is returned.
+

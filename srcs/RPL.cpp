@@ -97,3 +97,35 @@ std::string ERR_NEEDMOREPARAMS(User &user, std::string command) {
 std::string ERR_ALREADYREGISTRED(User &user) {
 	return ("462 " + user.get_username() + " :You may not reregister");
 }
+
+// Indicates the supplied channel name is not a valid.
+// This is similar to, but stronger than, ERR_NOSUCHCHANNEL (403), which indicates 
+// that the channel does not exist, but that it may be a valid name.
+std::string ERR_BADCHANMASK(std::string channel_mask) {
+	return ("476 " + channel_mask + ":Bad Channel Mask");
+}
+
+
+// Returned when a client tries to perform a channel-affecting command on a 
+// channel which the client isn’t a part of.
+std::string ERR_NOTONCHANNEL(User &user, Channel &chan) {
+	return ("442 " + user.get_username() + " " + chan.get_ChannelName() + " :You're not on that channel");
+}
+
+// Returned when a client tries to invite <nick> to a channel they’re already joined to.
+std::string ERR_USERONCHANNEL(User &user, std::string nick, Channel &chan) {
+	return ("443 " + user.get_username() + " " + nick + " " + chan.get_ChannelName() + " :is already on channel");
+}
+
+
+
+// RPL_CHANNELMODEIS (324) 
+//   "<client> <channel> <modestring> <mode arguments>..."
+// Sent to a client to inform them of the currently-set modes of a channel. 
+// <channel> is the name of the channel. <modestring> and <mode arguments> are a 
+// mode string and the mode arguments (delimited as separate parameters) as 
+// defined in the MODE message description.
+
+std::string RPL_CHANNELMODEIS(User &user, Channel &chan) {
+	return ("324 " + user.get_nickname() + " " + chan.get_ChannelName());
+}
