@@ -21,6 +21,7 @@
 extern bool signal_value;
 void check_args(int argc, char **argv);
 void signal_send(int signum);
+std::string remove_OneChar(char c, std::vector<std::string> &arg);
 
 // IRC PROTOCOL
 void displayWelcome(Server &server, User &user);
