@@ -16,6 +16,10 @@ class Channel
 		std::string	get_ChannelName() const;
 		void		set_UserChannel(User &user);
 		std::vector<User> & get_UserChannel();
+		std::string get_ChannelTopic() const;
+		void set_ChannelTopic(std::string topic);
+		void set_opChannel(std::string user);
+		bool is_opChannel(std::string user);
 
 
 	private:
@@ -24,4 +28,5 @@ class Channel
 		std::string _pass;
 		int 		_limitUser;
 		std::vector<User> _chanUsers;
+		std::vector<std::string> _opUsers;
 };

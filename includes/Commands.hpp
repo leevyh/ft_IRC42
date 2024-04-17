@@ -8,6 +8,7 @@
 
 class Server;
 class User;
+class Channel;
 class Commands {
 	public:
 		Commands(void);
@@ -38,4 +39,7 @@ class Commands {
 		std::map<std::string, cmdFPtr> cmdMap;
 };
 
+int		check_channelName(Server &server, User &user, std::vector<std::string> &channel);
 std::vector<std::string> split(const std::string& str);
+void	create_NewChannel(Server &server, User &user, std::string const &channel_name);
+void	add_UserInChannel(User &user, std::string const &channel_name, std::map<std::string, Channel>::iterator it);

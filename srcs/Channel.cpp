@@ -20,6 +20,7 @@ Channel &Channel::operator=(Channel const &rhs) {
 		_topic = rhs._topic;
 		_pass = rhs._pass;
 		_chanUsers = rhs._chanUsers;
+		_opUsers = rhs._opUsers;
 	}
 	return (*this);
 }
@@ -34,6 +35,27 @@ std::vector<User> &Channel::get_UserChannel() {
 
 std::string Channel::get_ChannelName() const {
 	return (_nameChannel);
+}
+
+std::string Channel::get_ChannelTopic() const {
+	return (_topic);
+}
+
+void Channel::set_ChannelTopic(std::string topic) {
+	_topic = topic;
+}
+
+void	Channel::set_opChannel(std::string user) {
+	std::cout << "Adding " << user << " to op list" << std::endl;
+	_opUsers.push_back(user);
+}
+
+bool Channel::is_opChannel(std::string user) { //TODO FIX THIS
+	for (std::vector<std::string>::iterator it = _opUsers.begin(); it != _opUsers.end(); ++it) {
+		if (*it == user)
+			return (true);
+	}
+	return (false);
 }
 
 Channel::~Channel() {
