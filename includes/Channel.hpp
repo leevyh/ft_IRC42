@@ -30,3 +30,4 @@ class Channel
 		std::vector<User> _chanUsers;
 		std::vector<std::string> _opUsers;
 };
+std::ostream &operator<<(std::ostream &o, Channel &src);

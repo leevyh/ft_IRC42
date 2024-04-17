@@ -60,3 +60,18 @@ bool Channel::is_opChannel(std::string user) { //TODO FIX THIS
 
 Channel::~Channel() {
 }
+
+/* ************************************************************************** */
+
+std::ostream &operator<<(std::ostream &o, Channel &src) {
+	o << "Name: " << src.get_ChannelName() << " | Users(s) : ";
+	for (std::vector<User>::iterator it = src.get_UserChannel().begin(); 
+		it != src.get_UserChannel().end(); ++it) {
+		std::cout << it->get_username() << " - OP : ";
+		if (src.is_opChannel(it->get_username()))
+			std::cout << "Y" << std::endl;
+		else
+			std::cout << "N" << std::endl;
+	}
+	return (o);
+}

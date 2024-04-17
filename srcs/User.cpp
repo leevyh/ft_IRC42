@@ -178,6 +178,8 @@ void User::authentication(Server &server, Commands &cmd, std::vector<std::string
 	}
 	if (!_nickname.empty() && !_username.empty() && !_realname.empty() && !_password.empty()) {
 		_authenticated = true;
+		std::cout << "PASS :" << get_password() << "| USER :" << get_username() << "| NICK :" << get_nickname() \
+		<< "| REALNAME :" << get_realname() << std::endl;
 		displayWelcome(server, *this);
 	}
 }
