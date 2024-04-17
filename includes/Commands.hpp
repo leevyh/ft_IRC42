@@ -43,3 +43,4 @@ int		check_channelName(Server &server, User &user, std::vector<std::string> &cha
 std::vector<std::string> split(const std::string& str);
 void	create_NewChannel(Server &server, User &user, std::string const &channel_name);
 void	add_UserInChannel(Server &server, User &user, std::string const &channel_name, std::map<std::string, Channel>::iterator it);
+void	edit_Topic(Server &server, User &user, std::vector<std::string> &arg, std::map<std::string, Channel>::iterator it);

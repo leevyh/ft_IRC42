@@ -107,7 +107,7 @@ void Commands::nick(Server &server, User &user, std::vector<std::string> &arg) {
 	if (!user.get_nickname().empty()) {
 		server.sendMsg(user, user.get_nickname() + " changed his nickname to " + arg[1], 1);
 		std::string resp = ":" + user.get_nickname() + "!~" + user.get_username() + "@" + user.get_ip() \
-		+ " NICK :" + arg[1] + "\r\n";
+		+ " NICK :" + arg[1];
 		// if (send(user.get_fd(), resp.c_str(), resp.length(), 0) == -1)
 		// 	std::perror("send:");
 		server.sendMsg(user, resp, 2);
@@ -172,10 +172,48 @@ void Commands::quit(Server &server, User &user, std::vector<std::string> &arg) {
 // Command Example:   QUIT :Gone to have lunch         ; Client exiting from the network
 // Message Example:  :dan-!d@localhost QUIT :Quit: Bye for now!
 // 					; dan- is exiting the network with the message: "Quit: Bye for now!"
-	(void)server;
-	(void)user;
-	(void)arg;
-	std::cout << "QUIT à coder\n";
+	int nb_arg = 0;
+	std::string msg_send;
+	for (std::vector<std::string>::iterator it = arg.begin(); it != arg.end(); ++it) {
+		nb_arg++;
+	}
+	if (nb_arg > 2 && arg[1][0] != ':')
+		server.sendMsg(user, ERR_NEEDMOREPARAMS(user, "QUIT"), 1);
+	if (nb_arg > 1)
+	{
+		if (arg[1][0] == ':')
+		{
+			for (size_t i = 1; i < arg.size(); i++)
+				msg_send += arg[i] + " ";
+		}
+		else
+			msg_send += arg[1];
+	}
+	std::vector<std::map<std::string, Channel>::iterator> channel_list;
+	if (!server.get_channels().empty())
+	{
+		for (std::map<std::string, Channel>::iterator it = server.get_channels().begin(); it != server.get_channels().end(); ++it)
+		{
+			if (it->second.is_UserInChannel(user))
+			{
+				it->second.unsetChannelUser(user);
+				if (it->second.get_UserChannel().empty())
+				{
+					channel_list.push_back(it);
+				}
+			}
+		}
+	}
+	for (std::vector<std::map<std::string, Channel>::iterator>::iterator it = channel_list.begin(); it != channel_list.end(); ++it)
+		server.get_channels().erase((*it)->first);
+	//Display all channels always active
+	for (std::map<std::string, Channel>::iterator it = server.get_channels().begin(); it != server.get_channels().end(); ++it)
+	{
+		std::cout << it->second.get_ChannelName() << std::endl;
+	}
+//	user.set_authenticated(false);
+//	user.set_status(false);
+	std::cout << "QUIT a coder" << std::endl;
 }
 
 
@@ -220,37 +258,65 @@ void	channel_BroadcastJoin(Server &server, User &user, std::string const &channe
 	{
 		if (it->get_fd() != user.get_fd())
 		{
-			msg_send = ":" + user.get_nickname() + "!~" + user.get_username() + "@localhost.ip JOIN :" + channel_name +
-					   "\r\n";
-			send(it->get_fd(), msg_send.c_str(), msg_send.length(), 0);
+			msg_send = ":" + user.get_nickname() + "!~" + user.get_username() + "@localhost.ip JOIN :" + channel_name;
+			server.sendMsg(*it, msg_send, 2);
 		}
 	}
 }
+
+
+short is_Authorize(Server &server, User &user, Channel &Channel, std::vector<std::string> &key, size_t i)
+{
+	(void)server;
+	(void)user;
+	if (Channel.is_ValidKey(key, i) == false)
+		return (2);
+	return (1);
+}
+
 
 void Commands::join(Server &server, User &user, std::vector<std::string> &arg) {
 	std::vector<std::string> channels;
 	channels = split(arg[1]);
 	std::string msg_send;
+	std::vector<std::string> key;
+	short authorized = 0;
 	if (check_channelName(server, user, channels) == -6969)
 		return;
-	for (size_t i = 0; i < channels.size(); i++)
+	for(size_t i = 0; i < channels.size(); i++)
 	{
-		if (server.get_channels().empty())
-			create_NewChannel(server, user, channels[i]);
-		else
+		if (!(server.get_channels().empty()))
 		{
 			for (std::map<std::string, Channel>::iterator it = server.get_channels().begin(); it != server.get_channels().end(); ++it)
 			{
 				if (channels[i] == it->second.get_ChannelName())
 				{
-						add_UserInChannel(server, user, channels[i], it);
-						channel_BroadcastJoin(server, user, channels[i]);
-						if (!it->second.get_ChannelTopic().empty())
-							server.sendMsg(user, RPL_TOPIC(user, channels[i], it->second.get_ChannelTopic()), 1);
+					authorized = is_Authorize(server, user, it->second, key, i);
+					switch (authorized) {
+						case 1:
+							add_UserInChannel(server, user, channels[i], it);
+							channel_BroadcastJoin(server, user, channels[i]);
+							if (!it->second.get_ChannelTopic().empty())
+								server.sendMsg(user, RPL_TOPIC(user, channels[i], it->second.get_ChannelTopic()), 1);
+							break;
+						case 2:
+//							server.sendMsg(user, ERR_BADCHANNELKEY(channels[i]), 1);
+							std::cout<< "ERR_BADCHANNELKEY a coder" << std::endl;
+							break;
+						default:
+							std::cerr << "Error: Unknown error" << std::endl;
+					}
+//						case 3:
+//							std::cout << "ERR_CHANNELISFULL a coder" << std::endl;
+//							break;
+//						case 4:
+//							std::cout << "ERR_INVITEONLYCHAN a coder" << std::endl;
+//							break;
 				}
 			}
-			//channel not found
-		}
+		}//TODO FIX LE CAS OU LE 1ER CHAN EST DANS LA MAP MAIS PAS LE 2EME QUI NE REMETS PAS AUTHORIZED A 0
+		if (authorized == 0)
+			create_NewChannel(server, user, channels[i]);
 	}
 	return;
 }
@@ -313,6 +379,26 @@ void	add_UserInChannel(Server &server, User &user, std::string const &channel_na
 
 /* --------------------------------------------------TOPIC-------------------------------------------------- */
 
+void	edit_Topic(Server &server, User &user, std::vector<std::string> &arg, std::map<std::string, Channel>::iterator it)
+{
+	if (arg[1] == it->second.get_ChannelName())
+	{
+		std::cout << "user.get_username() = " << user.get_username() << std::endl;
+		if (it->second.is_opChannel(user.get_username()))
+		{
+			std::string topic = remove_OneChar(':', arg);
+			it->second.set_ChannelTopic(topic);
+			std::string msg_send = ":" + user.get_nickname() + "!~" + user.get_username() + "@localhost.ip TOPIC " + arg[1] + " :" + topic;
+			std::vector<User> user_list = it->second.get_UserChannel();
+			for (std::vector<User>::iterator itb = user_list.begin(); itb != user_list.end(); ++itb) {
+				server.sendMsg(*itb, msg_send, 2);
+			}
+		}
+		else
+			server.sendMsg(user, ERR_CHANOPRIVSNEEDED(user, it->second), 1);
+	}
+}
+
 void Commands::topic(Server &server, User &user, std::vector<std::string> &arg) {
 	(void)user;
 	if (arg.size() >= 3)
@@ -322,27 +408,27 @@ void Commands::topic(Server &server, User &user, std::vector<std::string> &arg) 
 			for (std::map<std::string, Channel>::iterator it = server.get_channels().begin(); it != server.get_channels().end(); ++it)
 			{
 				if (arg[1] == it->second.get_ChannelName())
-				{
-					std::cout << "user.get_username() = " << user.get_username() << std::endl;
-					if (it->second.is_opChannel(user.get_username()))
-					{
-						std::string topic = remove_OneChar(':', arg);
-						it->second.set_ChannelTopic(topic);
-						std::string msg_send = ":" + user.get_nickname() + "!~" + user.get_username() + "@localhost.ip TOPIC " + arg[1] + " :" + topic;
-						std::vector<User> user_list = it->second.get_UserChannel();
-						for (std::vector<User>::iterator itb = user_list.begin(); itb != user_list.end(); ++itb) {
-								server.sendMsg(*itb, msg_send, 2);
-						}
-					}
-					else
-					{
-						server.sendMsg(user, ERR_CHANOPRIVSNEEDED(user, arg[1]), 1);
-					}
-				}
-				std::cout << "Channel not found" << std::endl;
+					edit_Topic(server, user, arg, it);
+				else
+					continue;
+				return ;
+			}
+			server.sendMsg(user, ERR_NOSUCHCHANNEL(user, arg[1]), 1);
+		}
+	}
+	if (arg.size() == 2)
+	{
+		if (!server.get_channels().empty())
+		{
+			for(std::map<std::string, Channel>::iterator it = server.get_channels().begin(); it != server.get_channels().end(); ++it)
+			{
+				if (arg[1] != it->second.get_ChannelName())
+					server.sendMsg(user, ERR_NOTONCHANNEL(user, it->second), 1);
 			}
 		}
 	}
+	else
+		server.sendMsg(user, ERR_NEEDMOREPARAMS(user, "TOPIC"), 1);
 }
 
 

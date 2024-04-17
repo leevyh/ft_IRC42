@@ -38,6 +38,10 @@ std::string RPL_AWAY(User &user, std::string nick, std::string message) {
 	return ("301 " + user.get_username() + " " + nick + " :" + message);
 }
 
+std::string RPL_NOTOPIC(User &user, std::string channel, std::string topic) {
+	return ("331 " + user.get_username() + " " + channel + " :" + topic);
+}
+
 std::string RPL_TOPIC(User &user, std::string channel, std::string topic) {
 	return ("332 " + user.get_username() + " " + channel + " :" + topic);
 }

@@ -33,6 +33,10 @@ std::vector<User> &Channel::get_UserChannel() {
 	return (_chanUsers);
 }
 
+std::string Channel::get_ChannelKey() const {
+	return (_pass);
+}
+
 std::string Channel::get_ChannelName() const {
 	return (_nameChannel);
 }
@@ -75,3 +79,41 @@ std::ostream &operator<<(std::ostream &o, Channel &src) {
 	}
 	return (o);
 }
+
+bool	Channel::is_ValidKey(std::vector<std::string> key, int i)
+{
+//	if (key.empty() || key.size() < (unsigned long)i)
+//		return (false);
+//	if (key[i] == _pass)
+//		return (true);
+//	return (false);
+
+	(void)key;
+	(void)i;
+	return (true);
+}
+
+bool	Channel::is_UserInChannel(User &user) {
+	for (std::vector<User>::iterator it = _chanUsers.begin(); it != _chanUsers.end(); ++it)
+	{
+		if (it->get_nickname() == user.get_nickname())
+			return (true);
+	}
+	return (false);
+}
+
+void	Channel::unsetChannelUser(User& user){
+
+	for (std::vector<User>::iterator it = _chanUsers.begin(); it != _chanUsers.end(); ++it)
+	{
+		if (it->get_username() == user.get_username())
+		{
+			_chanUsers.erase(it);
+			return;
+		}
+	}
+	return;
+}
+
+
+
