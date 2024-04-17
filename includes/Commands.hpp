@@ -22,15 +22,16 @@ class Commands {
 		void quit(Server &server, User &user, std::vector<std::string> &arg);
 /* Channel operations */
 		void join(Server &server, User &user, std::vector<std::string> &arg);
-		void part();
-		void topic();
-		void names();
-		void invite();
-		void leave();
 		void kick();
+		void invite();
+		void topic();
 		void mode(Server &server, User &user, std::vector<std::string> &arg);
-		void privmsg(Server &server, User &user, std::vector<std::string> &arg);
 
+		void names();
+		void leave();
+
+		void part();
+		void privmsg(Server &server, User &user, std::vector<std::string> &arg);
 		void ping(Server &server, User &user, std::vector<std::string> &arg);
 		void pong(Server &server, User &user, std::vector<std::string> &arg);
 	private:

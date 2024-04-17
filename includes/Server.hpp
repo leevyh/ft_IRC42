@@ -51,5 +51,4 @@ class Server {
 		std::map<int, User> _clientmap;
 		std::map<std::string, Channel> _channels;
 		bool _irssi;
-//		std::map<std::string, Channel> _channels;
 };
