@@ -245,7 +245,7 @@ void Commands::join(Server &server, User &user, std::vector<std::string> &arg) {
 			{
 				if (channels[i] == it->second.get_ChannelName())
 				{
-						add_UserInChannel(user, channels[i], it);
+						add_UserInChannel(server, user, channels[i], it);
 						channel_BroadcastJoin(server, user, channels[i]);
 						if (!it->second.get_ChannelTopic().empty())
 							server.sendMsg(user, RPL_TOPIC(user, channels[i], it->second.get_ChannelTopic()), 1);
@@ -298,30 +298,26 @@ void	create_NewChannel(Server &server, User &user, std::string const &channel_na
 	channel.set_UserChannel(user);
 	channel.set_opChannel(user.get_username());
 	server.get_channels()[channel_name] = channel;
-	msg_send = ":" + user.get_nickname() + "!~" + user.get_username() + "@localhost.ip JOIN :" + channel_name +
-			   "\r\n";
-	std::cout << "Message sent: " << msg_send << std::endl;
-	send(user.get_fd(), msg_send.c_str(), msg_send.length(), 0);
+	msg_send = ":" + user.get_nickname() + "!~" + user.get_username() + "@localhost.ip JOIN :" + channel_name;
+	server.sendMsg(user, msg_send, 2);
 }
 
-void	add_UserInChannel(User &user, std::string const &channel_name, std::map<std::string, Channel>::iterator it)
+void	add_UserInChannel(Server &server, User &user, std::string const &channel_name, std::map<std::string, Channel>::iterator it)
 {
 	it->second.set_UserChannel(user);
 	std::string msg_send;
-	msg_send = ":" + user.get_nickname() + "!~" + user.get_username() + "@localhost.ip JOIN :" + channel_name +
-			   "\r\n";
-	send(user.get_fd(), msg_send.c_str(), msg_send.length(), 0);
+	msg_send = ":" + user.get_nickname() + "!~" + user.get_username() + "@localhost.ip JOIN :" + channel_name;
+	server.sendMsg(user, msg_send, 2);
 }
 
 
 /* --------------------------------------------------END JOIN-------------------------------------------------- */
 
-
 /* --------------------------------------------------TOPIC-------------------------------------------------- */
 
 void Commands::topic(Server &server, User &user, std::vector<std::string> &arg) {
 	(void)user;
-	if (arg.size() == 3)
+	if (arg.size() >= 3)
 	{
 		if (!server.get_channels().empty())
 		{
@@ -332,15 +328,20 @@ void Commands::topic(Server &server, User &user, std::vector<std::string> &arg) 
 					std::cout << "user.get_username() = " << user.get_username() << std::endl;
 					if (it->second.is_opChannel(user.get_username()))
 					{
-						it->second.set_ChannelTopic(arg[2]);
-						std::string msg_send = ":" + user.get_nickname() + "!~" + user.get_username() + "@localhost.ip TOPIC " + arg[1] + " :" + arg[2];
-						server.sendMsg(user, msg_send, 2);
+						std::string topic = remove_OneChar(':', arg);
+						it->second.set_ChannelTopic(topic);
+						std::string msg_send = ":" + user.get_nickname() + "!~" + user.get_username() + "@localhost.ip TOPIC " + arg[1] + " :" + topic;
+						std::vector<User> user_list = it->second.get_UserChannel();
+						for (std::vector<User>::iterator itb = user_list.begin(); itb != user_list.end(); ++itb) {
+								server.sendMsg(*itb, msg_send, 2);
+						}
 					}
 					else
 					{
-						std::cout << "Err no OP" << std::endl;
+						server.sendMsg(user, ERR_CHANOPRIVSNEEDED(user, arg[1]), 1);
 					}
 				}
+				std::cout << "Channel not found" << std::endl;
 			}
 		}
 	}
@@ -444,17 +445,11 @@ Numeric Replies: ERR_NOSUCHNICK (401); ERR_NOSUCHSERVER (402);
 					RPL_AWAY (301)*/
 void Commands::privmsg(Server &server, User &user, std::vector<std::string> &arg) {
 	std::string full_msg;
-	int i = 2;
 //	if (arg.size() < 3) {
 //		return (server.sendMsg(user, ERR_NORECIPIENT(user)));
 //	}
 	if (arg[1][0] != '#') {
-		for (std::vector<std::string>::iterator it = arg.begin() + 2; it != arg.end(); ++it, i++) {
-			if (arg[i][0] == ':')
-				full_msg += arg[i].erase(0, 1);
-			else
-				full_msg += " " + *it;
-		}
+		full_msg = remove_OneChar(':', arg);
 		for (std::map<int, User>::iterator it = server.get_clientmap().begin();
 			 it != server.get_clientmap().end(); ++it) {
 			if (arg[1] == it->second.get_nickname()) {
@@ -471,14 +466,7 @@ void Commands::privmsg(Server &server, User &user, std::vector<std::string> &arg
 		server.sendMsg(user, ERR_NOSUCHNICK(user, arg[1]), 1);
 	}
 	else {
-		for (std::vector<std::string>::iterator it = arg.begin() + 2;
-			 it != arg.end(); ++it, i++) //TODO FAIRE UNE FONCTION CAR DOUBLON VOIR PLUS
-		{
-			if (arg[i][0] == ':')
-				full_msg += arg[i].erase(0, 1);
-			else
-				full_msg += " " + *it;
-		}
+		full_msg = remove_OneChar(':', arg);
 		for (std::map<std::string, Channel>::iterator it = server.get_channels().begin();
 			 it != server.get_channels().end(); it++) {
 			if (arg[1] == it->second.get_ChannelName()) {
@@ -490,8 +478,8 @@ void Commands::privmsg(Server &server, User &user, std::vector<std::string> &arg
 								std::string msg_send =
 										":" + user.get_nickname() + "!~" + user.get_username() + "@" + user.get_ip() +
 										" PRIVMSG " +
-										arg[1] + " :" + full_msg + "\r\n";
-								send(itb->get_fd(), msg_send.c_str(), msg_send.length(), 0);
+										arg[1] + " :" + full_msg;
+								server.sendMsg(*itb, msg_send, 2);
 							}
 						}
 						return;

@@ -40,6 +40,7 @@ Server &Server::operator=(Server const &rhs) {
 		_port = rhs._port;
 		_password = rhs._password;
 		// _irssi = false;
+		_channels = rhs._channels;
 	}
 	return (*this);
 }

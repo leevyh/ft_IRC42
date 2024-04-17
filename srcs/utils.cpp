@@ -22,6 +22,18 @@ void check_args(int argc, char **argv) {
 	}
 }
 
+std::string remove_OneChar(char c, std::vector<std::string> &arg) {
+	std::string full_msg;
+	int i = 2;
+	for (std::vector<std::string>::iterator it = arg.begin() + 2; it != arg.end(); ++it, i++) {
+		if (arg[i][0] == c)
+			full_msg += arg[i].erase(0, 1);
+		else
+			full_msg += " " + *it;
+	}
+	return (full_msg);
+}
+
 void signal_send(int signum) {
 	(void) signum;
 	signal_value = true;
