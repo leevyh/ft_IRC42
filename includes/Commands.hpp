@@ -25,7 +25,7 @@ class Commands {
 		void join(Server &server, User &user, std::vector<std::string> &arg);
 		void kick();
 		void invite();
-		void topic();
+		void topic(Server &server, User &user, std::vector<std::string> &arg);
 		void mode(Server &server, User &user, std::vector<std::string> &arg);
 
 		void names();

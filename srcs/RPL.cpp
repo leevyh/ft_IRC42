@@ -34,10 +34,8 @@ std::string RPL_MYINFO(Server &server, User &user) {
 
 /* ************************************************************************** */
 
-// Indicates that the user with the nickname <nick> is currently away and sends the away message that they set.
-// "<client> <nick> :<message>"
-std::string RPL_AWAY(User &user, std::string recipient, std::string away_msg) {
-	return ("301 " + user.get_username() + " " + recipient + " :" + away_msg);
+std::string RPL_AWAY(User &user, std::string nick, std::string message) {
+	return ("301 " + user.get_username() + " " + nick + " :" + message);
 }
 
 std::string RPL_TOPIC(User &user, std::string channel, std::string topic) {
@@ -64,14 +62,16 @@ std::string ERR_NOORIGIN(User &user) {
 	return ("409 " + user.get_username() + ":No origin specified");
 }
 
-// Returned by the PRIVMSG command to indicate the message wasn’t delivered because there was no recipient given. -> Recipient = destinataire
 std::string ERR_NORECIPIENT(User &user, std::string command) {
 	return ("411 " + user.get_username() + " :No recipient given (" + command + ")");
 }
 
-// Returned by the PRIVMSG command to indicate the message wasn’t delivered because there was no text to send.
 std::string ERR_NOTEXTTOSEND(User &user) {
 	return ("412 " + user.get_username() + " :No text to send");
+}
+
+std::string ERR_UNKNOWNCOMMAND(User &user, std::string command) {
+	return ("421 " + user.get_username() + " " + command + " :Unknown command");
 }
 
 std::string ERR_NONICKNAMEGIVEN(std::string name) {
@@ -86,25 +86,9 @@ std::string ERR_NICKNAMEINUSE(std::string name) {
 	return ("433 " + name + " :Nickname is already in use");
 }
 
-std::string ERR_UNKNOWNCOMMAND(User &user, std::string command) {
-	return ("421 " + user.get_username() + " " + command + " :Unknown command");
+std::string ERR_USERNOTINCHANNEL(User &user, std::string nick, Channel& chan) {
+	return ("441 " + user.get_username() + " " + nick + " " + chan.get_ChannelName() + " :They aren't on that channel");
 }
-
-std::string ERR_NEEDMOREPARAMS(User &user, std::string command) {
-	return ("461 " + user.get_username() + " " + command + " :Not enough parameters");
-}
-
-std::string ERR_ALREADYREGISTRED(User &user) {
-	return ("462 " + user.get_username() + " :You may not reregister");
-}
-
-// Indicates the supplied channel name is not a valid.
-// This is similar to, but stronger than, ERR_NOSUCHCHANNEL (403), which indicates 
-// that the channel does not exist, but that it may be a valid name.
-std::string ERR_BADCHANMASK(std::string channel_mask) {
-	return ("476 " + channel_mask + ":Bad Channel Mask");
-}
-
 
 // Returned when a client tries to perform a channel-affecting command on a 
 // channel which the client isn’t a part of.
@@ -117,7 +101,35 @@ std::string ERR_USERONCHANNEL(User &user, std::string nick, Channel &chan) {
 	return ("443 " + user.get_username() + " " + nick + " " + chan.get_ChannelName() + " :is already on channel");
 }
 
+std::string ERR_NEEDMOREPARAMS(User &user, std::string command) {
+	return ("461 " + user.get_username() + " " + command + " :Not enough parameters");
+}
 
+std::string ERR_ALREADYREGISTRED(User &user) {
+	return ("462 " + user.get_username() + " :You may not reregister");
+}
+
+std::string ERR_UNKNOWNMODE(User &user, std::string modechar) {
+	return ("472 " + user.get_username() + " " + modechar + " :is unknown mode char to me");
+}
+
+// Indicates the supplied channel name is not a valid.
+// This is similar to, but stronger than, ERR_NOSUCHCHANNEL (403), which indicates 
+// that the channel does not exist, but that it may be a valid name.
+std::string ERR_BADCHANMASK(std::string channel_mask) {
+	return ("476 " + channel_mask + " :Bad Channel Mask");
+}
+
+std::string ERR_CHANOPRIVSNEEDED(User &user, Channel &chan) {
+	return ("482 " + user.get_username() + " " + chan.get_ChannelName() + " :You're not channel operator");
+}
+
+// Indicates that a MODE command affecting a user failed because they were trying to set or 
+// view modes for other users. The text used in the last param of this message varies, 
+// for instance when trying to view modes for another user, a server may send: "Can't view modes for other users".
+std::string ERR_USERSDONTMATCH(User &user) {
+	return ("502 " + user.get_username() + " :Cant change mode for other users");
+}
 
 // RPL_CHANNELMODEIS (324) 
 //   "<client> <channel> <modestring> <mode arguments>..."
@@ -126,6 +138,13 @@ std::string ERR_USERONCHANNEL(User &user, std::string nick, Channel &chan) {
 // mode string and the mode arguments (delimited as separate parameters) as 
 // defined in the MODE message description.
 
-std::string RPL_CHANNELMODEIS(User &user, Channel &chan) {
-	return ("324 " + user.get_nickname() + " " + chan.get_ChannelName());
-}
+// std::string RPL_CHANNELMODEIS(User &user, Channel &chan) {
+// 	return ("324 " + user.get_username() + " " + chan.get_ChannelName() + );
+// }
+
+// Parameters: <channel> *( ( "-" / "+" ) *<modes> *<modeparams>
+// If <modeparams> is not given, the RPL_CHANNELMODEIS (324) numeric is returned.
+
+
+
+

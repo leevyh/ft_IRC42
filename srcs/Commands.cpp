@@ -57,20 +57,17 @@ send a PASS command before sending the NICK/USER combination.
 
 Numeric Replies: ERR_NEEDMOREPARAMS (461); ERR_ALREADYREGISTRED (462)*/
 void Commands::pass(Server &server, User &user, std::vector<std::string> &arg) {
-	if (user.get_authenticated() == true) {
+	if (user.get_authenticated() == true)
 		return (server.sendMsg(user, ERR_ALREADYREGISTRED(user), 1));
-	};
-	if (arg[1].empty()) {
+	if (arg[1].empty())
 		return (server.sendMsg(user, ERR_NEEDMOREPARAMS(user, "PASS"), 1));
-	}
 	if (arg[1] == server.get_Password()) {
-		if (user.get_password().empty()) {
-			user.set_password(arg[1]);
-		}
-		else {
+		if (user.get_password().empty())
+			return (user.set_password(arg[1]));
+		else
 			return (server.sendMsg(user, ERR_ALREADYREGISTRED(user), 1));
-		}
 	}
+	return (server.sendMsg(user, ERR_NEEDMOREPARAMS(user, "PASS"), 1));
 }
 
 /* Command NICK | Parameters: <nickname>
@@ -528,10 +525,45 @@ void Commands::mode(Server &server, User &user, std::vector<std::string> &arg) {
 	(void)user;
 	if (arg.size() == 3 && arg[2] == "+i") // MODE <user> +i
 		return;
-
+	for (std::map<std::string, Channel>::iterator it = server.get_channels().begin(); 
+		it != server.get_channels().end(); ++it) {
+		if (it->first == arg[1]) {
+			Channel chan = it->second;
+			// std::cout << chan << std::endl;
+		
+			if (it->second.is_opChannel(user.get_username()) == true) {
+				std::vector<User> users = chan.get_UserChannel();
+				std::string	mode[] = {"+i", "+t", "+k", "+o", "+l"};
+				int	i = 0;
+				while (i < 5 && mode[i].compare(arg[2]))
+					i++;
+				switch (i) {
+					case 0: // i: Set/remove Invite-only channel
+						std::cout << "/MODE +i\n";
+						break;
+					case 1: // t: Set/remove the restrictions of the TOPIC command to channel operators
+						std::cout << "/MODE +t\n";
+						break;
+					case 2: // k: Set/remove the channel key (password)
+						std::cout << "/MODE +k\n";
+						break;
+					case 3: // o: Give/take channel operator privilege
+						for (std::vector<User>::iterator itu = chan.get_UserChannel().begin(); 
+							itu != chan.get_UserChannel().end(); ++itu)
+							if (itu->get_username() == arg[3]) {
+								chan.set_opChannel(itu->get_username());
+								server.get_channels()[chan.get_ChannelName()] = chan;
+								return ;
+							}
+						return (server.sendMsg(user, ERR_USERNOTINCHANNEL(user, arg[3], chan), 2));
+					case 4: // l: Set/remove the user limit to channel
+						std::cout << "/MODE +l\n";
+						break;
+					default: // Unknown mode
+						server.sendMsg(user, ERR_UNKNOWNMODE(user, arg[2]), 2);
+					}
+				}
+			server.sendMsg(user, ERR_CHANOPRIVSNEEDED(user, chan), 2);
+		}
+	}
 }
-
-
-// Parameters: <channel> *( ( "-" / "+" ) *<modes> *<modeparams>
-// If <modeparams> is not given, the RPL_CHANNELMODEIS (324) numeric is returned.
-
