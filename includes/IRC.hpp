@@ -51,9 +51,12 @@ std::string ERR_USERONCHANNEL(User &user, std::string to_join, Channel &chan); /
 std::string ERR_NEEDMOREPARAMS(User &user, std::string command);       // 461
 std::string ERR_ALREADYREGISTRED(User &user);                          // 462
 std::string ERR_UNKNOWNMODE(User &user, std::string modechar);         // 472
+std::string ERR_BADCHANNELKEY(User &user, Channel &channel);           // 475
 std::string ERR_BADCHANMASK(std::string channel_mask);                 // 476
 std::string ERR_CHANOPRIVSNEEDED(User &user, Channel &chan);           // 482
 std::string ERR_USERSDONTMATCH(User &user);                            // 502
+
+std::string RPL_MODE(Channel &channel, std::string modestring, std::string mode_arg);
 
 struct IsClientFDPredicate {
 	int clientFD;
