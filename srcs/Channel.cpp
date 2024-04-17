@@ -20,6 +20,7 @@ Channel &Channel::operator=(Channel const &rhs) {
 		_topic = rhs._topic;
 		_pass = rhs._pass;
 		_chanUsers = rhs._chanUsers;
+		_opUsers = rhs._opUsers;
 	}
 	return (*this);
 }
