@@ -54,13 +54,15 @@ std::string	Channel::get_password() const {return (_pass);}
 
 std::string Channel::get_ChannelKey() const {return (_pass);}
 
+std::vector<std::string> Channel::get_opUsers() {return (_opUsers);}
+
 /* ************************************************************************** */
 
 void	Channel::set_UserChannel(User &user) {_chanUsers.push_back(user);}
 
 void	Channel::unset_UserChannel(User& user){
 	for (std::vector<User>::iterator it = _chanUsers.begin(); it != _chanUsers.end(); ++it) {
-		if (it->get_username() == user.get_username()) {
+		if (it->get_nickname() == user.get_nickname()) {
 			_chanUsers.erase(it);
 			return;
 		}
@@ -116,4 +118,14 @@ bool	Channel::is_UserInChannel(User &user) {
 			return (true);
 	}
 	return (false);
+}
+
+std::string	print_Names(std::string nickname, Channel &channel) {
+	std::vector<std::string> user_list = channel.get_opUsers();
+	std::string names = "";
+	for (std::vector<std::string>::iterator it = user_list.begin(); it != user_list.end(); ++it) {
+		if (*it == nickname)
+			names += "@";
+	}
+	return (names);
 }

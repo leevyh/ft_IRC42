@@ -32,8 +32,10 @@ std::string RPL_MYINFO(Server &server, User &user);                    // 004
 
 std::string RPL_AWAY(User &user, std::string recipient, std::string message); // 301
 
-std::string RPL_NOTOPIC(User &user, std::string channel, std::string topic); // 331
-std::string RPL_TOPIC(User &user, std::string channel, std::string topic); // 332
+std::string RPL_NOTOPIC(User &user, Channel &channel);; // 331
+std::string RPL_TOPIC(User &user, Channel &channel); // 332
+std::string RPL_NAMES(User &user, Channel &channel);
+std::string RPL_ENDOFNAMES(User &user, Channel &channel);
 
 std::string ERR_NOSUCHNICK(User &user, std::string nickname);          // 401
 std::string ERR_NOSUCHSERVER(User &user, std::string server_name);     // 402
@@ -56,6 +58,7 @@ std::string ERR_BADCHANNELKEY(User &user, Channel &channel);           // 475
 std::string ERR_BADCHANMASK(std::string channel_mask);                 // 476
 std::string ERR_CHANOPRIVSNEEDED(User &user, Channel &chan);           // 482
 std::string ERR_USERSDONTMATCH(User &user);                            // 502
+
 
 std::string RPL_MODE(Channel &channel, std::string modestring, std::string mode_arg);
 
