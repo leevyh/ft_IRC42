@@ -4,7 +4,6 @@
 #include "unistd.h"
 #include <algorithm>
 
-
 Server::Server() {
 	_port = 6667;
 	_password = "default";
@@ -31,9 +30,7 @@ Server::~Server() {
 	_pollfdmap.clear();
 }
 
-Server::Server(Server const &copy) {
-	*this = copy;
-}
+Server::Server(Server const &copy) {*this = copy;}
 
 Server &Server::operator=(Server const &rhs) {
 	if (this != &rhs) {
@@ -47,36 +44,22 @@ Server &Server::operator=(Server const &rhs) {
 
 /* ************************************************************************** */
 
-long Server::get_Port(void) const {
-	return (_port);
-}
+long Server::get_Port(void) const {return (_port);}
 
-std::string Server::get_Password(void) const {
-	return (_password);
-}
+std::string Server::get_Password(void) const {return (_password);}
 
-std::string Server::get_networkname(void) const {
-	return (_networkname);
-}
+std::string Server::get_networkname(void) const {return (_networkname);}
 
-std::map<int, User> &Server::get_clientmap(void) {
-	return (_clientmap);
-}
+std::map<int, User> &Server::get_clientmap(void) {return (_clientmap);}
 
 
-std::map<std::string, Channel> &Server::get_channels(void) {
-	return (_channels);
-}
+std::map<std::string, Channel> &Server::get_channels(void) {return (_channels);}
 
-bool Server::get_Irssi(void) {
-	return (_irssi);
-}
+bool Server::get_Irssi(void) {return (_irssi);}
 
 /* ************************************************************************** */
 
-void Server::set_Irssi(bool status) {
-	this->_irssi = status;
-}
+void Server::set_Irssi(bool status) {this->_irssi = status;}
 
 /* ************************************************************************** */
 
@@ -300,13 +283,6 @@ void Server::disconnect(User &user) {
 
 void Server::sendMsg(User &user, std::string message, int code) const {
 	std::string msg;
-	// On utilise le username ou le networkname ?
-	(void) user;
-	// msg = ":" + this->get_networkname() + " " + message + "\r\n";
-	// if (send(user.get_fd(), msg.c_str(), msg.length(), 0) == -1)
-	// 	std::perror("send:");
-	// std::cout << ">> " << msg << std::endl;
-
 	switch (code) {
 		case 1:
 			msg = ":" + this->get_networkname() + " " + message + "\r\n";
@@ -314,7 +290,7 @@ void Server::sendMsg(User &user, std::string message, int code) const {
 				std::perror("send:");
 			break;
 		case 2:
-			msg = message + "\r\n";
+			msg = ":" + message + "\r\n";
 			if (send(user.get_fd(), msg.c_str(), msg.length(), 0) == -1)
 				std::perror("send:");
 			break;

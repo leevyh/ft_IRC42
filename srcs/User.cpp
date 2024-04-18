@@ -178,8 +178,6 @@ void User::authentication(Server &server, Commands &cmd, std::vector<std::string
 	}
 	if (!_nickname.empty() && !_username.empty() && !_realname.empty() && !_password.empty()) {
 		_authenticated = true;
-		std::cout << "PASS :" << get_password() << "| USER :" << get_username() << "| NICK :" << get_nickname() \
-		<< "| REALNAME :" << get_realname() << std::endl;
 		displayWelcome(server, *this);
 	}
 }
@@ -187,7 +185,7 @@ void User::authentication(Server &server, Commands &cmd, std::vector<std::string
 void User::parseClientMessage(Server &server, std::string line) {
 	std::vector<std::string> splited_cmd = splitcmd(line);
 	Commands cmd;
-	if (get_status() == true)
+	if (get_authenticated() == true)
 		cmd.getcommand(server, *this, splited_cmd);
 	else
 		authentication(server, cmd, splited_cmd);
