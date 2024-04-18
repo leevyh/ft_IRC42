@@ -38,6 +38,13 @@ std::string RPL_AWAY(User &user, std::string nick, std::string message) {
 	return ("301 " + user.get_username() + " " + nick + " :" + message);
 }
 
+std::string RPL_CREATIONTIME(User &user, Channel &channel) {
+	time_t	creationTime = channel.get_creationTime();
+	std::stringstream ss;
+	ss << creationTime;
+	return ("329 " + user.get_username() + " " + channel.get_ChannelName() + " " + ss.str());
+}
+
 std::string RPL_NOTOPIC(User &user, Channel &channel) {
 	return ("331 " + user.get_username() + " " + channel.get_ChannelName() + " :" + channel.get_ChannelTopic());
 }

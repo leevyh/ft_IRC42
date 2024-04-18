@@ -22,8 +22,10 @@ void Commands::mode(Server &server, User &user, std::vector<std::string> &arg) {
 		if (it->first == arg[1]) {
 			Channel chan = it->second;
 		
-			if (it->second.is_opChannel(user.get_username()) == true) {
+			if (it->second.is_opChannel(user.get_nickname()) == true) {
 				std::vector<User> users = chan.get_UserChannel();
+				if (arg.size() < 3)
+					return(server.sendMsg(user, ERR_NEEDMOREPARAMS(user, "MODE"), 2));
 				if (arg[2][0] == '+')
 					set_mode(server, user, chan, arg);
 				else if (arg[2][0] == '-')
@@ -60,8 +62,8 @@ void	Commands::set_mode(Server &server, User &user, Channel &chan, std::vector<s
 				case 3: // +o: Give channel operator privilege
 					for (std::vector<User>::iterator itu = chan.get_UserChannel().begin(); 
 						itu != chan.get_UserChannel().end(); ++itu)
-						if (itu->get_username() == arg[3]) {
-							chan.set_opChannel(itu->get_username());
+						if (itu->get_nickname() == arg[3]) {
+							chan.set_opChannel(itu->get_nickname());
 							server.get_channels()[chan.get_ChannelName()] = chan;
 							chan.sendMsg(RPL_MODE(user, chan, arg[2], arg[3]));
 							break;

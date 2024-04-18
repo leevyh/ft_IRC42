@@ -111,7 +111,7 @@ void Commands::nick(Server &server, User &user, std::vector<std::string> &arg) {
 	}
 	if (!user.get_nickname().empty()) {
 		server.sendMsg(user, user.get_nickname() + " changed his nickname to " + arg[1], 1);
-		std::string resp = ":" + user.get_nickname() + "!~" + user.get_username() + "@" + user.get_ip() \
+		std::string resp = user.get_nickname() + "!~" + user.get_username() + "@" + user.get_ip() \
 		+ " NICK :" + arg[1];
 		server.sendMsg(user, resp, 2);
 	}
@@ -215,15 +215,9 @@ void Commands::quit(Server &server, User &user, std::vector<std::string> &arg) {
 						std::cout << "ita->get_fd(): " << ita->get_fd() << std::endl;
 						std::cout << "ita->get_nickname(): " << ita->get_nickname() << std::endl;
 					}
-					std::string final_message = ":" + user.get_nickname() + "!~" + user.get_username() + "@" + user.get_ip() + ".ip QUIT :" + msg_send;
-					for (std::vector<User>::iterator itb = user_list.begin(); itb != user_list.end(); ++itb)
-					{
-						std::cout << "final_message: " << final_message << std::endl;
-						std::cout << "itb->get_fd(): " << itb->get_nickname() << std::endl;
-						server.sendMsg(*itb, final_message, 2);
-					}
+					std::string final_message = user.get_nickname() + "!~" + user.get_username() + "@" + user.get_ip() + ".ip QUIT :" + msg_send;
+					it->second.sendMsg(final_message);
 				}
-
 			}
 		}
 	}
@@ -281,7 +275,7 @@ void	channel_BroadcastJoin(Server &server, User &user, std::string const &channe
 	{
 		if (it->get_fd() != user.get_fd())
 		{
-			msg_send = ":" + user.get_nickname() + "!~" + user.get_username() + "@localhost.ip JOIN :" + channel_name;
+			msg_send = user.get_nickname() + "!~" + user.get_username() + "@localhost.ip JOIN :" + channel_name;
 			server.sendMsg(*it, msg_send, 2);
 		}
 	}
@@ -324,6 +318,7 @@ void Commands::join(Server &server, User &user, std::vector<std::string> &arg) {
 								server.sendMsg(user, RPL_TOPIC(user, it->second), 1);
 							server.sendMsg(user, RPL_NAMES(user, it->second), 1);
 							server.sendMsg(user, RPL_ENDOFNAMES(user, it->second), 1);
+							server.sendMsg(user, RPL_CREATIONTIME(user, it->second), 1);
 							break;
 						case 2:
 							server.sendMsg(user, ERR_BADCHANNELKEY(user, it->second), 1);
@@ -382,15 +377,15 @@ int	check_channelName(Server &server, User &user, std::vector<std::string> &chan
 
 void	create_NewChannel(Server &server, User &user, std::string const &channel_name)
 {
-	std::string msg_send;
 	Channel channel(channel_name);
 	channel.set_ChannelUser(user);
 	channel.set_opChannel(user.get_nickname());
+	channel.creationTime();
 	server.get_channels()[channel_name] = channel;
-	msg_send = ":" + user.get_nickname() + "!~" + user.get_username() + "@localhost.ip JOIN :" + channel_name;
-  server.sendMsg(user, RPL_JOIN(user, channel), 2);
+	server.sendMsg(user, RPL_JOIN(user, channel), 2);
 	server.sendMsg(user, RPL_NAMES(user, channel), 1);
 	server.sendMsg(user, RPL_ENDOFNAMES(user, channel), 1);
+	server.sendMsg(user, RPL_CREATIONTIME(user, channel), 1);
 }
 
 void	add_UserInChannel(Server &server, User &user, Channel &channel)

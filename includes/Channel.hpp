@@ -4,6 +4,7 @@
 #include <string>
 #include <map>
 #include "IRC.hpp"
+#include "time.h"
 
 class Channel
 {
@@ -20,6 +21,7 @@ class Channel
 		long	get_limitUser() const;
 		std::string	get_password() const;
 		std::string get_ChannelKey() const;
+		time_t get_creationTime() const;
 		std::vector<std::string> get_opUsers();
 		void	set_ChannelUser(User &user);
 		void	unset_ChannelUser(User& user);
@@ -39,6 +41,7 @@ class Channel
 		bool	is_inviteOnly(void);
 
 		void	sendMsg(std::string message);
+		void	creationTime(void);
 
 	private:
 		std::string _nameChannel;
@@ -47,6 +50,7 @@ class Channel
 		long 		_limitUser;
 		bool		_inviteonly;
 		// bool		_optopic;
+		time_t		_creationTime;
 		std::vector<User> _chanUsers;
 		std::vector<std::string> _opUsers;
 };

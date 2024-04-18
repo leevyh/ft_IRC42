@@ -24,6 +24,7 @@ Channel &Channel::operator=(Channel const &rhs) {
 		_opUsers = rhs._opUsers;
 		_limitUser = rhs._limitUser;
 		_inviteonly = rhs._inviteonly;
+		_creationTime = rhs._creationTime;
 	}
 	return (*this);
 }
@@ -58,6 +59,8 @@ std::string	Channel::get_password() const {return (_pass);}
 std::string Channel::get_ChannelKey() const {return (_pass);}
 
 std::vector<std::string> Channel::get_opUsers() {return (_opUsers);}
+
+time_t	Channel::get_creationTime() const {return (_creationTime);}
 
 /* ************************************************************************** */
 
@@ -154,4 +157,12 @@ void	Channel::sendMsg(std::string message) {
 		it != this->get_UserChannel().end(); ++it)
 		if (send(it->get_fd(), msg.c_str(), msg.length(), 0) == -1)
 			std::perror("send:");
+}
+
+
+//Do a function to have a time stamp of the creation of the channel
+void	Channel::creationTime(void) {
+	time_t now = time(NULL);
+	std::cout << "timestamp: " << now << std::endl;
+	_creationTime = now;
 }

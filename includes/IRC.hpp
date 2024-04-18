@@ -31,7 +31,7 @@ std::string RPL_CREATED(User &user);                                   // 003
 std::string RPL_MYINFO(Server &server, User &user);                    // 004
 
 std::string RPL_AWAY(User &user, std::string recipient, std::string message); // 301
-
+std::string RPL_CREATIONTIME(User &user, Channel &channel);            // 329
 std::string RPL_NOTOPIC(User &user, Channel &channel);; // 331
 std::string RPL_TOPIC(User &user, Channel &channel); // 332
 std::string RPL_NAMES(User &user, Channel &channel);
