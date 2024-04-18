@@ -38,12 +38,25 @@ std::string RPL_AWAY(User &user, std::string nick, std::string message) {
 	return ("301 " + user.get_username() + " " + nick + " :" + message);
 }
 
-std::string RPL_NOTOPIC(User &user, std::string channel, std::string topic) {
-	return ("331 " + user.get_username() + " " + channel + " :" + topic);
+std::string RPL_NOTOPIC(User &user, Channel &channel) {
+	return ("331 " + user.get_username() + " " + channel.get_ChannelName() + " :" + channel.get_ChannelTopic());
 }
 
-std::string RPL_TOPIC(User &user, std::string channel, std::string topic) {
-	return ("332 " + user.get_username() + " " + channel + " :" + topic);
+std::string RPL_TOPIC(User &user, Channel &channel) {
+	return ("332 " + user.get_username() + " " + channel.get_ChannelName() + " :" + channel.get_ChannelTopic());
+}
+
+std::string RPL_NAMES(User &user, Channel &channel) {
+	std::string names = "";
+	std::vector<User> users = channel.get_UserChannel();
+	for (std::vector<User>::iterator it = users.begin(); it != users.end(); ++it) {
+		names += print_Names(it->get_nickname(), channel) + it->get_nickname() + " ";
+	}
+	return ("353 " + user.get_username() + " = " + channel.get_ChannelName() + " :" + names);
+}
+
+std::string RPL_ENDOFNAMES(User &user, Channel &channel) {
+	return ("366 " + user.get_username() + " " + channel.get_ChannelName() + " :End of /NAMES list");
 }
 
 std::string ERR_NOSUCHNICK(User &user, std::string nickname) {
@@ -171,3 +184,4 @@ std::string RPL_EDITTOPIC(User &user, Channel &channel, std::string topic) {
 	std::string msg = user.get_nickname() + "!~" + user.get_username() + "@" + user.get_ip() + ".ip";
 	return (msg + " TOPIC " + channel.get_ChannelName() + " :" + topic);
 }
+

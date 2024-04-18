@@ -20,6 +20,7 @@ class Channel
 		long	get_limitUser() const;
 		std::string	get_password() const;
 		std::string get_ChannelKey() const;
+		std::vector<std::string> get_opUsers();
 		void	set_ChannelUser(User &user);
 		void	unset_ChannelUser(User& user);
 		void	set_ChannelTopic(std::string topic);
@@ -50,3 +51,5 @@ class Channel
 		std::vector<std::string> _opUsers;
 };
 std::ostream &operator<<(std::ostream &o, Channel &src);
+
+std::string print_Names(std::string nickname, Channel &channel);
