@@ -137,6 +137,7 @@ std::string	print_Names(std::string nickname, Channel &channel) {
 			names += "@";
 	}
 	return (names);
+}
 
 bool	Channel::is_inviteOnly(void) {
 	if (_inviteonly == true)
