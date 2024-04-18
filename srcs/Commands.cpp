@@ -108,6 +108,7 @@ void Commands::nick(Server &server, User &user, std::vector<std::string> &arg) {
 		server.sendMsg(user, user.get_nickname() + " changed his nickname to " + arg[1], 1);
 		std::string resp = ":" + user.get_nickname() + "!~" + user.get_username() + "@" + user.get_ip() \
 		+ " NICK :" + arg[1];
+		+ " NICK :" + arg[1];
 		// if (send(user.get_fd(), resp.c_str(), resp.length(), 0) == -1)
 		// 	std::perror("send:");
 		server.sendMsg(user, resp, 2);
@@ -196,7 +197,7 @@ void Commands::quit(Server &server, User &user, std::vector<std::string> &arg) {
 		{
 			if (it->second.is_UserInChannel(user))
 			{
-				it->second.unsetChannelUser(user);
+				it->second.unset_UserChannel(user);
 				if (it->second.get_UserChannel().empty())
 				{
 					channel_list.push_back(it);
@@ -603,36 +604,55 @@ void Commands::mode(Server &server, User &user, std::vector<std::string> &arg) {
 		it != server.get_channels().end(); ++it) {
 		if (it->first == arg[1]) {
 			Channel chan = it->second;
-			// std::cout << chan << std::endl;
+			std::cout << chan << std::endl;
 		
 			if (it->second.is_opChannel(user.get_username()) == true) {
 				std::vector<User> users = chan.get_UserChannel();
-				std::string	mode[] = {"+i", "+t", "+k", "+o", "+l"};
+				std::string	mode[] = {"+i", "-i", "+t", "-t", "+k", "-k" "+o", "-o", "+l", "-l"};
 				int	i = 0;
-				while (i < 5 && mode[i].compare(arg[2]))
+				while (i < 10 && mode[i].compare(arg[2]))
 					i++;
 				switch (i) {
 					case 0: // i: Set/remove Invite-only channel
 						std::cout << "/MODE +i\n";
 						break;
-					case 1: // t: Set/remove the restrictions of the TOPIC command to channel operators
+					case 1:;
+					case 2: // t: Set/remove the restrictions of the TOPIC command to channel operators
 						std::cout << "/MODE +t\n";
 						break;
-					case 2: // k: Set/remove the channel key (password)
+					case 3:;
+					case 4: // k: Set/remove the channel key (password)
 						std::cout << "/MODE +k\n";
+						chan.set_password(arg[3]);
+						return (server.sendMsg(user, RPL_MODE(chan, arg[2], chan.get_password()), 1));
 						break;
-					case 3: // o: Give/take channel operator privilege
+					case 5:
+						std::cout << "/MODE -k\n";
+						chan.unset_password();
+						return (server.sendMsg(user, RPL_MODE(chan, arg[2], chan.get_password()), 1));
+						break;
+					case 6: // +o: Give channel operator privilege
 						for (std::vector<User>::iterator itu = chan.get_UserChannel().begin(); 
 							itu != chan.get_UserChannel().end(); ++itu)
 							if (itu->get_username() == arg[3]) {
 								chan.set_opChannel(itu->get_username());
 								server.get_channels()[chan.get_ChannelName()] = chan;
-								return ;
+								return (server.sendMsg(user, RPL_MODE(chan, arg[2], arg[3]), 1));
 							}
 						return (server.sendMsg(user, ERR_USERNOTINCHANNEL(user, arg[3], chan), 2));
-					case 4: // l: Set/remove the user limit to channel
+					case 7: // -o: Take channel operator privilege
+						for (std::vector<User>::iterator itu = chan.get_UserChannel().begin(); 
+							itu != chan.get_UserChannel().end(); ++itu)
+							if (itu->get_username() == arg[3]) {
+								chan.unset_opChannel(itu->get_username());
+								server.get_channels()[chan.get_ChannelName()] = chan;
+								return (server.sendMsg(user, RPL_MODE(chan, arg[2], arg[3]), 1));
+							}
+						return (server.sendMsg(user, ERR_USERNOTINCHANNEL(user, arg[3], chan), 2));
+					case 8: // l: Set/remove the user limit to channel
 						std::cout << "/MODE +l\n";
 						break;
+					case 9:;
 					default: // Unknown mode
 						server.sendMsg(user, ERR_UNKNOWNMODE(user, arg[2]), 2);
 					}

@@ -117,6 +117,10 @@ std::string ERR_UNKNOWNMODE(User &user, std::string modechar) {
 	return ("472 " + user.get_username() + " " + modechar + " :is unknown mode char to me");
 }
 
+std::string ERR_BADCHANNELKEY(User &user, Channel &channel) {
+	return ("475 " + user.get_username() + " " + channel.get_ChannelName() + " :Cannot join channel (+k)");
+}
+
 // Indicates the supplied channel name is not a valid.
 // This is similar to, but stronger than, ERR_NOSUCHCHANNEL (403), which indicates 
 // that the channel does not exist, but that it may be a valid name.
@@ -151,4 +155,6 @@ std::string ERR_USERSDONTMATCH(User &user) {
 
 
 
-
+std::string RPL_MODE(Channel &channel, std::string modestring, std::string mode_arg) {
+	return ("MODE " + channel.get_ChannelName() + " " + modestring + " " + mode_arg);
+}
