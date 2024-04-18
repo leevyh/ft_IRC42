@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include <string>
+#include <sstream>
 #include <vector>
 #include <time.h>
 #include "IRC.hpp"
@@ -27,6 +28,8 @@ class Commands {
 		void invite();
 		void topic(Server &server, User &user, std::vector<std::string> &arg);
 		void mode(Server &server, User &user, std::vector<std::string> &arg);
+		void set_mode(Server &server, User &user, Channel &chan, std::vector<std::string> &arg);
+		void unset_mode(Server &server, User &user, Channel &chan, std::vector<std::string> &arg);
 
 		void names();
 		void leave();
@@ -42,5 +45,5 @@ class Commands {
 int		check_channelName(Server &server, User &user, std::vector<std::string> &channel);
 std::vector<std::string> split(const std::string& str);
 void	create_NewChannel(Server &server, User &user, std::string const &channel_name);
-void	add_UserInChannel(Server &server, User &user, std::string const &channel_name, std::map<std::string, Channel>::iterator it);
-void	edit_Topic(Server &server, User &user, std::vector<std::string> &arg, std::map<std::string, Channel>::iterator it);
+void	add_UserInChannel(Server &server, User &user, Channel &channel);
+void	edit_Topic(Server &server, User &user, std::vector<std::string> &arg, Channel &chan);

@@ -21,7 +21,8 @@ SRCS = $(PATH_SRCS)/main.cpp \
 		$(PATH_SRCS)/User.cpp \
 		$(PATH_SRCS)/Commands.cpp \
 		$(PATH_SRCS)/RPL.cpp \
-		$(PATH_SRCS)/Channel.cpp
+		$(PATH_SRCS)/Channel.cpp \
+		$(PATH_SRCS)/Mode.cpp
 
 
 OBJ_DIR = .objs

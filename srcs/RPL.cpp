@@ -13,7 +13,7 @@ void displayWelcome(Server &server, User &user) {
 std::string RPL_WELCOME(Server &server, User &user) {
 	return ("001 " + user.get_nickname() + " :Welcome to the "
 			+ server.get_networkname() + " Network, " + user.get_nickname()
-			+ "!~" + user.get_username() + "@" + user.get_ip());
+			+ "!~" + user.get_username() + "@" + user.get_ip() + ".ip");
 }
 
 std::string RPL_YOURHOST(Server &server, User &user) {
@@ -167,7 +167,21 @@ std::string ERR_USERSDONTMATCH(User &user) {
 // If <modeparams> is not given, the RPL_CHANNELMODEIS (324) numeric is returned.
 
 
-
-std::string RPL_MODE(Channel &channel, std::string modestring, std::string mode_arg) {
-	return ("MODE " + channel.get_ChannelName() + " " + modestring + " " + mode_arg);
+// :lkoletzk!~lkoletzk@7e6c-3f29-2fdb-8642-d8da.210.62.ip MODE #slt +i
+std::string RPL_MODE(User &user, Channel &channel, std::string modestring, std::string mode_arg) {
+	std::string msg = user.get_nickname() + "!~" + user.get_username() + "@" + user.get_ip() + ".ip";
+	if (mode_arg.empty())
+		return (msg + " MODE " + channel.get_ChannelName() + " " + modestring);
+	return (msg + " MODE " + channel.get_ChannelName() + " " + modestring + " " + mode_arg);
 }
+
+std::string RPL_JOIN(User &user, Channel &channel) {
+	std::string msg = user.get_nickname() + "!~" + user.get_username() + "@" + user.get_ip() + ".ip";
+	return (msg + " JOIN :" + channel.get_ChannelName());
+}
+
+std::string RPL_EDITTOPIC(User &user, Channel &channel, std::string topic) {
+	std::string msg = user.get_nickname() + "!~" + user.get_username() + "@" + user.get_ip() + ".ip";
+	return (msg + " TOPIC " + channel.get_ChannelName() + " :" + topic);
+}
+

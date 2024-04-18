@@ -58,9 +58,9 @@ std::string ERR_BADCHANNELKEY(User &user, Channel &channel);           // 475
 std::string ERR_BADCHANMASK(std::string channel_mask);                 // 476
 std::string ERR_CHANOPRIVSNEEDED(User &user, Channel &chan);           // 482
 std::string ERR_USERSDONTMATCH(User &user);                            // 502
-
-
-std::string RPL_MODE(Channel &channel, std::string modestring, std::string mode_arg);
+std::string RPL_MODE(User &user, Channel &channel, std::string modestring, std::string mode_arg);
+std::string RPL_JOIN(User &user, Channel &channel);
+std::string RPL_EDITTOPIC(User &user, Channel &channel, std::string topic);
 
 struct IsClientFDPredicate {
 	int clientFD;
