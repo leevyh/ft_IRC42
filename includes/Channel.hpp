@@ -21,6 +21,7 @@ class Channel
 		std::string	get_password() const;
 		std::string get_ChannelKey() const;
 		void	set_UserChannel(User &user);
+		void	unset_UserChannel(User& user);
 		void	set_ChannelTopic(std::string topic);
 		void	set_opChannel(std::string user);
 		void	unset_opChannel(std::string user);
@@ -32,7 +33,6 @@ class Channel
 		bool	is_opChannel(std::string user);
 		bool is_ValidKey(std::vector<std::string> key, int i);
 		bool is_UserInChannel(User &user);
-		void	unsetChannelUser(User &user);
 
 	private:
 		std::string _nameChannel;
