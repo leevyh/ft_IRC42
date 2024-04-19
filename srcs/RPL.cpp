@@ -25,8 +25,6 @@ std::string RPL_CREATED(User &user) {
 	return ("003 " + user.get_nickname() + " :This server was created Sun 20 Apr 2042 during the total eclipse");
 }
 
-// "<client> <servername> <version> <available user modes>
-// <available channel modes> [<channel modes with a parameter>]"
 std::string RPL_MYINFO(Server &server, User &user) {
 	return ("004 " + user.get_nickname() + " " + server.get_networkname() + \
 	" v0.1 <available user modes> <available channel modes>");
@@ -34,8 +32,11 @@ std::string RPL_MYINFO(Server &server, User &user) {
 
 /* ************************************************************************** */
 
-std::string RPL_AWAY(User &user, std::string nick, std::string message) {
-	return ("301 " + user.get_username() + " " + nick + " :" + message);
+void	displayInfosChannel(Server &server, User &user, Channel &channel) {
+	server.sendMsg(user, RPL_JOIN(user, channel), 1);
+	server.sendMsg(user, RPL_NAMES(user, channel), 1);
+	server.sendMsg(user, RPL_ENDOFNAMES(user, channel), 1);
+	server.sendMsg(user, RPL_CREATIONTIME(user, channel), 1);
 }
 
 std::string RPL_CREATIONTIME(User &user, Channel &channel) {
@@ -53,6 +54,16 @@ std::string RPL_TOPIC(User &user, Channel &channel) {
 	return ("332 " + user.get_username() + " " + channel.get_ChannelName() + " :" + channel.get_ChannelTopic());
 }
 
+// Sent to a client as a reply to the INVITE command when used with no parameter, to indicate a channel the client was invited to.
+std::string RPL_INVITELIST(User &user, Channel &channel) {
+	return ("336 " + user.get_username() + " " + channel.get_ChannelName());
+}
+
+// Sent as a reply to the INVITE command when used with no parameter, this numeric indicates the end of invitations a client received.
+std::string RPL_ENDOFINVITELIST(User &user) {
+	return ("337 " + user.get_username() + " :End of /INVITE list");
+}
+
 std::string RPL_NAMES(User &user, Channel &channel) {
 	std::string names = "";
 	std::vector<User> users = channel.get_UserChannel();
@@ -65,6 +76,8 @@ std::string RPL_NAMES(User &user, Channel &channel) {
 std::string RPL_ENDOFNAMES(User &user, Channel &channel) {
 	return ("366 " + user.get_username() + " " + channel.get_ChannelName() + " :End of /NAMES list");
 }
+
+/* ************************************************************************** */
 
 std::string ERR_NOSUCHNICK(User &user, std::string nickname) {
 	return ("401 " + user.get_username() + " " + nickname + " :No suck nick/channel");
@@ -114,13 +127,10 @@ std::string ERR_USERNOTINCHANNEL(User &user, std::string nick, Channel& chan) {
 	return ("441 " + user.get_username() + " " + nick + " " + chan.get_ChannelName() + " :They aren't on that channel");
 }
 
-// Returned when a client tries to perform a channel-affecting command on a 
-// channel which the client isn’t a part of.
 std::string ERR_NOTONCHANNEL(User &user, Channel &chan) {
 	return ("442 " + user.get_username() + " " + chan.get_ChannelName() + " :You're not on that channel");
 }
 
-// Returned when a client tries to invite <nick> to a channel they’re already joined to.
 std::string ERR_USERONCHANNEL(User &user, std::string nick, Channel &chan) {
 	return ("443 " + user.get_username() + " " + nick + " " + chan.get_ChannelName() + " :is already on channel");
 }
@@ -153,13 +163,6 @@ std::string ERR_CHANOPRIVSNEEDED(User &user, Channel &chan) {
 	return ("482 " + user.get_username() + " " + chan.get_ChannelName() + " :You're not channel operator");
 }
 
-// Indicates that a MODE command affecting a user failed because they were trying to set or 
-// view modes for other users. The text used in the last param of this message varies, 
-// for instance when trying to view modes for another user, a server may send: "Can't view modes for other users".
-std::string ERR_USERSDONTMATCH(User &user) {
-	return ("502 " + user.get_username() + " :Cant change mode for other users");
-}
-
 // RPL_CHANNELMODEIS (324) 
 //   "<client> <channel> <modestring> <mode arguments>..."
 // Sent to a client to inform them of the currently-set modes of a channel. 
@@ -174,14 +177,12 @@ std::string ERR_USERSDONTMATCH(User &user) {
 // Parameters: <channel> *( ( "-" / "+" ) *<modes> *<modeparams>
 // If <modeparams> is not given, the RPL_CHANNELMODEIS (324) numeric is returned.
 
+/* ************************************************************************** */
 
-// :lkoletzk!~lkoletzk@7e6c-3f29-2fdb-8642-d8da.210.62.ip MODE #slt +i
 std::string RPL_MODE(User &user, Channel &channel, std::string modestring, std::string mode_arg) {
 	std::string msg = user.get_nickname() + "!~" + user.get_username() + "@" + user.get_ip() + ".ip";
-	if (mode_arg.empty()){
-		std::cout << "empty str\n";
+	if (mode_arg.empty())
 		return (msg + " MODE " + channel.get_ChannelName() + " " + modestring);
-	}
 	return (msg + " MODE " + channel.get_ChannelName() + " " + modestring + " " + mode_arg);
 }
 
@@ -199,4 +200,3 @@ std::string RPL_PRIVMSG(User &user, std::string recipient, std::string message) 
 	std::string rpl = user.get_nickname() + "!~" + user.get_username() + "@" + user.get_ip() + ".ip";
 	return (rpl + " PRIVMSG " + recipient + " :" + message);
 }
-
