@@ -185,9 +185,9 @@ void Commands::quit(Server &server, User &user, std::vector<std::string> &arg) {
 	{
 		if (arg[1][0] == ':')
 		{
-			msg_send += arg[1].erase(0, 1);
-//			for (size_t i = 1; i < arg.size(); i++)
-//				msg_send += arg[i] + " ";
+			msg_send += arg[1].erase(0, 1) + " ";
+			for (size_t i = 2; i < arg.size(); i++)
+				msg_send += arg[i] + " ";
 		}
 		else
 			msg_send += arg[1];
@@ -404,7 +404,7 @@ void	add_UserInChannel(Server &server, User &user, Channel &channel)
 void	edit_Topic(Server &server, User &user, std::vector<std::string> &arg, Channel &chan)
 {
 	if (arg[1] == chan.get_ChannelName()) {
-		if (chan.is_opChannel(user.get_username())) {
+		if (chan.is_opChannel(user.get_nickname())) {
 			std::string topic = remove_OneChar(':', arg);
 			chan.set_ChannelTopic(topic);
 			for (std::vector<User>::iterator it = chan.get_UserChannel().begin(); \
