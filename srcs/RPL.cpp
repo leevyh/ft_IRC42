@@ -137,13 +137,14 @@ std::string ERR_UNKNOWNMODE(User &user, std::string modechar) {
 	return ("472 " + user.get_username() + " " + modechar + " :is unknown mode char to me");
 }
 
+std::string ERR_INVITEONLYCHAN(User &user, Channel &channel) {
+	return ("473 " + user.get_username() + " " + channel.get_ChannelName() + " :Cannot join channel (+i)");
+}
+
 std::string ERR_BADCHANNELKEY(User &user, Channel &channel) {
 	return ("475 " + user.get_username() + " " + channel.get_ChannelName() + " :Cannot join channel (+k)");
 }
 
-// Indicates the supplied channel name is not a valid.
-// This is similar to, but stronger than, ERR_NOSUCHCHANNEL (403), which indicates 
-// that the channel does not exist, but that it may be a valid name.
 std::string ERR_BADCHANMASK(std::string channel_mask) {
 	return ("476 " + channel_mask + " :Bad Channel Mask");
 }
@@ -177,8 +178,10 @@ std::string ERR_USERSDONTMATCH(User &user) {
 // :lkoletzk!~lkoletzk@7e6c-3f29-2fdb-8642-d8da.210.62.ip MODE #slt +i
 std::string RPL_MODE(User &user, Channel &channel, std::string modestring, std::string mode_arg) {
 	std::string msg = user.get_nickname() + "!~" + user.get_username() + "@" + user.get_ip() + ".ip";
-	if (mode_arg.empty())
+	if (mode_arg.empty()){
+		std::cout << "empty str\n";
 		return (msg + " MODE " + channel.get_ChannelName() + " " + modestring);
+	}
 	return (msg + " MODE " + channel.get_ChannelName() + " " + modestring + " " + mode_arg);
 }
 
@@ -190,5 +193,10 @@ std::string RPL_JOIN(User &user, Channel &channel) {
 std::string RPL_EDITTOPIC(User &user, Channel &channel, std::string topic) {
 	std::string msg = user.get_nickname() + "!~" + user.get_username() + "@" + user.get_ip() + ".ip";
 	return (msg + " TOPIC " + channel.get_ChannelName() + " :" + topic);
+}
+
+std::string RPL_PRIVMSG(User &user, std::string recipient, std::string message) {
+	std::string rpl = user.get_nickname() + "!~" + user.get_username() + "@" + user.get_ip() + ".ip";
+	return (rpl + " PRIVMSG " + recipient + " :" + message);
 }
 

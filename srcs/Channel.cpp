@@ -102,6 +102,10 @@ void	Channel::set_inviteOnly(void) {_inviteonly = true;}
 
 void	Channel::unset_inviteOnly(void) {_inviteonly = false;}
 
+void	Channel::set_optopic(void) {_optopic = true;}
+
+void	Channel::unset_optopic(void) {_optopic = false;}
+
 /* ************************************************************************** */
 
 bool	Channel::is_opChannel(std::string user) {
@@ -132,6 +136,20 @@ bool	Channel::is_UserInChannel(User &user) {
 	return (false);
 }
 
+bool	Channel::is_inviteOnly(void) {
+	if (_inviteonly == true)
+		return (true);
+	return (false);
+}
+
+bool	Channel::is_optopic(void) {
+	if (_optopic == true)
+		return (true);
+	return (false);
+}
+
+/* ************************************************************************** */
+
 std::string	print_Names(std::string nickname, Channel &channel) {
 	std::vector<std::string> user_list = channel.get_opUsers();
 	std::string names = "";
@@ -142,23 +160,24 @@ std::string	print_Names(std::string nickname, Channel &channel) {
 	return (names);
 }
 
-bool	Channel::is_inviteOnly(void) {
-	if (_inviteonly == true)
-		return (true);
-	return (false);
-}
-
-
-void	Channel::sendMsg(std::string message) {
+void	Channel::sendMsg(User &user, std::string message, int code) {
 	std::string msg;
 
 	msg = ":" + message + "\r\n";
-	for (std::vector<User>::iterator it = this->get_UserChannel().begin(); \
-		it != this->get_UserChannel().end(); ++it)
-		if (send(it->get_fd(), msg.c_str(), msg.length(), 0) == -1)
-			std::perror("send:");
+	switch (code) {
+		case 1:
+			for (std::vector<User>::iterator it = this->get_UserChannel().begin(); \
+				it != this->get_UserChannel().end(); ++it)
+				if (send(it->get_fd(), msg.c_str(), msg.length(), 0) == -1)
+					std::perror("send:");
+		case 2:
+			for (std::vector<User>::iterator it = this->get_UserChannel().begin(); \
+				it != this->get_UserChannel().end(); ++it)
+				if (it->get_fd() != user.get_fd())
+					if (send(it->get_fd(), msg.c_str(), msg.length(), 0) == -1)
+						std::perror("send:");
+	}
 }
-
 
 //Do a function to have a time stamp of the creation of the channel
 void	Channel::creationTime(void) {
