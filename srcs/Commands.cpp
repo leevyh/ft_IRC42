@@ -282,12 +282,16 @@ void	channel_BroadcastJoin(Server &server, User &user, std::string const &channe
 }
 
 
-short is_Authorize(Server &server, User &user, Channel &Channel, std::vector<std::string> &key, size_t i)
+short is_Authorize(Server &server, User &user, Channel &channel, std::vector<std::string> &key, size_t i)
 {
 	(void)server;
 	(void)user;
-	if (Channel.is_ValidKey(key, i) == false)
+	if (!channel.get_password().empty() && channel.is_ValidKey(key, i) == false)
 		return (2);
+	if (channel.get_limitUser() > -1 && channel.get_UserChannel().size() >= (unsigned long)channel.get_limitUser())
+		return (3);
+	if (channel.is_inviteOnly())
+		return (4);
 	return (1);
 }
 
@@ -323,12 +327,14 @@ void Commands::join(Server &server, User &user, std::vector<std::string> &arg) {
 						case 2: // on peut pas pcq mdp
 							server.sendMsg(user, ERR_BADCHANNELKEY(user, it->second), 1);
 							break;
-//						case 3: //channel full
-//							std::cout << "ERR_CHANNELISFULL a coder" << std::endl;
-//							break;
-//						case 4:  //channel sur invite
-//							std::cout << "ERR_INVITEONLYCHAN a coder" << std::endl;
-//							break;
+						case 3: //channel full
+							std::cout << "ERR_CHANNELISFULL a coder" << std::endl;
+//							server.sendMsg(user, ERR_CHANNELISFULL(user, it->second), 1);
+							break;
+						case 4:  //channel sur invite
+							std::cout << "ERR_INVITEONLYCHAN a coder" << std::endl;
+							server.sendMsg(user, ERR_INVITEONLYCHAN(user, it->second), 1);
+							break;
 						default:
 							std::cerr << "Error: Unknown error" << std::endl;
 					}
