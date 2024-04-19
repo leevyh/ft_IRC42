@@ -216,7 +216,7 @@ void Commands::quit(Server &server, User &user, std::vector<std::string> &arg) {
 						std::cout << "ita->get_nickname(): " << ita->get_nickname() << std::endl;
 					}
 					std::string final_message = user.get_nickname() + "!~" + user.get_username() + "@" + user.get_ip() + ".ip QUIT :" + msg_send;
-					it->second.sendMsg(final_message);
+					it->second.sendMsg(user, final_message, 1);
 				}
 			}
 		}
@@ -311,7 +311,7 @@ void Commands::join(Server &server, User &user, std::vector<std::string> &arg) {
 				{
 					authorized = is_Authorize(server, user, it->second, key, i);
 					switch (authorized) {
-						case 1:
+						case 1: // on peut join
 							add_UserInChannel(server, user, it->second);
 							channel_BroadcastJoin(server, user, channels[i]);
 							if (!it->second.get_ChannelTopic().empty())
@@ -320,18 +320,18 @@ void Commands::join(Server &server, User &user, std::vector<std::string> &arg) {
 							server.sendMsg(user, RPL_ENDOFNAMES(user, it->second), 1);
 							server.sendMsg(user, RPL_CREATIONTIME(user, it->second), 1);
 							break;
-						case 2:
+						case 2: // on peut pas pcq mdp
 							server.sendMsg(user, ERR_BADCHANNELKEY(user, it->second), 1);
 							break;
+//						case 3: //channel full
+//							std::cout << "ERR_CHANNELISFULL a coder" << std::endl;
+//							break;
+//						case 4:  //channel sur invite
+//							std::cout << "ERR_INVITEONLYCHAN a coder" << std::endl;
+//							break;
 						default:
 							std::cerr << "Error: Unknown error" << std::endl;
 					}
-//						case 3:
-//							std::cout << "ERR_CHANNELISFULL a coder" << std::endl;
-//							break;
-//						case 4:
-//							std::cout << "ERR_INVITEONLYCHAN a coder" << std::endl;
-//							break;
 				}
 			}
 		}
@@ -539,10 +539,11 @@ void Commands::privmsg(Server &server, User &user, std::vector<std::string> &arg
 		for (std::map<int, User>::iterator it = server.get_clientmap().begin();
 			 it != server.get_clientmap().end(); ++it) {
 			if (arg[1] == it->second.get_nickname()) {
-				std::string msg_send =
-						":" + user.get_nickname() + "!~" + user.get_username() + "@" + user.get_ip() + " PRIVMSG " +
-						arg[1] + " :" + full_msg;
-				server.sendMsg(it->second, msg_send, 2);
+				// std::string msg_send =
+				// 		":" + user.get_nickname() + "!~" + user.get_username() + "@" + user.get_ip() + " PRIVMSG " +
+				// 		arg[1] + " :" + full_msg;
+				// server.sendMsg(it->second, msg_send, 2);
+				server.sendMsg(it->second, RPL_PRIVMSG(user, arg[1], full_msg), 2); // A VERIFIER
 				return;
 			}
 		}
@@ -556,15 +557,17 @@ void Commands::privmsg(Server &server, User &user, std::vector<std::string> &arg
 				std::vector<User> user_list = it->second.get_UserChannel();
 				for (std::vector<User>::iterator ita = user_list.begin(); ita != user_list.end(); ++ita) {
 					if (ita->get_fd() == user.get_fd()) {
-						for (std::vector<User>::iterator itb = user_list.begin(); itb != user_list.end(); ++itb) {
-							if (itb->get_fd() != user.get_fd()) {
-								std::string msg_send =
-										":" + user.get_nickname() + "!~" + user.get_username() + "@" + user.get_ip() +
-										" PRIVMSG " +
-										arg[1] + " :" + full_msg;
-								server.sendMsg(*itb, msg_send, 2);
-							}
-						}
+						// for (std::vector<User>::iterator itb = user_list.begin(); itb != user_list.end(); ++itb) {
+						// 	if (itb->get_fd() != user.get_fd()) {
+								// std::string msg_send =
+								// 		":" + user.get_nickname() + "!~" + user.get_username() + "@" + user.get_ip() +
+								// 		" PRIVMSG " +
+								// 		arg[1] + " :" + full_msg;
+								// server.sendMsg(*itb, msg_send, 2);
+								// server.sendMsg(*itb, RPL_PRIVMSG(user, arg[1], full_msg), 2);
+								it->second.sendMsg(user, RPL_PRIVMSG(user, arg[1], full_msg), 2);
+						// 	}
+						// }
 						return;
 					}
 				}

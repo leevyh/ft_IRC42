@@ -294,8 +294,6 @@ void Server::sendMsg(User &user, std::string message, int code) const {
 			if (send(user.get_fd(), msg.c_str(), msg.length(), 0) == -1)
 				std::perror("send:");
 			break;
-		default:
-			break;;
 	}
 }
 
