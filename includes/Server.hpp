@@ -29,9 +29,6 @@ class Server {
 		std::string get_networkname(void) const;
 		std::vector<pollfd> get_fds(void) const;
 		std::map<int, User> &get_clientmap();
-		bool get_Irssi(void);
-// SETTERS
-		void set_Irssi(bool status);
 // FUNCTIONS
 		void init_serv(void);
 		void start_serv(void);
@@ -50,5 +47,4 @@ class Server {
 		std::vector<pollfd> _pollfdmap;
 		std::map<int, User> _clientmap;
 		std::map<std::string, Channel> _channels;
-		bool _irssi;
 };
