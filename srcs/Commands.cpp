@@ -399,60 +399,51 @@ void Commands::part(Server &server, User &user, std::vector<std::string> &arg) {
 	std::string part_msg;
 	int code = 0;
 	int j = 0;
-	if (arg.size() >= 3)
-	{
+	if (arg.size() >= 3) {
 		part_msg = remove_OneChar(':', arg);
 		std::cout << "part_msg: " << part_msg << std::endl;
 		code = 2;
 	}
-	else if (arg.size() == 2)
-	{
+	else if (arg.size() == 2) {
 		part_msg = "";
 		code = 1;
 	}
-	else
-	{
+	else {
 		server.sendMsg(user, ERR_NEEDMOREPARAMS(user, "PART"), 1);
-		return ;
+		return;
 	}
 	if (check_channelName(server, user, channels) == -6969)
 		return;
-	for (size_t i = 0; i < channels.size(); i++)
-	{
+	for (size_t i = 0; i < channels.size(); i++) {
 		std::vector<std::map<std::string, Channel>::iterator> channel_list;
-		if (!server.get_channels().empty())
-		{
-			for (std::map<std::string, Channel>::iterator it = server.get_channels().begin(); it != server.get_channels().end(); ++it)
-			{
+		if (!server.get_channels().empty()) {
+			for (std::map<std::string, Channel>::iterator it = server.get_channels().begin();
+				 it != server.get_channels().end(); ++it) {
 				j = 0;
-				if (channels[i] == it->second.get_ChannelName())
-				{
+				if (channels[i] == it->second.get_ChannelName()) {
 					j = 1;
-					if (it->second.is_UserInChannel(user))
-					{
+					if (it->second.is_UserInChannel(user)) {
 						it->second.unset_ChannelUser(user);
 						server.sendMsg(user, RPL_PART(user, it->second, part_msg, code), 2);
-						if (it->second.get_UserChannel().empty())
-						{
+						if (it->second.get_UserChannel().empty()) {
 							channel_list.push_back(it);
-							for (std::vector<std::map<std::string, Channel>::iterator>::iterator ita = channel_list.begin(); ita != channel_list.end(); ++ita)
+							for (std::vector<std::map<std::string, Channel>::iterator>::iterator ita = channel_list.begin();
+								 ita != channel_list.end(); ++ita)
 								server.get_channels().erase((*ita)->first);
-							break ;
+							break;
 						}
-						else
-						{
+						else {
 							it->second.sendMsg(user, RPL_PART(user, it->second, part_msg, code), 2);
-							break ;
+							break;
 						}
 					}
-					else
-					{
+					else {
 						server.sendMsg(user, ERR_NOTONCHANNEL(user, it->second), 1);
-						break ;
+						break;
 					}
 				}
 				else
-					continue ;
+					continue;
 			}
 			if (j == 0)
 				server.sendMsg(user, ERR_NOSUCHCHANNEL(user, channels[i]), 1);
@@ -460,6 +451,7 @@ void Commands::part(Server &server, User &user, std::vector<std::string> &arg) {
 		else
 			server.sendMsg(user, ERR_NOSUCHCHANNEL(user, arg[i]), 1);
 	}
+}
 /* Command: INVITE | Parameters: <nickname> <channel>
 
 The INVITE command is used to invite a user to a channel. The parameter <nickname> 
