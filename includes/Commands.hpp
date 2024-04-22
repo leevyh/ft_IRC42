@@ -34,7 +34,7 @@ class Commands {
 		void names();
 		void leave();
 
-		void part();
+		void part(Server &server, User &user, std::vector<std::string> &arg);
 		void privmsg(Server &server, User &user, std::vector<std::string> &arg);
 		void ping(Server &server, User &user, std::vector<std::string> &arg);
 		void pong(Server &server, User &user, std::vector<std::string> &arg);

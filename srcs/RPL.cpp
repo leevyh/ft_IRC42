@@ -33,7 +33,7 @@ std::string RPL_MYINFO(Server &server, User &user) {
 /* ************************************************************************** */
 
 void	displayInfosChannel(Server &server, User &user, Channel &channel) {
-	server.sendMsg(user, RPL_JOIN(user, channel), 1);
+//	server.sendMsg(user, RPL_JOIN(user, channel), 1);
 	server.sendMsg(user, RPL_NAMES(user, channel), 1);
 	server.sendMsg(user, RPL_ENDOFNAMES(user, channel), 1);
 	server.sendMsg(user, RPL_CREATIONTIME(user, channel), 1);
@@ -88,7 +88,7 @@ std::string ERR_NOSUCHSERVER(User &user, std::string server_name) {
 }
 
 std::string ERR_NOSUCHCHANNEL(User &user, std::string channel) {
-	return ("403 " + user.get_username() + " " + channel + " :No such channel");
+	return ("403 " + user.get_nickname() + " " + channel + " :No such channel");
 }
 
 std::string ERR_CANNOTSENDTOCHAN(User &user, std::string channel) {
@@ -200,3 +200,14 @@ std::string RPL_PRIVMSG(User &user, std::string recipient, std::string message) 
 	std::string rpl = user.get_nickname() + "!~" + user.get_username() + "@" + user.get_ip() + ".ip";
 	return (rpl + " PRIVMSG " + recipient + " :" + message);
 }
+
+std::string RPL_PART(User &user, Channel &channel, std::string part_message, int code)
+{
+	std::string msg = user.get_nickname() + "!~" + user.get_username() + "@" + user.get_ip() + ".ip";
+	if (code == 1)
+		return (msg + " PART " + channel.get_ChannelName());
+	else
+		return (msg + " PART " + channel.get_ChannelName() + " :" + part_message);
+}
+
+
