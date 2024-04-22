@@ -25,14 +25,11 @@ class Commands {
 /* Channel operations */
 		void join(Server &server, User &user, std::vector<std::string> &arg);
 		void kick();
-		void invite();
+		void invite(Server &server, User &user, std::vector<std::string> &arg);
 		void topic(Server &server, User &user, std::vector<std::string> &arg);
 		void mode(Server &server, User &user, std::vector<std::string> &arg);
 		void set_mode(Server &server, User &user, Channel &chan, std::vector<std::string> &arg);
 		void unset_mode(Server &server, User &user, Channel &chan, std::vector<std::string> &arg);
-
-		void names();
-		void leave();
 
 		void part();
 		void privmsg(Server &server, User &user, std::vector<std::string> &arg);

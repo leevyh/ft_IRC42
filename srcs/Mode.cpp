@@ -12,7 +12,6 @@ void Commands::mode(Server &server, User &user, std::vector<std::string> &arg) {
 		it != server.get_channels().end(); ++it) {
 		if (it->first == arg[1]) {
 			if (it->second.is_opChannel(user.get_nickname()) == true) {
-				std::vector<User> users = it->second.get_UserChannel();
 				if (arg[2][0] == '+')
 					set_mode(server, user, it->second, arg);
 				else if (arg[2][0] == '-')

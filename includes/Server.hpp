@@ -38,6 +38,7 @@ class Server {
 		void disconnect(User &user);
 		void timeout_disconnect(User &user);
 		std::map<std::string, Channel> &get_channels(void);
+		bool is_onServer(std::string to_find);
 	private:
 		struct sockaddr_in _server_addr;
 		long _port;
