@@ -13,6 +13,8 @@ Commands::Commands(void) {
 	cmdMap["JOIN"] = &Commands::join;
 	cmdMap["TOPIC"] = &Commands::topic;
 	cmdMap["PART"] = &Commands::part;
+	// cmdMap["KICK"] = &Commands::kick;
+	cmdMap["INVITE"] = &Commands::invite;
 }
 
 Commands::~Commands(void) {}
@@ -239,7 +241,7 @@ void Commands::join(Server &server, User &user, std::vector<std::string> &arg) {
 							break;
 						case 4:  //channel sur invite
 							std::cout << "ERR_INVITEONLYCHAN a coder" << std::endl;
-							server.sendMsg(user, ERR_INVITEONLYCHAN(user, it->second), 1);
+							// server.sendMsg(user, ERR_INVITEONLYCHAN(user, it->second), 1);
 							break;
 						default:
 							std::cerr << "Error: Unknown error" << std::endl;
@@ -458,4 +460,57 @@ void Commands::part(Server &server, User &user, std::vector<std::string> &arg) {
 		else
 			server.sendMsg(user, ERR_NOSUCHCHANNEL(user, arg[i]), 1);
 	}
+/* Command: INVITE | Parameters: <nickname> <channel>
+
+The INVITE command is used to invite a user to a channel. The parameter <nickname> 
+is the nickname of the person to be invited to the target channel <channel>.
+
+The target channel SHOULD exist (at least one user is on it). Otherwise, the server 
+SHOULD reject the command with the ERR_NOSUCHCHANNEL numeric.
+
+Only members of the channel are allowed to invite other users. Otherwise, the server 
+MUST reject the command with the ERR_NOTONCHANNEL numeric.
+
+Servers MAY reject the command with the ERR_CHANOPRIVSNEEDED numeric. In particular, 
+they SHOULD reject it when the channel has invite-only mode set, and the user is not 
+a channel operator.
+
+If the user is already on the target channel, the server MUST reject the command with 
+the ERR_USERONCHANNEL numeric.
+
+When the invite is successful, the server MUST send a RPL_INVITING numeric to the 
+command issuer, and an INVITE message, with the issuer as <source>, to the target user. 
+Other channel members SHOULD NOT be notified.
+
+Numeric Replies:
+    RPL_INVITING (341); ERR_NEEDMOREPARAMS (461);
+    ERR_NOSUCHCHANNEL (403); ERR_NOTONCHANNEL (442)
+    ERR_CHANOPRIVSNEEDED (482); ERR_USERONCHANNEL (443) */
+void Commands::invite(Server &server, User &user, std::vector<std::string> &arg) {
+	if (arg.size() != 3)
+		return (server.sendMsg(user, ERR_NEEDMOREPARAMS(user, arg[0]), 1)); //a verifier
+	if (!arg[1].empty() && server.is_onServer(arg[1]) == false) // check si le user invité est sur le server
+		return (server.sendMsg(user, ERR_NOSUCHNICK(user, arg[1]), 1));
+	for (std::map<std::string, Channel>::iterator itc = server.get_channels().begin(); 
+		itc != server.get_channels().end(); ++itc) {
+		if (itc->first == arg[2]) { // check si le channel existe
+			if (itc->second.is_opChannel(user.get_nickname()) == true) { // check si le user est operateur du channel
+				for (std::vector<User>::iterator itu = itc->second.get_UserChannel().begin(); \
+					itu != itc->second.get_UserChannel().end(); ++itu) {
+					if (itu->get_nickname() == arg[1]) // check si la personne est pas deja dans le channel
+						return (server.sendMsg(user, ERR_USERONCHANNEL(user, arg[1], itc->second), 1));
+				}
+				server.sendMsg(user, RPL_INVITING(user, itc->second, arg[1]), 1);
+				server.sendMsg(user, RPL_INVITE(user, arg[1], itc->second), 1);
+				// envoyer l'invitation au user invité
+				// Exemple :
+				// :leevyh!~leevyh@704e-6754-28de-304-3cdc.197.78.ip INVITE leevyh_ :#slt
+				std::string msg = "INVITE " + arg[1] + " :" + itc->second.get_ChannelName();
+				return;
+			}
+			return (server.sendMsg(user, ERR_CHANOPRIVSNEEDED(user, itc->second), 1));
+		}
+
+	}
+	return (server.sendMsg(user, ERR_NOSUCHCHANNEL(user, arg[2]), 1));
 }

@@ -287,3 +287,11 @@ void Server::sendMsg(User &user, std::string message, int code) const {
 			break;
 	}
 }
+
+bool Server::is_onServer(std::string to_find) {
+	for (std::map<int, User>::iterator it = this->get_clientmap().begin();
+		it != this->get_clientmap().end(); ++it)
+		if (it->second.get_nickname() == to_find)
+			return (true);
+	return (false);
+}

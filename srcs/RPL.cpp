@@ -64,6 +64,10 @@ std::string RPL_ENDOFINVITELIST(User &user) {
 	return ("337 " + user.get_username() + " :End of /INVITE list");
 }
 
+std::string RPL_INVITING(User &user, Channel &channel, std::string to_invite) {
+	return ("341 " + user.get_username() + " " + to_invite + " " + channel.get_ChannelName());
+}
+
 std::string RPL_NAMES(User &user, Channel &channel) {
 	std::string names = "";
 	std::vector<User> users = channel.get_UserChannel();
@@ -210,4 +214,8 @@ std::string RPL_PART(User &user, Channel &channel, std::string part_message, int
 		return (msg + " PART " + channel.get_ChannelName() + " :" + part_message);
 }
 
-
+std::string RPL_INVITE(User &user, std::string to_invite, Channel &channel) {
+	std::string rpl = "NOTICE @" + channel.get_ChannelName() + " :" + user.get_username() +
+	" invited " + to_invite + " into channel " + channel.get_ChannelName();
+	return (rpl);
+}

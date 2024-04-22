@@ -185,27 +185,3 @@ void	Channel::creationTime(void) {
 	std::cout << "timestamp: " << now << std::endl;
 	_creationTime = now;
 }
-
-
-
-/*
-
-i = invite only 			oui/non
-k = pass 					oui/non + pass
-l = limit					oui/non + limit
-
-
-
-
-
-
-
-*/
-
-
-// std::string& is_mode(void) {
-// 	check si _pass.empty();
-// 	check si is_inviteonly
-// 	is__limitUser}
-
-
