@@ -66,7 +66,9 @@ std::string RPL_MODE(User &user, Channel &channel, std::string modestring, std::
 std::string RPL_JOIN(User &user, Channel &channel);
 std::string RPL_EDITTOPIC(User &user, Channel &channel, std::string topic);
 std::string RPL_PRIVMSG(User &user, std::string recipient, std::string message);
+std::string RPL_PART(User &user, Channel &channel, std::string part_msg, int code);
 std::string RPL_INVITE(User &user, std::string to_invite, Channel &channel);
+
 
 struct IsClientFDPredicate {
 	int clientFD;

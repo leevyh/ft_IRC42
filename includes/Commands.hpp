@@ -30,8 +30,11 @@ class Commands {
 		void mode(Server &server, User &user, std::vector<std::string> &arg);
 		void set_mode(Server &server, User &user, Channel &chan, std::vector<std::string> &arg);
 		void unset_mode(Server &server, User &user, Channel &chan, std::vector<std::string> &arg);
+  
+		void names();
+		void leave();
 
-		void part();
+		void part(Server &server, User &user, std::vector<std::string> &arg);
 		void privmsg(Server &server, User &user, std::vector<std::string> &arg);
 		void ping(Server &server, User &user, std::vector<std::string> &arg);
 		void pong(Server &server, User &user, std::vector<std::string> &arg);

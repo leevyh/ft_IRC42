@@ -12,7 +12,7 @@ Commands::Commands(void) {
 	cmdMap["PRIVMSG"] = &Commands::privmsg;
 	cmdMap["JOIN"] = &Commands::join;
 	cmdMap["TOPIC"] = &Commands::topic;
-	// cmdMap["PART"] = &Commands::part;
+	cmdMap["PART"] = &Commands::part;
 	// cmdMap["KICK"] = &Commands::kick;
 	cmdMap["INVITE"] = &Commands::invite;
 }
@@ -183,6 +183,21 @@ Numeric Replies: ERR_INVITEONLYCHAN (473); ERR_BADCHANNELKEY (475);
 				ERR_CHANNELISFULL (471); ERR_BADCHANMASK (476);
 				ERR_NOSUCHCHANNEL (403); RPL_TOPIC (332) */
 
+void	channel_BroadcastJoin(Server &server, User &user, std::string const &channel_name)
+{
+	std::string msg_send;
+	std::vector<User> user_list = server.get_channels()[channel_name].get_UserChannel();
+	for (std::vector<User>::iterator it = user_list.begin(); it != user_list.end(); ++it)
+	{
+//		if (it->get_fd() != user.get_fd())
+//		{
+		msg_send = user.get_nickname() + "!~" + user.get_username() + "@localhost.ip JOIN :" + channel_name;
+		server.sendMsg(*it, msg_send, 2);
+//		}
+	}
+}
+
+
 short is_Authorize(Server &server, User &user, Channel &channel, std::vector<std::string> &key, size_t i) {
 	(void)server;
 	(void)user;
@@ -272,11 +287,13 @@ void	create_NewChannel(Server &server, User &user, std::string const &channel_na
 	channel.set_opChannel(user.get_nickname());
 	channel.creationTime();
 	server.get_channels()[channel_name] = channel;
+	channel_BroadcastJoin(server, user, channel.get_ChannelName());
 	displayInfosChannel(server, user, channel);
 }
 
 void	add_UserInChannel(Server &server, User &user, Channel &channel) {
 	channel.set_ChannelUser(user);
+	channel_BroadcastJoin(server, user, channel.get_ChannelName());
 	displayInfosChannel(server, user, channel);
 }
 
@@ -376,6 +393,73 @@ void Commands::privmsg(Server &server, User &user, std::vector<std::string> &arg
 	}
 }
 
+void Commands::part(Server &server, User &user, std::vector<std::string> &arg) {
+	std::vector<std::string> channels;
+	channels = split(arg[1]);
+	std::string part_msg;
+	int code = 0;
+	int j = 0;
+	if (arg.size() >= 3)
+	{
+		part_msg = remove_OneChar(':', arg);
+		std::cout << "part_msg: " << part_msg << std::endl;
+		code = 2;
+	}
+	else if (arg.size() == 2)
+	{
+		part_msg = "";
+		code = 1;
+	}
+	else
+	{
+		server.sendMsg(user, ERR_NEEDMOREPARAMS(user, "PART"), 1);
+		return ;
+	}
+	if (check_channelName(server, user, channels) == -6969)
+		return;
+	for (size_t i = 0; i < channels.size(); i++)
+	{
+		std::vector<std::map<std::string, Channel>::iterator> channel_list;
+		if (!server.get_channels().empty())
+		{
+			for (std::map<std::string, Channel>::iterator it = server.get_channels().begin(); it != server.get_channels().end(); ++it)
+			{
+				j = 0;
+				if (channels[i] == it->second.get_ChannelName())
+				{
+					j = 1;
+					if (it->second.is_UserInChannel(user))
+					{
+						it->second.unset_ChannelUser(user);
+						server.sendMsg(user, RPL_PART(user, it->second, part_msg, code), 2);
+						if (it->second.get_UserChannel().empty())
+						{
+							channel_list.push_back(it);
+							for (std::vector<std::map<std::string, Channel>::iterator>::iterator ita = channel_list.begin(); ita != channel_list.end(); ++ita)
+								server.get_channels().erase((*ita)->first);
+							break ;
+						}
+						else
+						{
+							it->second.sendMsg(user, RPL_PART(user, it->second, part_msg, code), 2);
+							break ;
+						}
+					}
+					else
+					{
+						server.sendMsg(user, ERR_NOTONCHANNEL(user, it->second), 1);
+						break ;
+					}
+				}
+				else
+					continue ;
+			}
+			if (j == 0)
+				server.sendMsg(user, ERR_NOSUCHCHANNEL(user, channels[i]), 1);
+		}
+		else
+			server.sendMsg(user, ERR_NOSUCHCHANNEL(user, arg[i]), 1);
+	}
 /* Command: INVITE | Parameters: <nickname> <channel>
 
 The INVITE command is used to invite a user to a channel. The parameter <nickname> 
@@ -429,5 +513,4 @@ void Commands::invite(Server &server, User &user, std::vector<std::string> &arg)
 
 	}
 	return (server.sendMsg(user, ERR_NOSUCHCHANNEL(user, arg[2]), 1));
-
 }
