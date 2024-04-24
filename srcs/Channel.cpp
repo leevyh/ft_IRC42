@@ -25,6 +25,7 @@ Channel &Channel::operator=(Channel const &rhs) {
 		_limitUser = rhs._limitUser;
 		_inviteonly = rhs._inviteonly;
 		_creationTime = rhs._creationTime;
+		_inviteList = rhs._inviteList;
 	}
 	return (*this);
 }
@@ -66,7 +67,7 @@ time_t	Channel::get_creationTime() const {return (_creationTime);}
 
 void	Channel::set_ChannelUser(User &user) {_chanUsers.push_back(user);}
 
-void	Channel::unset_ChannelUser(User& user){
+void	Channel::unset_ChannelUser(User& user) {
 	for (std::vector<User>::iterator it = _chanUsers.begin(); it != _chanUsers.end(); ++it) {
 		if (it->get_nickname() == user.get_nickname()) {
 			_chanUsers.erase(it);
@@ -105,6 +106,18 @@ void	Channel::unset_inviteOnly(void) {_inviteonly = false;}
 void	Channel::set_optopic(void) {_optopic = true;}
 
 void	Channel::unset_optopic(void) {_optopic = false;}
+
+void	Channel::set_inviteList(User &user) {_inviteList.push_back(user);}
+
+void	Channel::unset_inviteList(User& user) {
+	for (std::vector<User>::iterator it = _inviteList.begin(); it != _inviteList.end(); ++it) {
+		if (it->get_nickname() == user.get_nickname()) {
+			_inviteList.erase(it);
+			return;
+		}
+	}
+	return;
+}
 
 /* ************************************************************************** */
 

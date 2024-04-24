@@ -36,6 +36,8 @@ class Channel
 		void	unset_inviteOnly(void);
 		void	set_optopic(void);
 		void	unset_optopic(void);
+		void	set_inviteList(User &user);
+		void	unset_inviteList(User& user);
 
 		bool	is_opChannel(std::string user);
 		bool	is_ValidKey(std::vector<std::string> key, int i);
@@ -56,13 +58,8 @@ class Channel
 		time_t		_creationTime;
 		std::vector<User> _chanUsers;
 		std::vector<std::string> _opUsers;
+		std::vector<User> _inviteList;
 };
 std::ostream &operator<<(std::ostream &o, Channel &src);
 
 std::string print_Names(std::string nickname, Channel &channel);
-
-
-// std::string& is_mode(void) {
-// 	check si _pass.empty();
-// 	check si is_inviteonly
-// 	is__limitUser}

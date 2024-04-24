@@ -34,8 +34,7 @@ void displayInfosChannel(Server &server, User &user, Channel &channel);
 std::string RPL_CREATIONTIME(User &user, Channel &channel);            // 329
 std::string RPL_NOTOPIC(User &user, Channel &channel);                 // 331
 std::string RPL_TOPIC(User &user, Channel &channel);                   // 332
-std::string RPL_INVITELIST(User &user, Channel &channel);              // 336
-std::string RPL_ENDOFINVITELIST(User &user);                           // 337
+void displayInvite(Server &server, User &user, Channel &channel, std::string to_invite);
 std::string RPL_INVITING(User &user, Channel &channel, std::string to_invite); //341
 std::string RPL_NAMES(User &user, Channel &channel);                   // 353
 std::string RPL_ENDOFNAMES(User &user, Channel &channel);              // 366

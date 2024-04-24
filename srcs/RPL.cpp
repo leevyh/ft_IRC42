@@ -54,6 +54,19 @@ std::string RPL_TOPIC(User &user, Channel &channel) {
 	return ("332 " + user.get_username() + " " + channel.get_ChannelName() + " :" + channel.get_ChannelTopic());
 }
 
+void	displayInvite(Server &server, User &user, Channel &channel, std::string to_invite) {
+	server.sendMsg(user, RPL_INVITING(user, channel, to_invite), 1);
+	server.sendMsg(user, RPL_INVITE(user, to_invite, channel), 1);
+	std::string msg = user.get_nickname() + "!~" + user.get_username() + "@" + user.get_ip() \
+	+ ".ip INVITE " + to_invite + " :" + channel.get_ChannelName();
+	for (std::map<int, User>::iterator it = server.get_clientmap().begin();
+		it != server.get_clientmap().end(); ++it)
+		if (it->second.get_nickname() == to_invite) {
+			channel.set_inviteList(it->second);
+			server.sendMsg(it->second, msg, 2);
+		}
+}
+
 // Sent to a client as a reply to the INVITE command when used with no parameter, to indicate a channel the client was invited to.
 std::string RPL_INVITELIST(User &user, Channel &channel) {
 	return ("336 " + user.get_username() + " " + channel.get_ChannelName());

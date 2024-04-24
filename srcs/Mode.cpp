@@ -33,6 +33,9 @@ void	Commands::set_mode(Server &server, User &user, Channel &chan, std::vector<s
 			switch (i) {
 				case 0:
 					chan.set_inviteOnly();
+					for (std::vector<User>::iterator it = chan.get_UserChannel().begin(); \
+						it != chan.get_UserChannel().end(); ++it)
+							chan.set_inviteList(*it);
 					chan.sendMsg(user, RPL_MODE(user, chan, "+i", ""), 1);
 					break;
 				case 1:
