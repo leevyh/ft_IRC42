@@ -36,8 +36,9 @@ class Channel
 		void	unset_inviteOnly(void);
 		void	set_optopic(void);
 		void	unset_optopic(void);
-		void	set_inviteList(User &user);
-		void	unset_inviteList(User& user);
+		void	add_inviteList(User &user);
+		void	remove_inviteList(User& user);
+		void	delete_inviteList(void);
 
 		bool	is_opChannel(std::string user);
 		bool	is_ValidKey(std::vector<std::string> key, int i);

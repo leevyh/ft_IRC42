@@ -67,6 +67,8 @@ std::string RPL_EDITTOPIC(User &user, Channel &channel, std::string topic);
 std::string RPL_PRIVMSG(User &user, std::string recipient, std::string message);
 std::string RPL_PART(User &user, Channel &channel, std::string part_msg, int code);
 std::string RPL_INVITE(User &user, std::string to_invite, Channel &channel);
+std::string RPL_KICK(User &user, Channel &channel, std::string to_kick, std::string kick_message);
+// void	displayKick(Server &server, User &user, Channel &channel, std::string to_kick, std::string msg);
 
 
 struct IsClientFDPredicate {

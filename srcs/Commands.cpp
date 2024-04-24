@@ -69,10 +69,11 @@ void Commands::pass(Server &server, User &user, std::vector<std::string> &arg) {
 void Commands::nick(Server &server, User &user, std::vector<std::string> &arg) {
 	if (arg[1].empty())
 		return (server.sendMsg(user, ERR_NONICKNAMEGIVEN(arg[1]), 1));
-	if (arg[1].find_first_not_of("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789") \
-		!= std::string::npos) //ajouter les autres caractères autorisés
+	if (arg[1].find_first_not_of("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789[]\\`_^{|}-") \
+		!= std::string::npos) 
 		return (server.sendMsg(user, ERR_ERRONEUSNICKNAME(arg[1]), 1));
-	std::map<int, User> users = server.get_clientmap();
+
+// ERR_NICKNAMEINUSE a modifier
 	for(std::map<int, User>::iterator it = server.get_clientmap().begin(); \
 		it != server.get_clientmap().end(); ++it) {
 		if (arg[1] == it->second.get_nickname())
@@ -86,6 +87,7 @@ void Commands::nick(Server &server, User &user, std::vector<std::string> &arg) {
 	}
 	user.set_nickname(arg[1]);
 }
+
 
 /* Command USER | Parameters: <user> <mode> <unused> <realname> */
 void Commands::user(Server &server, User &user, std::vector<std::string> &arg) {
@@ -121,10 +123,8 @@ void Commands::quit(Server &server, User &user, std::vector<std::string> &arg) {
 	}
 	if (nb_arg > 2 && arg[1][0] != ':')
 		server.sendMsg(user, ERR_NEEDMOREPARAMS(user, "QUIT"), 1);
-	if (nb_arg > 1)
-	{
-		if (arg[1][0] == ':')
-		{
+	if (nb_arg > 1) {
+		if (arg[1][0] == ':') {
 			msg_send += arg[1].erase(0, 1) + " ";
 			for (size_t i = 2; i < arg.size(); i++)
 				msg_send += arg[i] + " ";
@@ -133,40 +133,31 @@ void Commands::quit(Server &server, User &user, std::vector<std::string> &arg) {
 			msg_send += arg[1];
 	}
 	std::vector<std::map<std::string, Channel>::iterator> channel_list;
-	if (!server.get_channels().empty())
-	{
-		for (std::map<std::string, Channel>::iterator it = server.get_channels().begin(); it != server.get_channels().end(); ++it)
-		{
-			std::cout << "user.get_nickname(): " << user.get_nickname() << std::endl;
-			if (it->second.is_UserInChannel(user))
-			{
-				std::cout << "user removed from channel: " << user.get_nickname() << std::endl;
-				it->second.unset_ChannelUser(user);
-				if (it->second.get_UserChannel().empty())
-				{
-					channel_list.push_back(it);
-				}
-				else
-				{
-					std::vector<User> user_list = it->second.get_UserChannel();
+	if (!server.get_channels().empty()) {
+		for (std::vector<Channel>::iterator it = server.get_channels().begin(); it != server.get_channels().end(); ++it) {
+			if (it->is_UserInChannel(user)) {
+				it->unset_ChannelUser(user);
+				if (it->get_UserChannel().empty())
+					server.remove_channelList(*it);
+					// channel_list.push_back(it);															// MODIF VECTOR
+				else {
+					std::vector<User> user_list = it->get_UserChannel();
 					//DISPLAY LIST OF USER IN CHANNEL
-					for (std::vector<User>::iterator ita = user_list.begin(); ita != user_list.end(); ++ita)
-					{
+					for (std::vector<User>::iterator ita = user_list.begin(); ita != user_list.end(); ++ita) {
 						std::cout << "ita->get_fd(): " << ita->get_fd() << std::endl;
 						std::cout << "ita->get_nickname(): " << ita->get_nickname() << std::endl;
 					}
 					std::string final_message = user.get_nickname() + "!~" + user.get_username() + "@" + user.get_ip() + ".ip QUIT :" + msg_send;
-					it->second.sendMsg(user, final_message, 1);
+					it->sendMsg(user, final_message, 1);
 				}
 			}
 		}
 	}
-	for (std::vector<std::map<std::string, Channel>::iterator>::iterator it = channel_list.begin(); it != channel_list.end(); ++it)
-		server.get_channels().erase((*it)->first);
+	// for (std::vector<std::map<std::string, Channel>::iterator>::iterator it = channel_list.begin(); it != channel_list.end(); ++it)
+	// 	server.get_channels().erase((*it)->first);															// MODIF VECTOR
 	//Display all channels always active
-	for (std::map<std::string, Channel>::iterator it = server.get_channels().begin(); it != server.get_channels().end(); ++it)
-	{
-		std::cout << it->second.get_ChannelName() << std::endl;
+	for (std::vector<Channel>::iterator it = server.get_channels().begin(); it != server.get_channels().end(); ++it) {
+		std::cout << it->get_ChannelName() << std::endl;
 	}
 	user.set_authenticated(false);
 	user.set_status(false);
@@ -175,19 +166,20 @@ void Commands::quit(Server &server, User &user, std::vector<std::string> &arg) {
 
 /* --------------------------------------------------JOIN-------------------------------------------------- */
 
-// void	channel_BroadcastJoin(Server &server, User &user, std::string const &channel_name)
-// {
-// 	std::string msg_send;
-// 	std::vector<User> user_list = server.get_channels()[channel_name].get_UserChannel();
-// 	for (std::vector<User>::iterator it = user_list.begin(); it != user_list.end(); ++it)
-// 	{
-// //		if (it->get_fd() != user.get_fd())
-// //		{
-// 		msg_send = user.get_nickname() + "!~" + user.get_username() + "@localhost.ip JOIN :" + channel_name;
-// 		server.sendMsg(*it, msg_send, 2);
-// //		}
-// 	}
-// }
+void	channel_BroadcastJoin(Server &server, User &user, std::string const &channel_name)
+{
+	std::string msg_send;
+	
+	for (std::vector<Channel>::iterator itc = server.get_channels().begin(); \
+		itc != server.get_channels().end(); ++itc)
+		if (itc->get_ChannelName() == channel_name){
+			std::vector<User> user_list = itc->get_UserChannel();
+			for (std::vector<User>::iterator it = user_list.begin(); it != user_list.end(); ++it) {
+				msg_send = user.get_nickname() + "!~" + user.get_username() + "@localhost.ip JOIN :" + channel_name;
+				server.sendMsg(*it, msg_send, 2);
+		}
+	}
+}
 
 short is_Authorize(Server &server, User &user, Channel &channel, std::vector<std::string> &key, size_t i) {
 	(void)server;
@@ -232,14 +224,14 @@ void	create_NewChannel(Server &server, User &user, std::string const &channel_na
 	channel.set_ChannelUser(user);
 	channel.set_opChannel(user.get_nickname());
 	channel.creationTime();
-	server.get_channels()[channel_name] = channel;
-	// channel_BroadcastJoin(server, user, channel.get_ChannelName());
+	server.add_channelList(channel);
+	channel_BroadcastJoin(server, user, channel.get_ChannelName());
 	displayInfosChannel(server, user, channel);
 }
 
 void	add_UserInChannel(Server &server, User &user, Channel &channel) {
 	channel.set_ChannelUser(user);
-	// channel_BroadcastJoin(server, user, channel.get_ChannelName());
+	channel_BroadcastJoin(server, user, channel.get_ChannelName());
 	displayInfosChannel(server, user, channel);
 }
 
@@ -259,18 +251,18 @@ void Commands::join(Server &server, User &user, std::vector<std::string> &arg) {
 	for(size_t i = 0; i < channels.size(); i++) {
 		if (!(server.get_channels().empty())) {
 			authorized = 0;
-			for (std::map<std::string, Channel>::iterator it = server.get_channels().begin(); \
+			for (std::vector<Channel>::iterator it = server.get_channels().begin(); \
 				it != server.get_channels().end(); ++it) {
-				if (channels[i] == it->second.get_ChannelName()) {
-					authorized = is_Authorize(server, user, it->second, key, i);
+				if (channels[i] == it->get_ChannelName()) {
+					authorized = is_Authorize(server, user, *it, key, i);
 					switch (authorized) {
 						case 1:
-							add_UserInChannel(server, user, it->second);   // A VERIFIER
-							if (!it->second.get_ChannelTopic().empty())
-								server.sendMsg(user, RPL_TOPIC(user, it->second), 1);
+							add_UserInChannel(server, user, *it);   // A VERIFIER
+							if (!it->get_ChannelTopic().empty())
+								server.sendMsg(user, RPL_TOPIC(user, *it), 1);
 							break;
 						case 2:
-							server.sendMsg(user, ERR_BADCHANNELKEY(user, it->second), 1);
+							server.sendMsg(user, ERR_BADCHANNELKEY(user, *it), 1);
 							break;
 						case 3: //channel full
 							std::cout << "ERR_CHANNELISFULL a coder" << std::endl;
@@ -314,10 +306,10 @@ void Commands::topic(Server &server, User &user, std::vector<std::string> &arg) 
 	(void)user;
 	if (arg.size() >= 3) {
 		if (!server.get_channels().empty()) {
-			for (std::map<std::string, Channel>::iterator it = server.get_channels().begin(); \
+			for (std::vector<Channel>::iterator it = server.get_channels().begin(); \
 				it != server.get_channels().end(); ++it) {
-				if (arg[1] == it->second.get_ChannelName())
-					edit_Topic(server, user, arg, it->second);
+				if (arg[1] == it->get_ChannelName())
+					edit_Topic(server, user, arg, *it);
 				else
 					continue;
 				return ;
@@ -327,10 +319,10 @@ void Commands::topic(Server &server, User &user, std::vector<std::string> &arg) 
 	}
 	if (arg.size() == 2) {
 		if (!server.get_channels().empty()) {
-			for(std::map<std::string, Channel>::iterator it = server.get_channels().begin(); \
+			for(std::vector< Channel>::iterator it = server.get_channels().begin(); \
 				it != server.get_channels().end(); ++it) {
-				if (arg[1] != it->second.get_ChannelName())
-					server.sendMsg(user, ERR_NOTONCHANNEL(user, it->second), 1);
+				if (arg[1] != it->get_ChannelName())
+					server.sendMsg(user, ERR_NOTONCHANNEL(user, *it), 1);
 			}
 		}
 	}
@@ -373,13 +365,13 @@ void Commands::privmsg(Server &server, User &user, std::vector<std::string> &arg
 		server.sendMsg(user, ERR_NOSUCHNICK(user, arg[1]), 1);
 	}
 	else {
-		for (std::map<std::string, Channel>::iterator it = server.get_channels().begin();
+		for (std::vector<Channel>::iterator it = server.get_channels().begin();
 			 it != server.get_channels().end(); it++)
-			if (arg[1] == it->second.get_ChannelName()) {
-				std::vector<User> user_list = it->second.get_UserChannel();
+			if (arg[1] == it->get_ChannelName()) {
+				std::vector<User> user_list = it->get_UserChannel();
 				for (std::vector<User>::iterator ita = user_list.begin(); ita != user_list.end(); ++ita)
 					if (ita->get_fd() == user.get_fd()) {
-						it->second.sendMsg(user, RPL_PRIVMSG(user, arg[1], full_msg), 2); // A VERIFIER
+						it->sendMsg(user, RPL_PRIVMSG(user, arg[1], full_msg), 2); // A VERIFIER
 						return;
 					}
 			}
@@ -413,28 +405,25 @@ void Commands::part(Server &server, User &user, std::vector<std::string> &arg) {
 	for (size_t i = 0; i < channels.size(); i++) {
 		std::vector<std::map<std::string, Channel>::iterator> channel_list;
 		if (!server.get_channels().empty()) {
-			for (std::map<std::string, Channel>::iterator it = server.get_channels().begin();
+			for (std::vector<Channel>::iterator it = server.get_channels().begin();
 				 it != server.get_channels().end(); ++it) {
 				j = 0;
-				if (channels[i] == it->second.get_ChannelName()) {
+				if (channels[i] == it->get_ChannelName()) {
 					j = 1;
-					if (it->second.is_UserInChannel(user)) {
-						it->second.unset_ChannelUser(user);
-						server.sendMsg(user, RPL_PART(user, it->second, part_msg, code), 2);
-						if (it->second.get_UserChannel().empty()) {
-							channel_list.push_back(it);
-							for (std::vector<std::map<std::string, Channel>::iterator>::iterator ita = channel_list.begin();
-								 ita != channel_list.end(); ++ita)
-								server.get_channels().erase((*ita)->first);
+					if (it->is_UserInChannel(user)) {
+						it->unset_ChannelUser(user);
+						server.sendMsg(user, RPL_PART(user, *it, part_msg, code), 2);
+						if (it->get_UserChannel().empty()) {
+							server.remove_channelList(*it);
 							break;
 						}
 						else {
-							it->second.sendMsg(user, RPL_PART(user, it->second, part_msg, code), 2);
+							it->sendMsg(user, RPL_PART(user, *it, part_msg, code), 2);
 							break;
 						}
 					}
 					else {
-						server.sendMsg(user, ERR_NOTONCHANNEL(user, it->second), 1);
+						server.sendMsg(user, ERR_NOTONCHANNEL(user, *it), 1);
 						break;
 					}
 				}
@@ -450,28 +439,65 @@ void Commands::part(Server &server, User &user, std::vector<std::string> &arg) {
 }
 
 
-/* Command: KICK | Parameters: <channel> *( "," <channel> ) <user> *( "," <user> ) [<comment>]
+/* Command: KICK | Parameters: <channel> *( "," <channel> ) <user> *( "," <user> ) [<comment>] */
+std::string remove_OneCharbis(char c, std::vector<std::string> &arg) {													// A MODIFIER POUR UTILISER CELLE D'ANTOINE
+	std::string full_msg;
+	int i = 3;
+	for (std::vector<std::string>::iterator it = arg.begin() + 3; it != arg.end(); ++it, i++) {
+		if (arg[i][0] == c)
+			full_msg += arg[i].erase(0, 1);
+		else
+			full_msg += " " + *it;
+	}
+	return (full_msg);
+}
 
-The KICK command can be used to request the forced removal of a user
-from a channel.  It causes the <user> to PART from the <channel> by
-force.  For the message to be syntactically correct, there MUST be
-either one channel parameter and multiple user parameter, or as many
-channel parameters as there are user parameters.  If a "comment" is
-given, this will be sent instead of the default message, the nickname
-of the user issuing the KICK.
-
-The server MUST NOT send KICK messages with multiple channels or
-users to clients.  This is necessarily to maintain backward
-compatibility with old client software.
-
-Numeric Replies: ERR_NEEDMOREPARAMS (461); ERR_NOSUCHCHANNEL (403);
-				ERR_BADCHANMASK (476); ERR_CHANOPRIVSNEEDED (482);
-				ERR_USERNOTINCHANNEL (441); ERR_NOTONCHANNEL (442) */
 void Commands::kick(Server &server, User &user, std::vector<std::string> &arg) {
 	(void)server;
 	(void)user;
 	(void)arg;
-	std::cout << "KICK à coder\n";
+
+	std::cout << "KICK à terminer, peut etre devoir coder la RPL 366 pour envoyer a tout le serveur la nouvelle liste des USERS du CHANNEL + SEGFAULT a fix\n";
+
+
+	std::string kick_msg;
+	// if (arg.size() < 3)
+	// 	return (server.sendMsg(user, ERR_NEEDMOREPARAMS(user, arg[0]), 1));
+	if (!arg[2].empty() && server.is_onServer(arg[2]) == false)
+		return (server.sendMsg(user, ERR_NOSUCHNICK(user, arg[1]), 1));
+	std::cout << "arg[0]: " << arg[0] << std::endl;
+	std::cout << "arg[1]: " << arg[1] << std::endl;
+	std::cout << "arg[2]: " << arg[2] << std::endl;
+	kick_msg = remove_OneCharbis(':', arg);
+	std::vector<std::map<std::string, Channel>::iterator> chan_list;
+	for (std::vector< Channel>::iterator itc = server.get_channels().begin(); 
+		itc != server.get_channels().end(); ++itc) {										// CHANNEL existe
+		if (itc->get_ChannelName() == arg[1]) {
+			if (itc->is_UserInChannel(user)) {												// USER est dans le channel
+				if (itc->is_opChannel(user.get_nickname()) == false)						// USER n'est pas operateur
+					return (server.sendMsg(user, ERR_CHANOPRIVSNEEDED(user, *itc), 1));
+				else {																		// USER est operateur
+					for (std::vector<User>::iterator itu = itc->get_UserChannel().begin(); \
+						itu != itc->get_UserChannel().end(); ++itu) {
+						std::cout << "Present: " << itu->get_nickname() << std::endl;
+						if (itu->get_nickname() == arg[2]) {								// TO_KICK est dans le channel
+							itc->sendMsg(user, RPL_KICK(user, *itc, arg[2], kick_msg), 1);
+							itc->remove_inviteList(*itu);
+							itc->unset_ChannelUser(*itu);
+							if (itc->get_UserChannel().empty()) {
+								server.remove_channelList(*itc);
+								// + SORTIR DU SERVER !!!!!
+								return;
+							}
+						}
+						return (server.sendMsg(user, ERR_USERNOTINCHANNEL(user, arg[2], *itc), 1));
+					}
+				}
+			}
+			return (server.sendMsg(user, ERR_NOTONCHANNEL(user, *itc), 1));
+		}
+	}
+	return (server.sendMsg(user, ERR_NOSUCHCHANNEL(user, arg[1]), 1));
 }
 
 
@@ -481,22 +507,22 @@ void Commands::invite(Server &server, User &user, std::vector<std::string> &arg)
 		return (server.sendMsg(user, ERR_NEEDMOREPARAMS(user, arg[0]), 1));
 	if (!arg[1].empty() && server.is_onServer(arg[1]) == false)
 		return (server.sendMsg(user, ERR_NOSUCHNICK(user, arg[1]), 1));
-	for (std::map<std::string, Channel>::iterator itc = server.get_channels().begin(); 
+	for (std::vector<Channel>::iterator itc = server.get_channels().begin(); 
 		itc != server.get_channels().end(); ++itc) {
-		if (itc->first == arg[2]) {
-			for (std::vector<User>::iterator itu = itc->second.get_UserChannel().begin(); \
-				itu != itc->second.get_UserChannel().end(); ++itu) {
+		if (itc->get_ChannelName() == arg[2]) {
+			for (std::vector<User>::iterator itu = itc->get_UserChannel().begin(); \
+				itu != itc->get_UserChannel().end(); ++itu) {
 				if (itu->get_nickname() == user.get_nickname()) {
-					if (itc->second.is_opChannel(user.get_nickname()) == false)
-						return (server.sendMsg(user, ERR_CHANOPRIVSNEEDED(user, itc->second), 1));
+					if (itc->is_opChannel(user.get_nickname()) == false)
+						return (server.sendMsg(user, ERR_CHANOPRIVSNEEDED(user, *itc), 1));
 					else
 						if (itu->get_nickname() == arg[1])
-							return (server.sendMsg(user, ERR_USERONCHANNEL(user, arg[1], itc->second), 1));
+							return (server.sendMsg(user, ERR_USERONCHANNEL(user, arg[1], *itc), 1));
 				}
 				else
-					return (server.sendMsg(user, ERR_NOTONCHANNEL(user, itc->second), 1));
+					return (server.sendMsg(user, ERR_NOTONCHANNEL(user, *itc), 1));
 			}
-			return (displayInvite(server, user, itc->second, arg[1]));
+			return (displayInvite(server, user, *itc, arg[1]));
 		}
 	}
 	return (server.sendMsg(user, ERR_NOSUCHCHANNEL(user, arg[2]), 1));

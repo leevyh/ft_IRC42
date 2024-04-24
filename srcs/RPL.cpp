@@ -33,11 +33,11 @@ std::string RPL_MYINFO(Server &server, User &user) {
 /* ************************************************************************** */
 
 void	displayInfosChannel(Server &server, User &user, Channel &channel) {
-	for (std::vector<User>::iterator it = channel.get_UserChannel().begin(); \
-		it != channel.get_UserChannel().end(); ++it) {
-		server.sendMsg(user, RPL_JOIN(user, channel), 2);
-	}
-//	server.sendMsg(user, RPL_JOIN(user, channel), 1);
+	// for (std::vector<User>::iterator it = channel.get_UserChannel().begin(); \
+	// 	it != channel.get_UserChannel().end(); ++it) {
+	// 	server.sendMsg(user, RPL_JOIN(user, channel), 2);
+	// }
+	//	server.sendMsg(user, RPL_JOIN(user, channel), 1);
 	server.sendMsg(user, RPL_NAMES(user, channel), 1);
 	server.sendMsg(user, RPL_ENDOFNAMES(user, channel), 1);
 	server.sendMsg(user, RPL_CREATIONTIME(user, channel), 1);
@@ -66,7 +66,7 @@ void	displayInvite(Server &server, User &user, Channel &channel, std::string to_
 	for (std::map<int, User>::iterator it = server.get_clientmap().begin();
 		it != server.get_clientmap().end(); ++it)
 		if (it->second.get_nickname() == to_invite) {
-			channel.set_inviteList(it->second);
+			channel.add_inviteList(it->second);
 			server.sendMsg(it->second, msg, 2);
 		}
 }
@@ -131,7 +131,7 @@ std::string ERR_ERRONEUSNICKNAME(std::string name) {
 }
 
 std::string ERR_NICKNAMEINUSE(std::string name) {
-	return ("433 " + name + " :Nickname is already in use");
+	return ("433 * " + name + " :Nickname is already in use");
 }
 
 std::string ERR_USERNOTINCHANNEL(User &user, std::string nick, Channel& chan) {
@@ -225,4 +225,12 @@ std::string RPL_INVITE(User &user, std::string to_invite, Channel &channel) {
 	std::string rpl = "NOTICE @" + channel.get_ChannelName() + " :" + user.get_username() +
 	" invited " + to_invite + " into channel " + channel.get_ChannelName();
 	return (rpl);
+}
+
+std::string RPL_KICK(User &user, Channel &channel, std::string to_kick, std::string kick_message) {
+	std::string msg = user.get_nickname() + "!~" + user.get_username() + "@" + user.get_ip() + ".ip";
+	if (kick_message.empty())
+		return (msg + " KICK " + channel.get_ChannelName() + " " + to_kick + " :" + user.get_nickname());
+	else
+		return (msg + " KICK " + channel.get_ChannelName() + " " + to_kick + " :" + kick_message);
 }

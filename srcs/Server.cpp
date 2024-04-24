@@ -49,8 +49,7 @@ std::string Server::get_networkname(void) const {return (_networkname);}
 
 std::map<int, User> &Server::get_clientmap(void) {return (_clientmap);}
 
-
-std::map<std::string, Channel> &Server::get_channels(void) {return (_channels);}
+std::vector<Channel> &Server::get_channels(void) {return (_channels);}
 
 /* ************************************************************************** */
 
@@ -295,3 +294,17 @@ bool Server::is_onServer(std::string to_find) {
 			return (true);
 	return (false);
 }
+
+void	Server::add_channelList(Channel &channel) {_channels.push_back(channel);}
+
+void	Server::remove_channelList(Channel& channel) {
+	for (std::vector<Channel>::iterator it = _channels.begin(); it != _channels.end(); ++it) {
+		if (it->get_ChannelName() == channel.get_ChannelName()) {
+			_channels.erase(it);
+			return;
+		}
+	}
+	return;
+}
+
+void	Server::delete_channelList(void) {_channels.clear();}

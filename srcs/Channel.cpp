@@ -89,9 +89,7 @@ void	Channel::unset_opChannel(std::string user) {
 		}
 }
 
-void	Channel::set_limitUser(long nb) {
-	_limitUser = nb;
-	std::cout << "_limitUser: " << _limitUser << std::endl;}
+void	Channel::set_limitUser(long nb) {_limitUser = nb;}
 
 void	Channel::unset_limitUser(void) {_limitUser = -1;}
 
@@ -107,9 +105,9 @@ void	Channel::set_optopic(void) {_optopic = true;}
 
 void	Channel::unset_optopic(void) {_optopic = false;}
 
-void	Channel::set_inviteList(User &user) {_inviteList.push_back(user);}
+void	Channel::add_inviteList(User &user) {_inviteList.push_back(user);}
 
-void	Channel::unset_inviteList(User& user) {
+void	Channel::remove_inviteList(User& user) {
 	for (std::vector<User>::iterator it = _inviteList.begin(); it != _inviteList.end(); ++it) {
 		if (it->get_nickname() == user.get_nickname()) {
 			_inviteList.erase(it);
@@ -118,6 +116,8 @@ void	Channel::unset_inviteList(User& user) {
 	}
 	return;
 }
+
+void	Channel::delete_inviteList(void) {_inviteList.clear();}
 
 /* ************************************************************************** */
 
@@ -178,12 +178,12 @@ void	Channel::sendMsg(User &user, std::string message, int code) {
 
 	msg = ":" + message + "\r\n";
 	switch (code) {
-		case 1:
+		case 1: // A TOUS LES USERS DU CHANNEL
 			for (std::vector<User>::iterator it = this->get_UserChannel().begin(); \
 				it != this->get_UserChannel().end(); ++it)
 				if (send(it->get_fd(), msg.c_str(), msg.length(), 0) == -1)
 					std::perror("send:");
-		case 2:
+		case 2: // A TOUS SAUF LE USER
 			for (std::vector<User>::iterator it = this->get_UserChannel().begin(); \
 				it != this->get_UserChannel().end(); ++it)
 				if (it->get_fd() != user.get_fd())
