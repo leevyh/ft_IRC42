@@ -13,7 +13,7 @@ Commands::Commands(void) {
 	cmdMap["JOIN"] = &Commands::join;
 	cmdMap["TOPIC"] = &Commands::topic;
 	cmdMap["PART"] = &Commands::part;
-	// cmdMap["KICK"] = &Commands::kick;
+	cmdMap["KICK"] = &Commands::kick;
 	cmdMap["INVITE"] = &Commands::invite;
 }
 
@@ -173,30 +173,21 @@ void Commands::quit(Server &server, User &user, std::vector<std::string> &arg) {
 	std::cout << "QUIT a coder" << std::endl;
 }
 
-
-
 /* --------------------------------------------------JOIN-------------------------------------------------- */
 
-/* Command: JOIN | Parameters: ( <channel> *( "," <channel> ) [ <key> *( "," <key> ) ] ) / "0"
-
-Numeric Replies: ERR_INVITEONLYCHAN (473); ERR_BADCHANNELKEY (475);
-				ERR_CHANNELISFULL (471); ERR_BADCHANMASK (476);
-				ERR_NOSUCHCHANNEL (403); RPL_TOPIC (332) */
-
-void	channel_BroadcastJoin(Server &server, User &user, std::string const &channel_name)
-{
-	std::string msg_send;
-	std::vector<User> user_list = server.get_channels()[channel_name].get_UserChannel();
-	for (std::vector<User>::iterator it = user_list.begin(); it != user_list.end(); ++it)
-	{
-//		if (it->get_fd() != user.get_fd())
-//		{
-		msg_send = user.get_nickname() + "!~" + user.get_username() + "@localhost.ip JOIN :" + channel_name;
-		server.sendMsg(*it, msg_send, 2);
-//		}
-	}
-}
-
+// void	channel_BroadcastJoin(Server &server, User &user, std::string const &channel_name)
+// {
+// 	std::string msg_send;
+// 	std::vector<User> user_list = server.get_channels()[channel_name].get_UserChannel();
+// 	for (std::vector<User>::iterator it = user_list.begin(); it != user_list.end(); ++it)
+// 	{
+// //		if (it->get_fd() != user.get_fd())
+// //		{
+// 		msg_send = user.get_nickname() + "!~" + user.get_username() + "@localhost.ip JOIN :" + channel_name;
+// 		server.sendMsg(*it, msg_send, 2);
+// //		}
+// 	}
+// }
 
 short is_Authorize(Server &server, User &user, Channel &channel, std::vector<std::string> &key, size_t i) {
 	(void)server;
@@ -210,7 +201,53 @@ short is_Authorize(Server &server, User &user, Channel &channel, std::vector<std
 	return (1);
 }
 
+std::vector<std::string>	split(const std::string& str) {
+	std::vector<std::string> channels_result;
+	std::string delimiter = ",";
+	char *args = strtok((char *)str.c_str(), ",");
+	while (args != NULL) {
+		channels_result.push_back(args);
+		args = strtok(NULL, ",");
+	}
+	return (channels_result);
+}
 
+int	check_channelName(Server &server, User &user, std::vector<std::string> &channel) {
+	for (size_t i = 0; i < channel.size(); i++) {
+		if (channel[i][0] != '#') {
+			server.sendMsg(user, ERR_BADCHANMASK(channel[i]), 1);
+			return (-6969);
+		}
+		if (channel[i].find_first_not_of("#abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789") 
+			!= std::string::npos) {
+			server.sendMsg(user, ERR_BADCHANMASK(channel[i]), 1);
+			return (-6969);
+		}
+	}
+	return (0);
+}
+
+void	create_NewChannel(Server &server, User &user, std::string const &channel_name) {
+	Channel channel(channel_name);
+	channel.set_ChannelUser(user);
+	channel.set_opChannel(user.get_nickname());
+	channel.creationTime();
+	server.get_channels()[channel_name] = channel;
+	// channel_BroadcastJoin(server, user, channel.get_ChannelName());
+	displayInfosChannel(server, user, channel);
+}
+
+void	add_UserInChannel(Server &server, User &user, Channel &channel) {
+	channel.set_ChannelUser(user);
+	// channel_BroadcastJoin(server, user, channel.get_ChannelName());
+	displayInfosChannel(server, user, channel);
+}
+
+/* Command: JOIN | Parameters: ( <channel> *( "," <channel> ) [ <key> *( "," <key> ) ] ) / "0"
+
+Numeric Replies: ERR_INVITEONLYCHAN (473); ERR_BADCHANNELKEY (475);
+				ERR_CHANNELISFULL (471); ERR_BADCHANMASK (476);
+				ERR_NOSUCHCHANNEL (403); RPL_TOPIC (332) */
 void Commands::join(Server &server, User &user, std::vector<std::string> &arg) {
 	std::vector<std::string> channels;
 	channels = split(arg[1]);
@@ -255,51 +292,7 @@ void Commands::join(Server &server, User &user, std::vector<std::string> &arg) {
 	return;
 }
 
-std::vector<std::string>	split(const std::string& str) {
-	std::vector<std::string> channels_result;
-	std::string delimiter = ",";
-	char *args = strtok((char *)str.c_str(), ",");
-	while (args != NULL) {
-		channels_result.push_back(args);
-		args = strtok(NULL, ",");
-	}
-	return (channels_result);
-}
-
-int	check_channelName(Server &server, User &user, std::vector<std::string> &channel) {
-	for (size_t i = 0; i < channel.size(); i++) {
-		if (channel[i][0] != '#') {
-			server.sendMsg(user, ERR_BADCHANMASK(channel[i]), 1);
-			return (-6969);
-		}
-		if (channel[i].find_first_not_of("#abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789") 
-			!= std::string::npos) {
-			server.sendMsg(user, ERR_BADCHANMASK(channel[i]), 1);
-			return (-6969);
-		}
-	}
-	return (0);
-}
-
-void	create_NewChannel(Server &server, User &user, std::string const &channel_name) {
-	Channel channel(channel_name);
-	channel.set_ChannelUser(user);
-	channel.set_opChannel(user.get_nickname());
-	channel.creationTime();
-	server.get_channels()[channel_name] = channel;
-	channel_BroadcastJoin(server, user, channel.get_ChannelName());
-	displayInfosChannel(server, user, channel);
-}
-
-void	add_UserInChannel(Server &server, User &user, Channel &channel) {
-	channel.set_ChannelUser(user);
-	channel_BroadcastJoin(server, user, channel.get_ChannelName());
-	displayInfosChannel(server, user, channel);
-}
-
-
 /* --------------------------------------------------TOPIC-------------------------------------------------- */
-
 
 void	edit_Topic(Server &server, User &user, std::vector<std::string> &arg, Channel &chan)
 {
@@ -316,6 +309,7 @@ void	edit_Topic(Server &server, User &user, std::vector<std::string> &arg, Chann
 	}
 }
 
+/* Command: TOPIC | Parameters: <channel> [ <topic> ] */
 void Commands::topic(Server &server, User &user, std::vector<std::string> &arg) {
 	(void)user;
 	if (arg.size() >= 3) {
@@ -347,7 +341,7 @@ void Commands::topic(Server &server, User &user, std::vector<std::string> &arg) 
 
 /* Command: PING | Parameters: <token> */
 void Commands::ping(Server &server, User &user, std::vector<std::string> &arg) {
-	if (arg[1].empty() || !arg[1].size())
+	if (arg.size() != 2 || arg[1].empty() || !arg[1].size())
 		return (server.sendMsg(user, ERR_NOORIGIN(user), 1));
 	std::string msg_send = "PONG :" + arg[1];
 	server.sendMsg(user, msg_send, 1);
@@ -393,6 +387,8 @@ void Commands::privmsg(Server &server, User &user, std::vector<std::string> &arg
 	}
 }
 
+
+/* Command: PART | Parameters: <channel> *( "," <channel> ) [ <Part Message> ] */
 void Commands::part(Server &server, User &user, std::vector<std::string> &arg) {
 	std::vector<std::string> channels;
 	channels = split(arg[1]);
@@ -452,6 +448,32 @@ void Commands::part(Server &server, User &user, std::vector<std::string> &arg) {
 			server.sendMsg(user, ERR_NOSUCHCHANNEL(user, arg[i]), 1);
 	}
 }
+
+
+/* Command: KICK | Parameters: <channel> *( "," <channel> ) <user> *( "," <user> ) [<comment>]
+
+The KICK command can be used to request the forced removal of a user
+from a channel.  It causes the <user> to PART from the <channel> by
+force.  For the message to be syntactically correct, there MUST be
+either one channel parameter and multiple user parameter, or as many
+channel parameters as there are user parameters.  If a "comment" is
+given, this will be sent instead of the default message, the nickname
+of the user issuing the KICK.
+
+The server MUST NOT send KICK messages with multiple channels or
+users to clients.  This is necessarily to maintain backward
+compatibility with old client software.
+
+Numeric Replies: ERR_NEEDMOREPARAMS (461); ERR_NOSUCHCHANNEL (403);
+				ERR_BADCHANMASK (476); ERR_CHANOPRIVSNEEDED (482);
+				ERR_USERNOTINCHANNEL (441); ERR_NOTONCHANNEL (442) */
+void Commands::kick(Server &server, User &user, std::vector<std::string> &arg) {
+	(void)server;
+	(void)user;
+	(void)arg;
+	std::cout << "KICK à coder\n";
+}
+
 
 /* Command: INVITE | Parameters: <nickname> <channel> */
 void Commands::invite(Server &server, User &user, std::vector<std::string> &arg) {

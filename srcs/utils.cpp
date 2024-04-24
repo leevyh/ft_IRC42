@@ -38,3 +38,4 @@ void signal_send(int signum) {
 	(void) signum;
 	signal_value = true;
 }
+

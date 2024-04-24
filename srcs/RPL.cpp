@@ -33,6 +33,10 @@ std::string RPL_MYINFO(Server &server, User &user) {
 /* ************************************************************************** */
 
 void	displayInfosChannel(Server &server, User &user, Channel &channel) {
+	for (std::vector<User>::iterator it = channel.get_UserChannel().begin(); \
+		it != channel.get_UserChannel().end(); ++it) {
+		server.sendMsg(user, RPL_JOIN(user, channel), 2);
+	}
 //	server.sendMsg(user, RPL_JOIN(user, channel), 1);
 	server.sendMsg(user, RPL_NAMES(user, channel), 1);
 	server.sendMsg(user, RPL_ENDOFNAMES(user, channel), 1);
@@ -65,16 +69,6 @@ void	displayInvite(Server &server, User &user, Channel &channel, std::string to_
 			channel.set_inviteList(it->second);
 			server.sendMsg(it->second, msg, 2);
 		}
-}
-
-// Sent to a client as a reply to the INVITE command when used with no parameter, to indicate a channel the client was invited to.
-std::string RPL_INVITELIST(User &user, Channel &channel) {
-	return ("336 " + user.get_username() + " " + channel.get_ChannelName());
-}
-
-// Sent as a reply to the INVITE command when used with no parameter, this numeric indicates the end of invitations a client received.
-std::string RPL_ENDOFINVITELIST(User &user) {
-	return ("337 " + user.get_username() + " :End of /INVITE list");
 }
 
 std::string RPL_INVITING(User &user, Channel &channel, std::string to_invite) {
