@@ -13,7 +13,6 @@ Server::Server() {
 }
 
 Server::Server(long port, std::string password) : _port(port), _password(password) {
-	std::cout << "Server created with port: " << _port << " and password: " << _password << std::endl;
 	_nb_of_users = 0;
 	_networkname = "IRC_DE_LA_MORT";
 }
@@ -83,11 +82,13 @@ std::vector<Channel> &Server::get_channels(void) {return (_channels);}
 
 /* ************************************************************************** */
 
+#include <iomanip>
 
 void Server::init_serv(void) {
 	int server_socket;
 	int yes = 1;
 
+	/* INIT SERVER + ERR HANDLING*/
 	server_socket = socket(AF_INET, SOCK_STREAM, 0);
 	if (server_socket == -1)
 		throw except("Error creating socket");
@@ -95,19 +96,27 @@ void Server::init_serv(void) {
 		throw except("Error Setsockopt");
 	if (fcntl(server_socket, F_SETFL, O_NONBLOCK) == -1)
 		throw except("Error setting socket to non-blocking");
+
+	/* ADD OPTION IN SERVER_ADDR STRUCT */
 	_server_addr.sin_family = AF_INET;
 	_server_addr.sin_port = htons(_port);
 	_server_addr.sin_addr.s_addr = INADDR_ANY;
 
+	/* BINDING/LISTEN + ERR HANDLING */
 	if (bind(server_socket, (struct sockaddr *) &_server_addr, sizeof(_server_addr)) == -1)
 		throw except("Error binding socket");
 	if (listen(server_socket, 10) == -1)
 		throw except("Error listening on socket");
 
-/* MESSAGE D'OUVERTURE DU SERVER */
-	std::cout << "Server listening on port " << _port << std::endl;
-	std::cout << "Server address listen: " << inet_ntoa(_server_addr.sin_addr) << std::endl;
-	std::cout << "Server port: " << ntohs(_server_addr.sin_port) << std::endl;
+	/* SERVER START MESSAGE */
+	std::cout << "\033[1J\033[1;1H\033[38;2;160;160;160m/******** SERVER STARTING ********\\" << std::endl << std::endl;
+	std::cout << "  Server Listening on port: " << _port << std::endl;
+	std::cout << "  Server Address listen: " << inet_ntoa(_server_addr.sin_addr) << std::endl;
+	std::cout << "  Server Port: " << ntohs(_server_addr.sin_port) << std::endl;
+	std::cout << "  Server Password: " << _password << std::endl << std::endl;
+	std::cout << "\\********** SERVER LOG ***********/" << std::endl;
+
+	/* ADD SERVER SOCKET TO POLLFD */
 	_pollfdmap.push_back(pollfd());
 	_pollfdmap.back().fd = server_socket;
 	_pollfdmap.back().events = POLLIN;
@@ -127,26 +136,34 @@ void Server::start_serv(void) {
 void Server::new_Connection_Client(void) {
 	struct sockaddr_in user_addr;
 	socklen_t user_addr_len = sizeof(user_addr);
-	std::cout << "Socket server juste avant le fcntl :" << _pollfdmap[0].fd << std::endl;
 	int client_socket;
+
+
+	/* ACCEPT CONNECTION + ERR HANDLING */
 	client_socket = accept(_pollfdmap[0].fd, (struct sockaddr *) &user_addr, &user_addr_len);
 	if (client_socket == -1)
 		throw except("Error accepting connection");
 	if (fcntl(client_socket, F_SETFL, O_NONBLOCK) == -1)
 		throw except("Error setting connection to non-blocking");
 
-/* MESSAGE DE CONNEXION D'UN USER */
-	std::cout << "New connection on client_socket: " << client_socket << std::endl;
-	std::cout << "User address: " << inet_ntoa(user_addr.sin_addr) << std::endl;
-	std::cout << "User port: " << ntohs(user_addr.sin_port) << std::endl;
+	/* DISPLAY NEW CONNECTION */
+	unsigned short port = ntohs(user_addr.sin_port);
+	std::cout << std::endl << "	\033[38;2;100;160;100m New connection" << std::endl;
+	std::cout << std::endl << "  New connection on socket: " << client_socket << std::endl;
+	std::cout << "  User port: " << port << std::endl;
+	std::cout << "  User IP: " << inet_ntoa(user_addr.sin_addr) << std::endl << std::endl;
+	std::cout << "	End of connection" << std::endl << std::endl;
+	std::cout << "\033[38;2;160;160;160m\\********************************/" << std::endl;
+
+	/* CREATE NEW USER + ADD TO MAP + ADD TO POLLFD */
 	User user(client_socket);
 	user.set_ip(inet_ntoa(user_addr.sin_addr));
+	user.set_port(port);
 	_clientmap[client_socket] = user;
 	_pollfdmap.push_back(pollfd());
 	_pollfdmap.back().fd = client_socket;
 	_pollfdmap.back().events = POLLIN;
 	_nb_of_users++;
-	std::cout << "Number of users: " << _nb_of_users << std::endl;
 }
 
 void Server::get_New_Client_Message(void) {
@@ -162,7 +179,6 @@ void Server::get_New_Client_Message(void) {
 				if (bytes <= 0) {
 					memset(buf, 0, 1024);
 					disconnect(_clientmap[_pollfdmap[i].fd]);
-					std::cout << "deco" << std::endl;
 					return;
 				}
 				else {
@@ -171,7 +187,6 @@ void Server::get_New_Client_Message(void) {
 					_clientmap[_pollfdmap[i].fd].receive(*this);
 					memset(buf, 0, 1024);
 					if (_clientmap[_pollfdmap[i].fd].get_status() == false) {
-						std::cout << "je passe ici ?" << std::endl;
 						disconnect(_clientmap[_pollfdmap[i].fd]);
 					}
 				}
@@ -184,6 +199,9 @@ void Server::get_New_Client_Message(void) {
 }
 
 void Server::disconnect(User &user) {
+	std::cout << "\033[38;2;160;100;100mClient on socket: " << user.get_fd() << " has been disconnected" << std::endl;
+	std::cout << "User address: " << user.get_ip() << std::endl;
+	std::cout << "User port: " << user.get_port() << std::endl;
 	std::vector<pollfd>::iterator it = std::find_if(_pollfdmap.begin(), _pollfdmap.end(), IsClientFDPredicate(user.get_fd()));
 	if (it != _pollfdmap.end()) {
 		_pollfdmap.erase(it);

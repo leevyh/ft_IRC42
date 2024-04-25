@@ -78,7 +78,6 @@ void Commands::nick(Server &server, User &user, std::vector<std::string> &arg) {
 		!= std::string::npos)
 		return (server.sendMsg(user, ERR_ERRONEUSNICKNAME(arg[1]), 1));
 	std::map<int, User> users = server.get_clientmap();
-	std::cout << "NICK EN COURS : " << arg[1] << std::endl;
 	int code = 0;
 	for(std::map<int, User>::iterator it = server.get_clientmap().begin(); \
 		it != server.get_clientmap().end(); ++it) {
@@ -94,7 +93,6 @@ void Commands::nick(Server &server, User &user, std::vector<std::string> &arg) {
 		+ " NICK :" + arg[1];
 		server.sendMsg(user, resp, 2);
 	}
-	std::cout << "code: " << code << std::endl;
 	if (code == 0)
 	user.set_nickname(arg[1]);
 }

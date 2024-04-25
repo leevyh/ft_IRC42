@@ -23,6 +23,7 @@ User &User::operator=(const User &rhs) {
 		this->_realname = rhs._realname;
 		this->_password = rhs._password;
 		this->_ip = rhs._ip;
+		this->_port = rhs._port;
 		this->_status = true;
 		this->_authenticated = false;
 		this->_fd = rhs._fd;
@@ -68,6 +69,10 @@ void User::set_ip(const std::string &ip) {
 	this->_ip = ip;
 }
 
+void User::set_port(unsigned short &port) {
+	this->_port = port;
+}
+
 void User::set_lastping(const int &ping) {
 	this->_lastping = ping;
 }
@@ -92,6 +97,10 @@ const std::string &User::get_password(void) const {
 
 const std::string &User::get_ip(void) const {
 	return (this->_ip);
+}
+
+unsigned short &User::get_port(void) {
+	return (this->_port);
 }
 
 int User::get_fd(void) const {

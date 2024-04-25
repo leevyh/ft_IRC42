@@ -14,6 +14,7 @@ class User {
 		std::string _realname;
 		std::string _password;
 		std::string _ip;
+		unsigned short _port;
 		bool _status;				// connected or not (/connect)
 		bool _authenticated;		// authenticated or not (PASS + NICK + USER)
 		int _fd;
@@ -33,6 +34,7 @@ class User {
 		void set_ip(const std::string &ip);
 		void set_status(bool status);
 		void set_authenticated(bool status);
+		void set_port(unsigned short &port);
 		void set_lastping(const int &ping);
 // GETTERS
 		const std::string &get_nickname(void) const;
@@ -40,6 +42,7 @@ class User {
 		const std::string &get_realname(void) const;
 		const std::string &get_password(void) const;
 		const std::string &get_ip(void) const;
+		unsigned short &get_port(void);
 		bool get_status(void) const;
 		bool get_authenticated(void) const;
 		int get_fd(void) const;
