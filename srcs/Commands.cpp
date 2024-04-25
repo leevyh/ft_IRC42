@@ -15,7 +15,7 @@ Commands::Commands(void) {
 	cmdMap["PART"] = &Commands::part;
 	cmdMap["KICK"] = &Commands::kick;
 	cmdMap["INVITE"] = &Commands::invite;
-//	cmdMap["WHOIS"] = &Commands::whois;
+	cmdMap["WHOIS"] = &Commands::whois;
 }
 
 Commands::~Commands(void) {}
@@ -133,8 +133,10 @@ void Commands::quit(Server &server, User &user, std::vector<std::string> &arg) {
 	}
 	if (nb_arg > 2 && arg[1][0] != ':')
 		server.sendMsg(user, ERR_NEEDMOREPARAMS(user, "QUIT"), 1);
-	if (nb_arg > 1) {
-		if (arg[1][0] == ':') {
+	if (nb_arg > 1)
+	{
+		if (arg[1][0] == ':')
+		{
 			msg_send += arg[1].erase(0, 1) + " ";
 			for (size_t i = 2; i < arg.size(); i++)
 				msg_send += arg[i] + " ";
@@ -142,17 +144,24 @@ void Commands::quit(Server &server, User &user, std::vector<std::string> &arg) {
 		else
 			msg_send += arg[1];
 	}
-	std::vector<std::map<std::string, Channel>::iterator> channel_list;
-	if (!server.get_channels().empty()) {
-		for (std::vector<Channel>::iterator it = server.get_channels().begin(); it != server.get_channels().end(); ++it) {
-			if (it->is_UserInChannel(user)) {
+	std::vector<std::vector<Channel>::iterator> channel_list;
+	if (!server.get_channels().empty())
+	{
+		for (std::vector<Channel>::iterator it = server.get_channels().begin(); it != server.get_channels().end(); ++it)
+		{
+			std::cout << "user.get_nickname(): " << user.get_nickname() << std::endl;
+			if (it->is_UserInChannel(user))
+			{
+				std::cout << "user removed from channel: " << user.get_nickname() << std::endl;
 				it->unset_ChannelUser(user);
 				if (it->get_ChannelUser().empty())
-					server.remove_channelList(*it);
-				else {
+					channel_list.push_back(it);
+				else
+				{
 					std::vector<User> user_list = it->get_ChannelUser();
-					//DISPLAY LIST OF USER IN CHANNEL
-					for (std::vector<User>::iterator ita = user_list.begin(); ita != user_list.end(); ++ita) {
+//DISPLAY LIST OF USER IN CHANNEL
+					for (std::vector<User>::iterator ita = user_list.begin(); ita != user_list.end(); ++ita)
+					{
 						std::cout << "ita->get_fd(): " << ita->get_fd() << std::endl;
 						std::cout << "ita->get_nickname(): " << ita->get_nickname() << std::endl;
 					}
@@ -162,10 +171,11 @@ void Commands::quit(Server &server, User &user, std::vector<std::string> &arg) {
 			}
 		}
 	}
-	// for (std::vector<std::map<std::string, Channel>::iterator>::iterator it = channel_list.begin(); it != channel_list.end(); ++it)
-	// 	server.get_channels().erase((*it)->first);															// MODIF VECTOR
-	//Display all channels always active
-	for (std::vector<Channel>::iterator it = server.get_channels().begin(); it != server.get_channels().end(); ++it) {
+	for (std::vector<std::vector<Channel>::iterator>::iterator it = channel_list.begin(); it != channel_list.end(); ++it)
+		server.get_channels().erase((*it));
+//Display all channels always active
+	for (std::vector<Channel>::iterator it = server.get_channels().begin(); it != server.get_channels().end(); ++it)
+	{
 		std::cout << it->get_ChannelName() << std::endl;
 	}
 	user.set_authenticated(false);
@@ -178,7 +188,7 @@ void Commands::quit(Server &server, User &user, std::vector<std::string> &arg) {
 void	edit_Topic(Server &server, User &user, std::vector<std::string> &arg, Channel &chan)
 {
 	if (arg[1] == chan.get_ChannelName()) {
-		if (chan.is_opChannel(user.get_nickname()) || chan.is_opTopic() == false) {
+		if (chan.is_opChannel(user.get_nickname()) || chan.is_optopic() == false) {
 			std::string topic = remove_OneChar(':', arg, 2);
 			chan.set_ChannelTopic(topic);
 			for (std::vector<User>::iterator it = chan.get_ChannelUser().begin(); \
@@ -393,19 +403,19 @@ void Commands::invite(Server &server, User &user, std::vector<std::string> &arg)
 	return (server.sendMsg(user, ERR_NOSUCHCHANNEL(user, arg[2]), 1));
 }
 
-//void Commands::whois(Server &server, User &user, std::vector<std::string> &arg) {
-//	if (arg.size() != 2)
-//		return (server.sendMsg(user, ERR_NEEDMOREPARAMS(user, arg[0]), 1));
-//	if (!arg[1].empty() && server.is_onServer(arg[1]) == false)
-//		return (server.sendMsg(user, ERR_NOSUCHNICK(user, arg[1]), 1));
-//	for (std::map<int, User>::iterator it = server.get_clientmap().begin(); \
-//		it != server.get_clientmap().end(); ++it) {
-//		if (it->second.get_nickname() == arg[1]) {
-//			server.sendMsg(user, RPL_WHOISUSER(user, it->second), 1);
-//			server.sendMsg(user, RPL_WHOISSERVER(user, it->second), 1);
-//			server.sendMsg(user, RPL_ENDOFWHOIS(user, it->second), 1);
-//			return;
-//		}
-//	}
-//	return (server.sendMsg(user, ERR_NOSUCHNICK(user, arg[1]), 1));
-//}
+void Commands::whois(Server &server, User &user, std::vector<std::string> &arg) {
+	if (arg.size() != 2)
+		return (server.sendMsg(user, ERR_NEEDMOREPARAMS(user, arg[0]), 1));
+	if (!arg[1].empty() && server.is_onServer(arg[1]) == false)
+		return (server.sendMsg(user, ERR_NOSUCHNICK(user, arg[1]), 1));
+	for (std::map<int, User>::iterator it = server.get_clientmap().begin(); \
+		it != server.get_clientmap().end(); ++it) {
+		if (it->second.get_nickname() == arg[1]) {
+			server.sendMsg(user, RPL_WHOISUSER(user, it->second), 1);
+			server.sendMsg(user, RPL_WHOISSERVER(user, it->second, server), 1);
+			server.sendMsg(user, RPL_ENDOFWHOIS(user, it->second), 1);
+			return;
+		}
+	}
+	return (server.sendMsg(user, ERR_NOSUCHNICK(user, arg[1]), 1));
+}
