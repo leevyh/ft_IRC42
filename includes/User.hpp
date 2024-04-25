@@ -7,14 +7,6 @@
 
 class Server;
 class Commands;
-/* Each user is distinguished from other users by a unique nickname
-having a maximum length of nine (9) characters.  See the protocol
-grammar rules (section 2.3.1) for what may and may not be used in a
-nickname.
-
-While the maximum length is limited to nine characters, clients
-SHOULD accept longer strings as they may become used in future
-evolutions of the protocol. */
 class User {
 	private:
 		std::string _nickname;
@@ -52,13 +44,10 @@ class User {
 		bool get_authenticated(void) const;
 		int get_fd(void) const;
 // FUNCTIONS
-		void joinBuffer(const char *buffer); // char * ou std::string ??
+		void joinBuffer(const char *buffer);
 		void receive(Server &server);
 		void parseClientMessage(Server &server, std::string line);
 		void authentication(Server &server, Commands &cmd, std::vector<std::string> arg);
 };
 std::ostream &operator<<(std::ostream &o, const User &src);
 std::vector<std::string> splitcmd(std::string line);
-
-// nick ::=  <any characters except NUL, CR, LF, chantype character, and SPACE> <possibly empty sequence of any characters except NUL, CR, LF, and SPACE>
-// user ::=  <sequence of any characters except NUL, CR, LF, and SPACE>

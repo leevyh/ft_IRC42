@@ -34,7 +34,10 @@ std::string RPL_MYINFO(Server &server, User &user) {
 /* ************************************************************************** */
 
 void	displayInfosChannel(Server &server, User &user, Channel &channel) {
-//	server.sendMsg(user, RPL_JOIN(user, channel), 1);
+	for (std::vector<User>::iterator it = channel.get_ChannelUser().begin(); \
+		it != channel.get_ChannelUser().end(); ++it) {
+		server.sendMsg(*it, RPL_JOIN(user, channel), 2);
+	}
 	server.sendMsg(user, RPL_NAMES(user, channel), 1);
 	server.sendMsg(user, RPL_ENDOFNAMES(user, channel), 1);
 	server.sendMsg(user, RPL_CREATIONTIME(user, channel), 1);
@@ -76,19 +79,9 @@ void	displayInvite(Server &server, User &user, Channel &channel, std::string to_
 	for (std::map<int, User>::iterator it = server.get_clientmap().begin();
 		it != server.get_clientmap().end(); ++it)
 		if (it->second.get_nickname() == to_invite) {
-			channel.set_inviteList(it->second);
+			channel.add_inviteList(it->second);
 			server.sendMsg(it->second, msg, 2);
 		}
-}
-
-// Sent to a client as a reply to the INVITE command when used with no parameter, to indicate a channel the client was invited to.
-std::string RPL_INVITELIST(User &user, Channel &channel) {
-	return ("336 " + user.get_username() + " " + channel.get_ChannelName());
-}
-
-// Sent as a reply to the INVITE command when used with no parameter, this numeric indicates the end of invitations a client received.
-std::string RPL_ENDOFINVITELIST(User &user) {
-	return ("337 " + user.get_username() + " :End of /INVITE list");
 }
 
 std::string RPL_INVITING(User &user, Channel &channel, std::string to_invite) {
@@ -97,7 +90,7 @@ std::string RPL_INVITING(User &user, Channel &channel, std::string to_invite) {
 
 std::string RPL_NAMES(User &user, Channel &channel) {
 	std::string names = "";
-	std::vector<User> users = channel.get_UserChannel();
+	std::vector<User> users = channel.get_ChannelUser();
 	for (std::vector<User>::iterator it = users.begin(); it != users.end(); ++it) {
 		names += print_Names(it->get_nickname(), channel) + it->get_nickname() + " ";
 	}
@@ -174,6 +167,10 @@ std::string ERR_ALREADYREGISTRED(User &user) {
 	return ("462 " + user.get_username() + " :You may not reregister");
 }
 
+std::string ERR_CHANNELISFULL(User &user, Channel &channel) {
+	return ("471 " + user.get_username() + " " + channel.get_ChannelName() + " :Cannot join channel (+l)");
+}
+
 std::string ERR_UNKNOWNMODE(User &user, std::string modechar) {
 	return ("472 " + user.get_username() + " " + modechar + " :is unknown mode char to me");
 }
@@ -245,4 +242,12 @@ std::string RPL_INVITE(User &user, std::string to_invite, Channel &channel) {
 	std::string rpl = "NOTICE @" + channel.get_ChannelName() + " :" + user.get_username() +
 	" invited " + to_invite + " into channel " + channel.get_ChannelName();
 	return (rpl);
+}
+
+std::string RPL_KICK(User &user, Channel &channel, std::string to_kick, std::string kick_message) {
+	std::string msg = user.get_nickname() + "!~" + user.get_username() + "@" + user.get_ip() + ".ip";
+	if (kick_message.empty())
+		return (msg + " KICK " + channel.get_ChannelName() + " " + to_kick + " :" + user.get_nickname());
+	else
+		return (msg + " KICK " + channel.get_ChannelName() + " " + to_kick + " :" + kick_message);
 }

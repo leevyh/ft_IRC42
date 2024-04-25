@@ -1,31 +1,8 @@
 #include "Commands.hpp"
 
-/*Command: MODE | Parameters: <channel> *( ( "-" / "+" ) *<modes> *<modeparams> )
+/*Command: MODE | Parameters: <channel> *( ( "-" / "+" ) *<modes> *<modeparams> ) */
 
-Numeric Replies: ERR_NEEDMOREPARAMS; ERR_NOCHANMODES; ERR_CHANOPRIVSNEEDED;
-				ERR_USERNOTINCHANNEL; ERR_UNKNOWNMODE; RPL_CHANNELMODEIS;
-				RPL_INVITELIST; RPL_ENDOFINVITELIST */
-void Commands::mode(Server &server, User &user, std::vector<std::string> &arg) {
-	if (arg.size() < 3)																// afficher les modes ?
-		return;
-	for (std::map<std::string, Channel>::iterator it = server.get_channels().begin(); 
-		it != server.get_channels().end(); ++it) {
-		if (it->first == arg[1]) {
-			if (it->second.is_opChannel(user.get_nickname()) == true) {
-				if (arg[2][0] == '+')
-					set_mode(server, user, it->second, arg);
-				else if (arg[2][0] == '-')
-					unset_mode(server, user, it->second, arg);
-				else
-				 	return(server.sendMsg(user, ERR_UNKNOWNMODE(user, arg[2]), 2));
-			}
-			else
-				server.sendMsg(user, ERR_CHANOPRIVSNEEDED(user, it->second), 2);
-		}
-	}
-}
-
-void	Commands::set_mode(Server &server, User &user, Channel &chan, std::vector<std::string> &arg) {
+void	set_mode(Server &server, User &user, Channel &chan, std::vector<std::string> &arg) {
 	char	mode[] = {'i', 't', 'k', 'o', 'l'};
 
 	for (int i = 0; i < 5; i++) {
@@ -33,9 +10,9 @@ void	Commands::set_mode(Server &server, User &user, Channel &chan, std::vector<s
 			switch (i) {
 				case 0:
 					chan.set_inviteOnly();
-					for (std::vector<User>::iterator it = chan.get_UserChannel().begin(); \
-						it != chan.get_UserChannel().end(); ++it)
-							chan.set_inviteList(*it);
+					for (std::vector<User>::iterator it = chan.get_ChannelUser().begin(); \
+						it != chan.get_ChannelUser().end(); ++it)
+							chan.add_inviteList(*it);
 					chan.sendMsg(user, RPL_MODE(user, chan, "+i", ""), 1);
 					break;
 				case 1:
@@ -45,14 +22,14 @@ void	Commands::set_mode(Server &server, User &user, Channel &chan, std::vector<s
 				case 2:
 					if (arg.size() < 4 || arg[3].empty())
 						break;
-					chan.set_password(arg[3]);
-					chan.sendMsg(user, RPL_MODE(user, chan, "+k", chan.get_password()), 1);
+					chan.set_ChannelKey(arg[3]);
+					chan.sendMsg(user, RPL_MODE(user, chan, "+k", chan.get_ChannelKey()), 1);
 					break;
 				case 3: 
 					if (arg.size() < 4 || arg[3].empty())
 						break;
-					for (std::vector<User>::iterator it = chan.get_UserChannel().begin(); \
-						it != chan.get_UserChannel().end(); ++it)
+					for (std::vector<User>::iterator it = chan.get_ChannelUser().begin(); \
+						it != chan.get_ChannelUser().end(); ++it)
 						if (it->get_nickname() == arg[3]) { 
 							chan.set_opChannel(it->get_nickname());
 							chan.sendMsg(user, RPL_MODE(user, chan, "+o", arg[3]), 1);
@@ -62,7 +39,9 @@ void	Commands::set_mode(Server &server, User &user, Channel &chan, std::vector<s
 					break;
 				case 4:
 					if (arg.size() < 4 || arg[3].empty() || arg[3].find_first_not_of("0123456789") != std::string::npos)
-						break;
+						return;
+					if (strtol(arg[3].c_str(), NULL, 10) < 1 || strtol(arg[3].c_str(), NULL, 10) > INT_MAX)
+						return;
 					chan.set_limitUser(strtol(arg[3].c_str(), NULL, 10));
 					chan.sendMsg(user, RPL_MODE(user, chan, "+l", arg[3]), 1);
 					break;
@@ -73,7 +52,7 @@ void	Commands::set_mode(Server &server, User &user, Channel &chan, std::vector<s
 	server.sendMsg(user, ERR_UNKNOWNMODE(user, arg[2]), 2);
 }
 
-void	Commands::unset_mode(Server &server, User &user, Channel &chan, std::vector<std::string> &arg) {
+void	unset_mode(Server &server, User &user, Channel &chan, std::vector<std::string> &arg) {
 	char	mode[] = {'i', 't', 'k', 'o', 'l'};
 
 	for (int i = 0; i < 5; i++) {
@@ -81,6 +60,7 @@ void	Commands::unset_mode(Server &server, User &user, Channel &chan, std::vector
 			switch (i) {
 				case 0:
 					chan.unset_inviteOnly();
+					chan.delete_inviteList();
 					chan.sendMsg(user, RPL_MODE(user, chan, "-i", ""), 1);
 					break;
 				case 1:
@@ -88,16 +68,16 @@ void	Commands::unset_mode(Server &server, User &user, Channel &chan, std::vector
 					chan.sendMsg(user, RPL_MODE(user, chan, "-t", ""), 1);
 					break;
 				case 2:
-					if (chan.get_password().empty())
+					if (chan.get_ChannelKey().empty())
 						break;
-					chan.sendMsg(user, RPL_MODE(user, chan, "-k", chan.get_password()), 1);
-					chan.unset_password();
+					chan.sendMsg(user, RPL_MODE(user, chan, "-k", chan.get_ChannelKey()), 1);
+					chan.unset_ChannelKey();
 					break;
 				case 3:
 					if (arg.size() < 4 || arg[3].empty())
 						break;
-					for (std::vector<User>::iterator itu = chan.get_UserChannel().begin(); \
-						itu != chan.get_UserChannel().end(); ++itu)
+					for (std::vector<User>::iterator itu = chan.get_ChannelUser().begin(); \
+						itu != chan.get_ChannelUser().end(); ++itu)
 						if (itu->get_nickname() == arg[3]) {
 							chan.unset_opChannel(itu->get_nickname());
 							chan.sendMsg(user, RPL_MODE(user, chan, "-o", arg[3]), 1);
@@ -115,3 +95,26 @@ void	Commands::unset_mode(Server &server, User &user, Channel &chan, std::vector
 	}
 	server.sendMsg(user, ERR_UNKNOWNMODE(user, arg[2]), 2);
 }
+
+void Commands::mode(Server &server, User &user, std::vector<std::string> &arg) {
+	if (arg.size() < 3)																// RPL_CHANNELMODEIS ?
+		return;
+	for (std::vector<Channel>::iterator it = server.get_channels().begin(); 
+		it != server.get_channels().end(); ++it) {
+		if (it->get_ChannelName() == arg[1]) {
+			if (it->is_opChannel(user.get_nickname()) == true) {
+				if (arg[2][0] == '+')
+					set_mode(server, user, *it, arg);
+				else if (arg[2][0] == '-')
+					unset_mode(server, user, *it, arg);
+				else if (arg[2] == "b")
+					return(server.sendMsg(user, "368", 2)); 						// RPL 368 END of BAN List
+				else
+				 	return(server.sendMsg(user, ERR_UNKNOWNMODE(user, arg[2]), 2));
+			}
+			else
+				server.sendMsg(user, ERR_CHANOPRIVSNEEDED(user, *it), 2);
+		}
+	}
+}
+
