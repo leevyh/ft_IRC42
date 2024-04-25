@@ -3,6 +3,7 @@
 #include "User.hpp"
 #include "unistd.h"
 #include <algorithm>
+#include <netdb.h>
 
 Server::Server() {
 	_port = 6667;
@@ -53,10 +54,11 @@ std::vector<Channel> &Server::get_channels(void) {return (_channels);}
 
 /* ************************************************************************** */
 
+
 void Server::init_serv(void) {
 	int server_socket;
 	int yes = 1;
-	// char ip_addr[INET_ADDRSTRLEN];
+	 char ip_addr[INET_ADDRSTRLEN];
 
 	// char	msg[1024];
 
@@ -76,10 +78,10 @@ void Server::init_serv(void) {
 	}
 	_server_addr.sin_family = AF_INET;
 	_server_addr.sin_port = htons(_port);
-	_server_addr.sin_addr.s_addr = INADDR_ANY;
+//	_server_addr.sin_addr.s_addr = INADDR_ANY;
 
-	// inet_ntop(AF_INET, &(_server_addr.sin_addr), ip_addr, INET_ADDRSTRLEN);
-
+	std::string test =  inet_ntop(AF_INET, &(_server_addr.sin_addr), ip_addr, INET_ADDRSTRLEN);
+	std::cout << "IP : " << test << std::endl;
 	if (bind(server_socket, (struct sockaddr *) &_server_addr, sizeof(_server_addr)) == -1) {
 		std::cerr << "Error binding socket" << std::endl;
 		// throw exception("Error binding socket")
@@ -91,7 +93,7 @@ void Server::init_serv(void) {
 		exit(1);
 	}
 	std::cout << "Server listening on port " << _port << std::endl;
-	std::cout << "Server address: " << inet_ntoa(_server_addr.sin_addr) << std::endl;
+	std::cout << "Private server address: " << inet_ntoa(_server_addr.sin_addr) << std::endl;
 	std::cout << "Server port: " << ntohs(_server_addr.sin_port) << std::endl;
 	_pollfdmap.push_back(pollfd());
 	_pollfdmap.back().fd = server_socket;
@@ -137,6 +139,7 @@ void Server::new_Connection_Client(void) {
 	std::cout << "User port: " << ntohs(user_addr.sin_port) << std::endl;
 	User user(client_socket);
 	//set ip for user
+	user.set_ip(inet_ntoa(user_addr.sin_addr));
 	_clientmap[client_socket] = user;
 	_pollfdmap.push_back(pollfd());
 	_pollfdmap.back().fd = client_socket;

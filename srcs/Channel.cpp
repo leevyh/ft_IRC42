@@ -170,6 +170,14 @@ bool	Channel::is_opTopic(void) {
 	return (false);
 }
 
+bool	Channel::is_InInviteList(User &user) {
+	for (std::vector<User>::iterator it = _inviteList.begin(); it != _inviteList.end(); ++it) {
+		if (it->get_nickname() == user.get_nickname())
+			return (true);
+	}
+	return (false);
+}
+
 /* ************************************************************************** */
 
 std::string	print_Names(std::string nickname, Channel &channel) {

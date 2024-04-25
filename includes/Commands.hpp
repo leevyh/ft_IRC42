@@ -29,6 +29,7 @@ class Commands {
 		void part(Server &server, User &user, std::vector<std::string> &arg);
 		void topic(Server &server, User &user, std::vector<std::string> &arg);
 		void mode(Server &server, User &user, std::vector<std::string> &arg);
+		void whois(Server &server, User &user, std::vector<std::string> &arg);
 
 		void privmsg(Server &server, User &user, std::vector<std::string> &arg);
 		void ping(Server &server, User &user, std::vector<std::string> &arg);
