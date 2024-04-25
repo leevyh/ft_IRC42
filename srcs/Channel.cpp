@@ -1,30 +1,31 @@
 #include "Channel.hpp"
 
 Channel::Channel() {
-	_nameChannel = "";
-	_pass = "";
+	_name = "";
+	_key = "";
 	_limitUser = -1;
-	_inviteonly = false;
+	_inviteOnly = false;
 }
 
-Channel::Channel(std::string name) : _nameChannel(name) {
-	_pass = "";
+Channel::Channel(std::string name) : _name(name) {
+	_key = "";
 	_limitUser = -1;
-	_inviteonly = false;
+	_inviteOnly = false;
 }
 
 Channel::Channel(Channel const &copy) {*this = copy;}
 
 Channel &Channel::operator=(Channel const &rhs) {
 	if (this != &rhs) {
-		_nameChannel = rhs._nameChannel;
-		_topic = rhs._topic;
-		_pass = rhs._pass;
+		_name = rhs._name;
 		_chanUsers = rhs._chanUsers;
 		_opUsers = rhs._opUsers;
-		_limitUser = rhs._limitUser;
-		_inviteonly = rhs._inviteonly;
+		_opTopic = rhs._opTopic;
+		_topic = rhs._topic;
 		_creationTime = rhs._creationTime;
+		_key = rhs._key;
+		_limitUser = rhs._limitUser;
+		_inviteOnly = rhs._inviteOnly;
 		_inviteList = rhs._inviteList;
 	}
 	return (*this);
@@ -74,19 +75,19 @@ void	Channel::set_limitUser(long nb) {_limitUser = nb;}
 
 void	Channel::unset_limitUser(void) {_limitUser = -1;}
 
-void	Channel::set_ChannelKey(std::string pass) {_pass = pass;}
+void	Channel::set_ChannelKey(std::string pass) {_key = pass;}
 
-void	Channel::unset_ChannelKey(void) {_pass = "";}
+void	Channel::unset_ChannelKey(void) {_key = "";}
 
-void	Channel::set_inviteOnly(void) {_inviteonly = true;}
+void	Channel::set_inviteOnly(void) {_inviteOnly = true;}
 
-void	Channel::unset_inviteOnly(void) {_inviteonly = false;}
+void	Channel::unset_inviteOnly(void) {_inviteOnly = false;}
 
 void	Channel::set_ChannelTopic(std::string topic) {_topic = topic;}
 
-void	Channel::set_optopic(void) {_optopic = true;}
+void	Channel::set_opTopic(void) {_opTopic = true;}
 
-void	Channel::unset_optopic(void) {_optopic = false;}
+void	Channel::unset_opTopic(void) {_opTopic = false;}
 
 void	Channel::add_inviteList(User &user) {_inviteList.push_back(user);}
 
@@ -104,7 +105,7 @@ void	Channel::delete_inviteList(void) {_inviteList.clear();}
 
 /* ************************************************************************** */
 
-std::string	Channel::get_ChannelName() const {return (_nameChannel);}
+std::string	Channel::get_ChannelName() const {return (_name);}
 
 std::vector<User>	&Channel::get_ChannelUser() {return (_chanUsers);}
 
@@ -114,7 +115,7 @@ std::string	Channel::get_ChannelTopic() const {return (_topic);}
 
 time_t	Channel::get_creationTime() const {return (_creationTime);}
 
-std::string Channel::get_ChannelKey() const {return (_pass);}
+std::string Channel::get_ChannelKey() const {return (_key);}
 
 long	Channel::get_limitUser() const {return (_limitUser);}
 
@@ -133,7 +134,7 @@ bool	Channel::is_opChannel(std::string user) {
 bool	Channel::is_ValidKey(std::string key) {
 	if (key.empty())
 		return (false);
-	if (key == _pass)
+	if (key == _key)
 		return (true);
 	return (false);
 }
@@ -147,13 +148,13 @@ bool	Channel::is_UserInChannel(User &user) {
 }
 
 bool	Channel::is_inviteOnly(void) {
-	if (_inviteonly == true)
+	if (_inviteOnly == true)
 		return (true);
 	return (false);
 }
 
 bool	Channel::is_opTopic(void) {
-	if (_optopic == true)
+	if (_opTopic == true)
 		return (true);
 	return (false);
 }
@@ -167,8 +168,6 @@ bool	Channel::is_InInviteList(User &user) {
 }
 
 /* ************************************************************************** */
-
-
 
 void	Channel::sendMsg(User &user, std::string message, int code) {
 	std::string msg;
@@ -189,7 +188,6 @@ void	Channel::sendMsg(User &user, std::string message, int code) {
 	}
 }
 
-//Do a function to have a time stamp of the creation of the channel
 void	Channel::creationTime(void) {
 	time_t now = time(NULL);
 	std::cout << "timestamp: " << now << std::endl;

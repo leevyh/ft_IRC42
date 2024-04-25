@@ -15,7 +15,7 @@ void	set_mode(Server &server, User &user, Channel &chan, std::vector<std::string
 					chan.sendMsg(user, RPL_MODE(user, chan, "+i", ""), 1);
 					break;
 				case 1:
-					chan.set_optopic();
+					chan.set_opTopic();
 					chan.sendMsg(user, RPL_MODE(user, chan, "+t", ""), 1);
 					break;
 				case 2:
@@ -63,7 +63,7 @@ void	unset_mode(Server &server, User &user, Channel &chan, std::vector<std::stri
 					chan.sendMsg(user, RPL_MODE(user, chan, "-i", ""), 1);
 					break;
 				case 1:
-					chan.unset_optopic();
+					chan.unset_opTopic();
 					chan.sendMsg(user, RPL_MODE(user, chan, "-t", ""), 1);
 					break;
 				case 2:

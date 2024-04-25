@@ -1,7 +1,6 @@
 #include "User.hpp"
 
-User::User() : _fd() {
-}
+User::User() : _fd() {}
 
 User::User(const int fd) : _fd(fd) {
 	this->_nickname = "";
@@ -11,9 +10,7 @@ User::User(const int fd) : _fd(fd) {
 	this->_authenticated = false;
 }
 
-User::~User() {
-//	close(this->_fd);
-}
+User::~User() {}
 
 User::User(const User &src) {
 	*this = src;
@@ -24,10 +21,11 @@ User &User::operator=(const User &rhs) {
 		this->_nickname = rhs._nickname;
 		this->_username = rhs._username;
 		this->_realname = rhs._realname;
+		this->_password = rhs._password;
+		this->_ip = rhs._ip;
 		this->_status = true;
 		this->_authenticated = false;
 		this->_fd = rhs._fd;
-		this->_ip = rhs._ip;
 	}
 	return (*this);
 }

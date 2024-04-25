@@ -27,8 +27,8 @@ class Channel
 		void set_inviteOnly(void);					// +i
 		void unset_inviteOnly(void);				// -i
 		void set_ChannelTopic(std::string topic);
-		void set_optopic(void);						// +t
-		void unset_optopic(void);					// -t
+		void set_opTopic(void);						// +t
+		void unset_opTopic(void);					// -t
 
 		void add_inviteList(User &user);
 		void remove_inviteList(User& user);
@@ -55,15 +55,15 @@ class Channel
 		void	creationTime(void);
 
 	private:
-		std::string _nameChannel;
-		std::string _topic;
-		std::string _pass;
-		long 		_limitUser;
-		bool		_inviteonly;
-		bool		_optopic;
-		time_t		_creationTime;
+		std::string _name;
 		std::vector<User> _chanUsers;
 		std::vector<std::string> _opUsers;
+		std::string _topic;
+		bool		_opTopic;
+		time_t		_creationTime;
+		std::string _key;
+		long 		_limitUser;
+		bool		_inviteOnly;
 		std::vector<User> _inviteList;
 };
 std::ostream &operator<<(std::ostream &o, Channel &src);

@@ -34,7 +34,11 @@ Server::Server(Server const &copy) {*this = copy;}
 Server &Server::operator=(Server const &rhs) {
 	if (this != &rhs) {
 		_port = rhs._port;
+		_nb_of_users = rhs._nb_of_users;
 		_password = rhs._password;
+		_networkname = rhs._networkname;
+		_pollfdmap = rhs._pollfdmap;
+		_clientmap = rhs._clientmap;
 		_channels = rhs._channels;
 	}
 	return (*this);
@@ -63,33 +67,21 @@ void Server::init_serv(void) {
 	// char	msg[1024];
 
 	server_socket = socket(AF_INET, SOCK_STREAM, 0);
-	if (server_socket == -1) {
-		std::cerr << "Error creating socket" << std::endl;
-		// throw exception("Error creating socket")
-		exit(1);
-	}
-	if (setsockopt(server_socket, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(yes)) == -1) {
-		std::cerr << "Error Setsockopt" << std::endl;
-	}
-	if (fcntl(server_socket, F_SETFL, O_NONBLOCK) == -1) {
-		std::cerr << "Error setting socket to non-blocking" << std::endl;
-		// throw exception("Error setting socket to non-blocking")
-		exit(1);
-	}
+	if (server_socket == -1)
+		throw except("Error creating socket");
+	if (setsockopt(server_socket, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(yes)) == -1)
+		throw except("Error Setsockopt");
+	if (fcntl(server_socket, F_SETFL, O_NONBLOCK) == -1)
+		throw except("Error setting socket to non-blocking");
 	_server_addr.sin_family = AF_INET;
 	_server_addr.sin_port = htons(_port);
 	_server_addr.sin_addr.s_addr = INADDR_ANY;
 
-	if (bind(server_socket, (struct sockaddr *) &_server_addr, sizeof(_server_addr)) == -1) {
-		std::cerr << "Error binding socket" << std::endl;
-		// throw exception("Error binding socket")
-		exit(1);
-	}
-	if (listen(server_socket, 10) == -1) {
-		std::cerr << "Error listening on socket" << std::endl;
-		// throw exception("Error listening on socket")
-		exit(1);
-	}
+	if (bind(server_socket, (struct sockaddr *) &_server_addr, sizeof(_server_addr)) == -1)
+		throw except("Error binding socket");
+	if (listen(server_socket, 10) == -1)
+		throw except("Error listening on socket");
+/* MESSAGE D'OUVERTURE DU SERVER */
 	std::cout << "Server listening on port " << _port << std::endl;
 	std::cout << "Server address listen: " << inet_ntoa(_server_addr.sin_addr) << std::endl;
 	std::cout << "Server port: " << ntohs(_server_addr.sin_port) << std::endl;
@@ -101,11 +93,8 @@ void Server::init_serv(void) {
 void Server::start_serv(void) {
 	if (poll(&_pollfdmap[0], _pollfdmap.size(), 2000) == -1) // -1 means wait indefinitely, but we can change it to a timeout 1000000 for 1 second
 	{
-		if (signal_value == false) {
-			std::cerr << "Signal" << std::endl;
-			// throw exception("poll exception")
-			exit(1);
-		}
+		if (signal_value == false)
+			throw except("poll exception");
 	}
 	if (_pollfdmap[0].revents == POLLIN) {
 		new_Connection_Client();
@@ -122,21 +111,14 @@ void Server::new_Connection_Client(void) {
 	int client_socket;
 //	std::cout << listen(_pollfdmap[0].fd, 10) << std::endl;
 	client_socket = accept(_pollfdmap[0].fd, (struct sockaddr *) &user_addr, &user_addr_len);
-	if (client_socket == -1) {
-		std::cerr << "Error accepting connection" << std::endl;
-		// throw exception("Error accepting connection")
-		exit(1);
-	}
-	if (fcntl(client_socket, F_SETFL, O_NONBLOCK) == -1) {
-		std::cerr << "Error setting connection to non-blocking" << std::endl;
-		// throw exception("Error setting connection to non-blocking")
-		exit(1);
-	}
+	if (client_socket == -1)
+		throw except("Error accepting connection");
+	if (fcntl(client_socket, F_SETFL, O_NONBLOCK) == -1)
+		throw except("Error setting connection to non-blocking");
 	std::cout << "New connection on client_socket: " << client_socket << std::endl;
 	std::cout << "User address: " << inet_ntoa(user_addr.sin_addr) << std::endl;
 	std::cout << "User port: " << ntohs(user_addr.sin_port) << std::endl;
 	User user(client_socket);
-	//set ip for user
 	user.set_ip(inet_ntoa(user_addr.sin_addr));
 	_clientmap[client_socket] = user;
 	_pollfdmap.push_back(pollfd());
