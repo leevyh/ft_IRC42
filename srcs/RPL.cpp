@@ -8,7 +8,6 @@ void displayWelcome(Server &server, User &user) {
 	server.sendMsg(user, RPL_YOURHOST(server, user), 1);
 	server.sendMsg(user, RPL_CREATED(user), 1);
 	server.sendMsg(user, RPL_MYINFO(server, user), 1);
-	std::cout << "user.ip = " << user.get_ip() << std::endl;
 }
 
 std::string RPL_WELCOME(Server &server, User &user) {
