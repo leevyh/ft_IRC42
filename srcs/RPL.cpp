@@ -130,6 +130,10 @@ std::string RPL_ENDOFNAMES(User &user, Channel &channel) {
 	return ("366 " + user.get_nickname() + " " + channel.get_ChannelName() + " :End of /NAMES list");
 }
 
+std::string RPL_ENDOFBANLIST(User &user, Channel &channel) {
+	return ("368 " + user.get_nickname() + " " + channel.get_ChannelName() + " :End of channel ban list");
+}
+
 /* ************************************************************************** */
 
 std::string ERR_NOSUCHNICK(User &user, std::string nickname) {
@@ -226,13 +230,34 @@ std::string ERR_CHANOPRIVSNEEDED(User &user, Channel &chan) {
 // <channel> is the name of the channel. <modestring> and <mode arguments> are a 
 // mode string and the mode arguments (delimited as separate parameters) as 
 // defined in the MODE message description.
-
-// std::string RPL_CHANNELMODEIS(User &user, Channel &chan) {
-// 	return ("324 " + user.get_username() + " " + chan.get_ChannelName() + );
-// }
-
 // Parameters: <channel> *( ( "-" / "+" ) *<modes> *<modeparams>
 // If <modeparams> is not given, the RPL_CHANNELMODEIS (324) numeric is returned.
+
+std::string RPL_CHANNELMODEIS(User &user, Channel &chan) {
+	std::string modes = "+";
+	std::vector<std::string> modeparams;
+	if (chan.is_opTopic())
+		modes += 't';
+	if (chan.is_inviteOnly())
+		modes += 'i';
+	if (chan.get_limitUser() != -1) {
+		modes += 'l';
+		std::string number;
+		std::stringstream strstream;
+		strstream << chan.get_limitUser();
+		strstream >> number;
+		modeparams.push_back(number);
+	}
+	if (!chan.get_ChannelKey().empty()) {
+		modes += 'k';
+		modeparams.push_back(chan.get_ChannelKey());
+	}
+	for (std::vector<std::string>::iterator it = modeparams.begin(); it != modeparams.end(); ++it)
+		modes += " " + *it;
+
+	return ("324 " + user.get_nickname() + " " + chan.get_ChannelName() + " " + modes);
+
+}
 
 /* ************************************************************************** */
 

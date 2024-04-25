@@ -105,14 +105,16 @@ void Commands::mode(Server &server, User &user, std::vector<std::string> &arg) {
 	}
 	for (std::vector<Channel>::iterator it = server.get_channels().begin(); 
 		it != server.get_channels().end(); ++it) {
+		if (arg.size() == 2 && it->get_ChannelName() == arg[1])
+			return (server.sendMsg(user, RPL_CHANNELMODEIS(user, *it), 1));
+		if (arg.size() == 3 && it->get_ChannelName() == arg[1] && arg[2] == "b")
+			return (server.sendMsg(user, RPL_ENDOFBANLIST(user, *it), 1));
 		if (it->get_ChannelName() == arg[1]) {
 			if (it->is_opChannel(user.get_nickname()) == true) {
 				if (arg[2][0] == '+')
 					set_mode(server, user, *it, arg);
 				else if (arg[2][0] == '-')
 					unset_mode(server, user, *it, arg);
-				else if (arg[2] == "b")
-					return(server.sendMsg(user, "368", 2)); 						// RPL 368 END of BAN List
 				else
 				 	return(server.sendMsg(user, ERR_UNKNOWNMODE(user, arg[2]), 2));
 			}
@@ -122,3 +124,11 @@ void Commands::mode(Server &server, User &user, std::vector<std::string> &arg) {
 	}
 }
 
+
+// << MODE #bleu
+// >> :lair.nl.eu.dal.net 324 Neoblack #bleu + 
+// --> chanquery mode
+
+// << MODE #bleu b
+// >> :lair.nl.eu.dal.net 368 Neoblack #bleu :End of Channel Ban List
+// --> chanquery ban end
