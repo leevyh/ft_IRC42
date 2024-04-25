@@ -33,11 +33,10 @@ std::string RPL_MYINFO(Server &server, User &user) {
 /* ************************************************************************** */
 
 void	displayInfosChannel(Server &server, User &user, Channel &channel) {
-	// for (std::vector<User>::iterator it = channel.get_UserChannel().begin(); \
-	// 	it != channel.get_UserChannel().end(); ++it) {
-	// 	server.sendMsg(user, RPL_JOIN(user, channel), 2);
-	// }
-	//	server.sendMsg(user, RPL_JOIN(user, channel), 1);
+	for (std::vector<User>::iterator it = channel.get_ChannelUser().begin(); \
+		it != channel.get_ChannelUser().end(); ++it) {
+		server.sendMsg(*it, RPL_JOIN(user, channel), 2);
+	}
 	server.sendMsg(user, RPL_NAMES(user, channel), 1);
 	server.sendMsg(user, RPL_ENDOFNAMES(user, channel), 1);
 	server.sendMsg(user, RPL_CREATIONTIME(user, channel), 1);
@@ -77,7 +76,7 @@ std::string RPL_INVITING(User &user, Channel &channel, std::string to_invite) {
 
 std::string RPL_NAMES(User &user, Channel &channel) {
 	std::string names = "";
-	std::vector<User> users = channel.get_UserChannel();
+	std::vector<User> users = channel.get_ChannelUser();
 	for (std::vector<User>::iterator it = users.begin(); it != users.end(); ++it) {
 		names += print_Names(it->get_nickname(), channel) + it->get_nickname() + " ";
 	}
@@ -152,6 +151,10 @@ std::string ERR_NEEDMOREPARAMS(User &user, std::string command) {
 
 std::string ERR_ALREADYREGISTRED(User &user) {
 	return ("462 " + user.get_username() + " :You may not reregister");
+}
+
+std::string ERR_CHANNELISFULL(User &user, Channel &channel) {
+	return ("471 " + user.get_username() + " " + channel.get_ChannelName() + " :Cannot join channel (+l)");
 }
 
 std::string ERR_UNKNOWNMODE(User &user, std::string modechar) {

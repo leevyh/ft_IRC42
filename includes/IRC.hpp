@@ -55,6 +55,7 @@ std::string ERR_NOTONCHANNEL(User &user, Channel &chan);               // 442
 std::string ERR_USERONCHANNEL(User &user, std::string to_join, Channel &chan); // 443
 std::string ERR_NEEDMOREPARAMS(User &user, std::string command);       // 461
 std::string ERR_ALREADYREGISTRED(User &user);                          // 462
+std::string ERR_CHANNELISFULL(User &user, Channel &channel);           // 471
 std::string ERR_UNKNOWNMODE(User &user, std::string modechar);         // 472
 std::string ERR_INVITEONLYCHAN(User &user, Channel &channel);          // 473
 std::string ERR_BADCHANNELKEY(User &user, Channel &channel);           // 475
@@ -68,7 +69,6 @@ std::string RPL_PRIVMSG(User &user, std::string recipient, std::string message);
 std::string RPL_PART(User &user, Channel &channel, std::string part_msg, int code);
 std::string RPL_INVITE(User &user, std::string to_invite, Channel &channel);
 std::string RPL_KICK(User &user, Channel &channel, std::string to_kick, std::string kick_message);
-// void	displayKick(Server &server, User &user, Channel &channel, std::string to_kick, std::string msg);
 
 
 struct IsClientFDPredicate {

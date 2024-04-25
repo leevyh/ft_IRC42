@@ -34,8 +34,8 @@ Channel::~Channel() {}
 
 std::ostream &operator<<(std::ostream &o, Channel &src) {
 	o << "Name: " << src.get_ChannelName() << " | Users(s) : ";
-	for (std::vector<User>::iterator it = src.get_UserChannel().begin(); 
-		it != src.get_UserChannel().end(); ++it) {
+	for (std::vector<User>::iterator it = src.get_ChannelUser().begin(); 
+		it != src.get_ChannelUser().end(); ++it) {
 		std::cout << it->get_username() << " - OP : ";
 		if (src.is_opChannel(it->get_username()))
 			std::cout << "Y" << std::endl;
@@ -49,25 +49,26 @@ std::ostream &operator<<(std::ostream &o, Channel &src) {
 
 std::string	Channel::get_ChannelName() const {return (_nameChannel);}
 
-std::vector<User>	&Channel::get_UserChannel() {return (_chanUsers);}
+std::vector<User>	&Channel::get_ChannelUser() {return (_chanUsers);}
 
 std::string	Channel::get_ChannelTopic() const {return (_topic);}
 
 long	Channel::get_limitUser() const {return (_limitUser);}
 
-std::string	Channel::get_password() const {return (_pass);}
-
 std::string Channel::get_ChannelKey() const {return (_pass);}
 
-std::vector<std::string> Channel::get_opUsers() {return (_opUsers);}
+std::vector<std::string> &Channel::get_opUsers() {return (_opUsers);}
 
 time_t	Channel::get_creationTime() const {return (_creationTime);}
+
+std::vector<User>	&Channel::get_inviteList() {return (_inviteList);}
 
 /* ************************************************************************** */
 
 void	Channel::set_ChannelUser(User &user) {_chanUsers.push_back(user);}
 
 void	Channel::unset_ChannelUser(User& user) {
+	std::cout << "unset_ChannelUser: " << user.get_nickname() << std::endl;
 	for (std::vector<User>::iterator it = _chanUsers.begin(); it != _chanUsers.end(); ++it) {
 		if (it->get_nickname() == user.get_nickname()) {
 			_chanUsers.erase(it);
@@ -93,9 +94,9 @@ void	Channel::set_limitUser(long nb) {_limitUser = nb;}
 
 void	Channel::unset_limitUser(void) {_limitUser = -1;}
 
-void	Channel::set_password(std::string pass) {_pass = pass;}
+void	Channel::set_ChannelKey(std::string pass) {_pass = pass;}
 
-void	Channel::unset_password(void) {_pass = "";}
+void	Channel::unset_ChannelKey(void) {_pass = "";}
 
 void	Channel::set_inviteOnly(void) {_inviteonly = true;}
 
@@ -129,16 +130,24 @@ bool	Channel::is_opChannel(std::string user) {
 	return (false);
 }
 
-bool	Channel::is_ValidKey(std::vector<std::string> key, int i) {
-//	if (key.empty() || key.size() < (unsigned long)i)
-//		return (false);
-//	if (key[i] == _pass)
-//		return (true);
-//	return (false);
+// bool	Channel::is_ValidKey(std::vector<std::string> key, int i) {
+// 	if (key.empty() || key.size() < (unsigned long)i)
+// 		return (false);
+// 	if (key[i] == _pass)
+// 		return (true);
+// 	return (false);
 
-	(void)key;
-	(void)i;
-	return (true);
+// 	// (void)key;
+// 	// (void)i;
+// 	// return (true);
+// }
+
+bool	Channel::is_ValidKey(std::string key) {
+	if (key.empty())
+		return (false);
+	if (key == _pass)
+		return (true);
+	return (false);
 }
 
 bool	Channel::is_UserInChannel(User &user) {
@@ -155,7 +164,7 @@ bool	Channel::is_inviteOnly(void) {
 	return (false);
 }
 
-bool	Channel::is_optopic(void) {
+bool	Channel::is_opTopic(void) {
 	if (_optopic == true)
 		return (true);
 	return (false);
@@ -179,13 +188,13 @@ void	Channel::sendMsg(User &user, std::string message, int code) {
 	msg = ":" + message + "\r\n";
 	switch (code) {
 		case 1: // A TOUS LES USERS DU CHANNEL
-			for (std::vector<User>::iterator it = this->get_UserChannel().begin(); \
-				it != this->get_UserChannel().end(); ++it)
+			for (std::vector<User>::iterator it = this->get_ChannelUser().begin(); \
+				it != this->get_ChannelUser().end(); ++it)
 				if (send(it->get_fd(), msg.c_str(), msg.length(), 0) == -1)
 					std::perror("send:");
 		case 2: // A TOUS SAUF LE USER
-			for (std::vector<User>::iterator it = this->get_UserChannel().begin(); \
-				it != this->get_UserChannel().end(); ++it)
+			for (std::vector<User>::iterator it = this->get_ChannelUser().begin(); \
+				it != this->get_ChannelUser().end(); ++it)
 				if (it->get_fd() != user.get_fd())
 					if (send(it->get_fd(), msg.c_str(), msg.length(), 0) == -1)
 						std::perror("send:");
