@@ -16,6 +16,7 @@ Commands::Commands(void) {
 	cmdMap["KICK"] = &Commands::kick;
 	cmdMap["INVITE"] = &Commands::invite;
 	cmdMap["WHOIS"] = &Commands::whois;
+	cmdMap["WHO"] = &Commands::who;
 }
 
 Commands::~Commands(void) {}
@@ -403,6 +404,7 @@ void Commands::pong(Server &server, User &user, std::vector<std::string> &arg) {
 
 /* ************************************************************************** */
 
+/* Command: WHOIS | Parameters: [<target>] <nick> */
 void Commands::whois(Server &server, User &user, std::vector<std::string> &arg) {
 	if (arg.size() != 2)
 		return (server.sendMsg(user, ERR_NEEDMOREPARAMS(user, arg[0]), 1));
@@ -418,4 +420,19 @@ void Commands::whois(Server &server, User &user, std::vector<std::string> &arg) 
 		}
 	}
 	return (server.sendMsg(user, ERR_NOSUCHNICK(user, arg[1]), 1));
+}
+
+/*Command: WHO | Parameters: <mask> */
+void Commands::who(Server &server, User &user, std::vector<std::string> &arg) {
+	if (arg.size() != 2)
+		return ;
+	if (!arg[1].empty() && server.is_onServer(user.get_nickname()) == true) {
+		for (std::vector<Channel>::iterator it = server.get_channels().begin(); \
+			it != server.get_channels().end(); ++it) {
+				if (it->get_ChannelName() == arg[1]) {
+					server.sendMsg(user, RPL_WHOREPLY(server, user, *it), 1);
+					server.sendMsg(user, RPL_ENDOFWHO(user, *it), 1);
+				}
+			}
+	}
 }

@@ -45,6 +45,31 @@ Server &Server::operator=(Server const &rhs) {
 
 /* ************************************************************************** */
 
+void	Server::add_channelList(Channel &channel) {_channels.push_back(channel);}
+
+void	Server::remove_channelList(Channel& channel) {
+std::cout << "remove_channelList: " << channel.get_ChannelName() << std::endl;
+	for (std::vector<Channel>::iterator it = _channels.begin(); it != _channels.end(); ++it) {
+		if (it->get_ChannelName() == channel.get_ChannelName()) {
+			_channels.erase(it);
+			return;
+		}
+	}
+	return;
+}
+
+void	Server::delete_channelList(void) {_channels.clear();}
+
+bool Server::is_onServer(std::string to_find) {
+	for (std::map<int, User>::iterator it = this->get_clientmap().begin();
+		it != this->get_clientmap().end(); ++it)
+		if (it->second.get_nickname() == to_find)
+			return (true);
+	return (false);
+}
+
+/* ************************************************************************** */
+
 long Server::get_Port(void) const {return (_port);}
 
 std::string Server::get_Password(void) const {return (_password);}
@@ -98,23 +123,21 @@ void Server::init_serv(void) {
 }
 
 void Server::start_serv(void) {
-	if (poll(&_pollfdmap[0], _pollfdmap.size(), 2000) == -1) // -1 means wait indefinitely, but we can change it to a timeout 1000000 for 1 second
-	{
+	if (poll(&_pollfdmap[0], _pollfdmap.size(), 2000) == -1) { // -1 means wait indefinitely, but we can change it to a timeout 1000000 for 1 second
 		if (signal_value == false)
 			throw except("poll exception");
 	}
-	if (_pollfdmap[0].revents == POLLIN) {
+	if (_pollfdmap[0].revents == POLLIN)
 		new_Connection_Client();
-	}
-	else {
+	else
 		get_New_Client_Message();
-	}
 }
 
 void Server::new_Connection_Client(void) {
 	struct sockaddr_in user_addr;
 	socklen_t user_addr_len = sizeof(user_addr);
 	int client_socket;
+
 
 	/* ACCEPT CONNECTION + ERR HANDLING */
 	client_socket = accept(_pollfdmap[0].fd, (struct sockaddr *) &user_addr, &user_addr_len);
@@ -175,9 +198,6 @@ void Server::get_New_Client_Message(void) {
 	}
 }
 
-
-//void	Server::send_MsgToUsers(Server &server, User &sender, User &dest)
-
 void Server::disconnect(User &user) {
 	std::cout << "\033[38;2;160;100;100mClient on socket: " << user.get_fd() << " has been disconnected" << std::endl;
 	std::cout << "User address: " << user.get_ip() << std::endl;
@@ -198,20 +218,7 @@ void Server::disconnect(User &user) {
 	}
 }
 
-//	std::vector<pollfd>::iterator it = std::find_if(_pollfdmap.begin(), _pollfdmap.end(), IsClientFDPredicate(user.get_fd()));
-//	if (it != _pollfdmap.end()){
-//		_pollfdmap.erase(it);
-//	}
-//	close(user.get_fd());
-//	std::map<int, User>::iterator it_fd = _clientmap.find(user.get_fd());
-//	if (it_fd != _clientmap.end()) {
-//		_clientmap.erase(it_fd);
-//	}
-//	_nb_of_users--;
-//	if (_nb_of_users < 1) {
-//		_clientmap.clear();
-//	}
-//}
+/* ************************************************************************** */
 
 void Server::sendMsg(User &user, std::string message, int code) const {
 	std::string msg;
@@ -229,25 +236,3 @@ void Server::sendMsg(User &user, std::string message, int code) const {
 	}
 }
 
-bool Server::is_onServer(std::string to_find) {
-	for (std::map<int, User>::iterator it = this->get_clientmap().begin();
-		it != this->get_clientmap().end(); ++it)
-		if (it->second.get_nickname() == to_find)
-			return (true);
-	return (false);
-}
-
-void	Server::add_channelList(Channel &channel) {_channels.push_back(channel);}
-
-void	Server::remove_channelList(Channel& channel) {
-std::cout << "remove_channelList: " << channel.get_ChannelName() << std::endl;
-	for (std::vector<Channel>::iterator it = _channels.begin(); it != _channels.end(); ++it) {
-		if (it->get_ChannelName() == channel.get_ChannelName()) {
-			_channels.erase(it);
-			return;
-		}
-	}
-	return;
-}
-
-void	Server::delete_channelList(void) {_channels.clear();}
