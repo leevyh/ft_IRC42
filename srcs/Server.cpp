@@ -75,9 +75,9 @@ void Server::init_serv(void) {
 		// throw exception("Error setting socket to non-blocking")
 		exit(1);
 	}
-	_server_addr.sin_family = AF_INET;
-	_server_addr.sin_port = htons(_port);
-	_server_addr.sin_addr.s_addr = INADDR_ANY;
+	_server_addr.sin_family = AF_INET;// quel type adrr ip
+	_server_addr.sin_port = htons(_port); // numero de port
+	_server_addr.sin_addr.s_addr = INADDR_ANY; // accept tt type addr ip
 
 	// inet_ntop(AF_INET, &(_server_addr.sin_addr), ip_addr, INET_ADDRSTRLEN);
 

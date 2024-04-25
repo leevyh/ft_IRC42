@@ -23,9 +23,9 @@ void Commands::getcommand(Server &server, User &user, std::vector<std::string> &
 	bool command = false;
 
 	if (!argument.empty()) {
-		for (std::map<std::string, cmdFPtr>::iterator it = cmdMap.begin(); it != cmdMap.end(); ++it) {
+		for (std::map<std::string, cmdFPtr>::iterator it = cmdMap.begin(); it != cmdMap.end(); ++it) { 
 			if (it->first == argument[0]) {
-				(this->*(it->second))(server, user, argument);
+				(this->*(it->second))(server, user, argument); 
 				command = true;
 			}
 		}
@@ -37,12 +37,10 @@ void Commands::getcommand(Server &server, User &user, std::vector<std::string> &
 	return;
 }
 
-
-void Commands::capls(Server &server, User &user, std::vector<std::string> &arg) {
+void Commands::capls(Server &server, User &user, std::vector<std::string> &arg) { 
 	if (arg.size() > 1 && arg[1] == "LS")
 		server.sendMsg(user, "CAP * LS :none", 1);
 }
-
 
 /* Command PASS | Parameters: <password> */
 void Commands::pass(Server &server, User &user, std::vector<std::string> &arg) {
