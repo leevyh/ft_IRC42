@@ -44,6 +44,7 @@ class Channel
 		bool	is_UserInChannel(User &user);
 		bool	is_inviteOnly(void);
 		bool	is_optopic(void);
+		bool	is_InInviteList(User &user);
 
 		void	sendMsg(User &user, std::string message, int code);
 		void	creationTime(void);

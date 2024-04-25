@@ -27,6 +27,7 @@ User &User::operator=(const User &rhs) {
 		this->_status = true;
 		this->_authenticated = false;
 		this->_fd = rhs._fd;
+		this->_ip = rhs._ip;
 	}
 	return (*this);
 }

@@ -30,6 +30,7 @@ class Commands {
 		void mode(Server &server, User &user, std::vector<std::string> &arg);
 		void set_mode(Server &server, User &user, Channel &chan, std::vector<std::string> &arg);
 		void unset_mode(Server &server, User &user, Channel &chan, std::vector<std::string> &arg);
+		void whois(Server &server, User &user, std::vector<std::string> &arg);
   
 		void names();
 		void leave();

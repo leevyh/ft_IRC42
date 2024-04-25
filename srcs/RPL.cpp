@@ -8,6 +8,7 @@ void displayWelcome(Server &server, User &user) {
 	server.sendMsg(user, RPL_YOURHOST(server, user), 1);
 	server.sendMsg(user, RPL_CREATED(user), 1);
 	server.sendMsg(user, RPL_MYINFO(server, user), 1);
+	std::cout << "user.ip = " << user.get_ip() << std::endl;
 }
 
 std::string RPL_WELCOME(Server &server, User &user) {
@@ -37,6 +38,19 @@ void	displayInfosChannel(Server &server, User &user, Channel &channel) {
 	server.sendMsg(user, RPL_NAMES(user, channel), 1);
 	server.sendMsg(user, RPL_ENDOFNAMES(user, channel), 1);
 	server.sendMsg(user, RPL_CREATIONTIME(user, channel), 1);
+
+}
+
+std::string RPL_WHOISUSER(User &user, User &whois) {
+	return ("311 " + user.get_username() + " " + whois.get_nickname() + " " + whois.get_username() + " " + whois.get_ip() + " * :" + whois.get_realname());
+}
+
+std::string RPL_WHOISSERVER(User &user, User &whois, Server &server) {
+	return ("312 " + user.get_username() + " " + whois.get_nickname() + " " + server.get_networkname() + " :Server Info");
+}
+
+std::string RPL_ENDOFWHOIS(User &user, User &whois) {
+	return ("318 " + user.get_username() + " " + whois.get_nickname() + " :End of /WHOIS list");
 }
 
 std::string RPL_CREATIONTIME(User &user, Channel &channel) {
@@ -137,7 +151,7 @@ std::string ERR_ERRONEUSNICKNAME(std::string name) {
 }
 
 std::string ERR_NICKNAMEINUSE(std::string name) {
-	return ("433 " + name + " :Nickname is already in use");
+	return ("433 * " + name + " :Nickname is already in use");
 }
 
 std::string ERR_USERNOTINCHANNEL(User &user, std::string nick, Channel& chan) {

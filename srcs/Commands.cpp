@@ -15,6 +15,7 @@ Commands::Commands(void) {
 	cmdMap["PART"] = &Commands::part;
 	// cmdMap["KICK"] = &Commands::kick;
 	cmdMap["INVITE"] = &Commands::invite;
+//	cmdMap["WHOIS"] = &Commands::whois;
 }
 
 Commands::~Commands(void) {}
@@ -69,21 +70,28 @@ void Commands::pass(Server &server, User &user, std::vector<std::string> &arg) {
 void Commands::nick(Server &server, User &user, std::vector<std::string> &arg) {
 	if (arg[1].empty())
 		return (server.sendMsg(user, ERR_NONICKNAMEGIVEN(arg[1]), 1));
-	if (arg[1].find_first_not_of("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789") \
+	if (arg[1].find_first_not_of("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789[]\\\\`_^{|}-") \
 		!= std::string::npos) //ajouter les autres caractères autorisés
 		return (server.sendMsg(user, ERR_ERRONEUSNICKNAME(arg[1]), 1));
 	std::map<int, User> users = server.get_clientmap();
+	std::cout << "NICK EN COURS : " << arg[1] << std::endl;
+	int code = 0;
 	for(std::map<int, User>::iterator it = server.get_clientmap().begin(); \
 		it != server.get_clientmap().end(); ++it) {
 		if (arg[1] == it->second.get_nickname())
+		{
 			server.sendMsg(user, ERR_NICKNAMEINUSE(arg[1]), 1);
+			code = 1;
+		}
 	}
-	if (!user.get_nickname().empty()) {
+	if (!user.get_nickname().empty() && code == 0) {
 		server.sendMsg(user, user.get_nickname() + " changed his nickname to " + arg[1], 1);
 		std::string resp = user.get_nickname() + "!~" + user.get_username() + "@" + user.get_ip() \
 		+ " NICK :" + arg[1];
 		server.sendMsg(user, resp, 2);
 	}
+	std::cout << "code: " << code << std::endl;
+	if (code == 0)
 	user.set_nickname(arg[1]);
 }
 
@@ -94,7 +102,6 @@ void Commands::user(Server &server, User &user, std::vector<std::string> &arg) {
 	if (arg.size() < 5)
 		return (server.sendMsg(user, ERR_NEEDMOREPARAMS(user, "USER"), 1));
 	user.set_username(arg[1]);
-	user.set_ip(arg[3]);
 	if (arg[4][0] == ':') {
 		std::string realname;
 		arg[4] = arg[4].erase(0, 1);
@@ -205,7 +212,7 @@ short is_Authorize(Server &server, User &user, Channel &channel, std::vector<std
 		return (2);
 	if (channel.get_limitUser() > -1 && channel.get_UserChannel().size() >= (unsigned long)channel.get_limitUser())
 		return (3);
-	if (channel.is_inviteOnly())
+	if (channel.is_inviteOnly() && !channel.is_InInviteList(user))
 		return (4);
 	return (1);
 }
@@ -240,8 +247,7 @@ void Commands::join(Server &server, User &user, std::vector<std::string> &arg) {
 //							server.sendMsg(user, ERR_CHANNELISFULL(user, it->second), 1);
 							break;
 						case 4:  //channel sur invite
-							std::cout << "ERR_INVITEONLYCHAN a coder" << std::endl;
-							// server.sendMsg(user, ERR_INVITEONLYCHAN(user, it->second), 1);
+							 server.sendMsg(user, ERR_INVITEONLYCHAN(user, it->second), 1);
 							break;
 						default:
 							std::cerr << "Error: Unknown error" << std::endl;
@@ -479,3 +485,20 @@ void Commands::invite(Server &server, User &user, std::vector<std::string> &arg)
 	}
 	return (server.sendMsg(user, ERR_NOSUCHCHANNEL(user, arg[2]), 1));
 }
+
+//void Commands::whois(Server &server, User &user, std::vector<std::string> &arg) {
+//	if (arg.size() != 2)
+//		return (server.sendMsg(user, ERR_NEEDMOREPARAMS(user, arg[0]), 1));
+//	if (!arg[1].empty() && server.is_onServer(arg[1]) == false)
+//		return (server.sendMsg(user, ERR_NOSUCHNICK(user, arg[1]), 1));
+//	for (std::map<int, User>::iterator it = server.get_clientmap().begin(); \
+//		it != server.get_clientmap().end(); ++it) {
+//		if (it->second.get_nickname() == arg[1]) {
+//			server.sendMsg(user, RPL_WHOISUSER(user, it->second), 1);
+//			server.sendMsg(user, RPL_WHOISSERVER(user, it->second), 1);
+//			server.sendMsg(user, RPL_ENDOFWHOIS(user, it->second), 1);
+//			return;
+//		}
+//	}
+//	return (server.sendMsg(user, ERR_NOSUCHNICK(user, arg[1]), 1));
+//}
