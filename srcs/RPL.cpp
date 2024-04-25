@@ -77,8 +77,7 @@ std::string RPL_CHANNELMODEIS(User &user, Channel &chan) {
 	}
 	for (std::vector<std::string>::iterator it = modeparams.begin(); it != modeparams.end(); ++it)
 		modes += ' ' + *it;
-	std::cout << "modes = " << modes << std::endl;
-		return ("324 " + user.get_nickname() + " " + chan.get_ChannelName() + " " + modes);
+	return ("324 " + user.get_nickname() + " " + chan.get_ChannelName() + " " + modes);
 
 }
 
@@ -245,8 +244,7 @@ std::string RPL_PRIVMSG(User &user, std::string recipient, std::string message) 
 	return (rpl + " PRIVMSG " + recipient + " :" + message);
 }
 
-std::string RPL_PART(User &user, Channel &channel, std::string part_message, int code)
-{
+std::string RPL_PART(User &user, Channel &channel, std::string part_message, int code) {
 	std::string msg = user.get_nickname() + "!~" + user.get_username() + "@" + user.get_ip() + ".ip";
 	if (code == 1)
 		return (msg + " PART " + channel.get_ChannelName());
@@ -266,4 +264,9 @@ std::string RPL_KICK(User &user, Channel &channel, std::string to_kick, std::str
 		return (msg + " KICK " + channel.get_ChannelName() + " " + to_kick + " :" + user.get_nickname());
 	else
 		return (msg + " KICK " + channel.get_ChannelName() + " " + to_kick + " :" + kick_message);
+}
+
+std::string RPL_QUIT(User &user, std::string quit_message) {
+	std::string msg = user.get_nickname() + "!~" + user.get_username() + "@" + user.get_ip() + ".ip";
+	return (msg + " QUIT :" + quit_message);
 }

@@ -21,7 +21,7 @@
 extern bool signal_value;
 void check_args(int argc, char **argv);
 void signal_send(int signum);
-std::string remove_OneChar(char c, std::vector<std::string> &arg);
+std::string remove_OneChar(char c, std::vector<std::string> &arg, int i);
 
 // IRC PROTOCOL
 void displayWelcome(Server &server, User &user);
@@ -33,7 +33,7 @@ std::string RPL_MYINFO(Server &server, User &user);                    // 004
 std::string RPL_CHANNELMODEIS(User &user, Channel &chan);              // 324
 void displayInfosChannel(Server &server, User &user, Channel &channel);
 std::string RPL_WHOISUSER(User &user, User &whois);                    // 311
-std::string RPL_WHOISSERVER(User &user, User &whois, Server &server);                  // 312
+std::string RPL_WHOISSERVER(User &user, User &whois, Server &server);  // 312
 std::string RPL_ENDOFWHOIS(User &user, User &whois);                   // 318
 std::string RPL_CREATIONTIME(User &user, Channel &channel);            // 329
 std::string RPL_NOTOPIC(User &user, Channel &channel);                 // 331
@@ -74,6 +74,7 @@ std::string RPL_PRIVMSG(User &user, std::string recipient, std::string message);
 std::string RPL_PART(User &user, Channel &channel, std::string part_msg, int code);
 std::string RPL_INVITE(User &user, std::string to_invite, Channel &channel);
 std::string RPL_KICK(User &user, Channel &channel, std::string to_kick, std::string kick_message);
+std::string RPL_QUIT(User &user, std::string quit_message);
 
 
 struct IsClientFDPredicate {
@@ -84,4 +85,17 @@ struct IsClientFDPredicate {
 	bool operator()(const pollfd& pfd) const {
 		return pfd.fd == clientFD;
 	}
+};
+
+
+/* ************************************************************************** */
+
+#include <exception>
+class except : public std::exception {
+	public:
+		except( const char* msg ) { _msg = msg; };
+		virtual ~except() throw() {};
+		virtual const char * what() const throw() {return this->_msg.c_str(); };
+	private:
+		std::string _msg;
 };

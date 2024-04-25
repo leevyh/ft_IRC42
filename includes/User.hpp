@@ -50,4 +50,5 @@ class User {
 		void authentication(Server &server, Commands &cmd, std::vector<std::string> arg);
 };
 std::ostream &operator<<(std::ostream &o, const User &src);
+
 std::vector<std::string> splitcmd(std::string line);

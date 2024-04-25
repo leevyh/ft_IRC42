@@ -1,7 +1,6 @@
 #include "Commands.hpp"
 
 /*Command: MODE | Parameters: <channel> *( ( "-" / "+" ) *<modes> *<modeparams> ) */
-
 void	set_mode(Server &server, User &user, Channel &chan, std::vector<std::string> &arg) {
 	char	mode[] = {'i', 't', 'k', 'o', 'l'};
 
@@ -97,8 +96,6 @@ void	unset_mode(Server &server, User &user, Channel &chan, std::vector<std::stri
 }
 
 void Commands::mode(Server &server, User &user, std::vector<std::string> &arg) {
-//	if (arg.size() < 3)																// RPL_CHANNELMODEIS ?
-//		return;
 	if (arg.size() == 3 && arg[1] == user.get_nickname() && arg[2] == "+i"){
 		std::string msg = user.get_nickname() + " MODE " + user.get_nickname() + " :+iH";
 		server.sendMsg(user, msg, 2);
@@ -126,12 +123,3 @@ void Commands::mode(Server &server, User &user, std::vector<std::string> &arg) {
 		}
 	}
 }
-
-
-// << MODE #bleu
-// >> :lair.nl.eu.dal.net 324 Neoblack #bleu + 
-// --> chanquery mode
-
-// << MODE #bleu b
-// >> :lair.nl.eu.dal.net 368 Neoblack #bleu :End of Channel Ban List
-// --> chanquery ban end

@@ -127,13 +127,10 @@ void User::receive(Server &server) {
 	static int i = 0;
 	while (pos != std::string::npos) {
 		i++;
-		// std::cout << "i: " << i << std::endl;
 		std::string line = _buffer.substr(0, pos);
-		// std::cout << "line: " << line << std::endl;
 		if (line.size()) {
 			parseClientMessage(server, line);
 			line.clear();
-//			return ;
 		}
 		_buffer.erase(0, _buffer.find("\n") + 1);
 		pos = _buffer.find("\r\n");
@@ -145,7 +142,7 @@ void User::receive(Server &server) {
 
 std::vector<std::string> splitcmd(std::string line) {
 	std::vector<std::string> cmd;
-	char *arg = strtok((char *) line.c_str(), "\r\n "); // /!\ La string ne doit pas être constante avec utilisation de strtok
+	char *arg = strtok((char *) line.c_str(), "\r\n ");
 	while (arg != NULL && !line.empty()) {
 		cmd.push_back(arg);
 		arg = strtok(NULL, "\r\n ");

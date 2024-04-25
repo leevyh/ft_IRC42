@@ -43,3 +43,5 @@ std::vector<std::string> split(const std::string& str);
 void	create_NewChannel(Server &server, User &user, std::string const &channel_name);
 void	edit_Topic(Server &server, User &user, std::vector<std::string> &arg, Channel &chan);
 std::string remove_OneChar(char c, std::vector<std::string> &arg, int i);
+short is_Authorize(User &user, Channel &channel, std::string key);
+std::string print_Names(std::string nickname, Channel &channel);

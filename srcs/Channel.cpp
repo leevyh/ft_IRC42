@@ -47,24 +47,6 @@ std::ostream &operator<<(std::ostream &o, Channel &src) {
 
 /* ************************************************************************** */
 
-std::string	Channel::get_ChannelName() const {return (_nameChannel);}
-
-std::vector<User>	&Channel::get_ChannelUser() {return (_chanUsers);}
-
-std::string	Channel::get_ChannelTopic() const {return (_topic);}
-
-long	Channel::get_limitUser() const {return (_limitUser);}
-
-std::string Channel::get_ChannelKey() const {return (_pass);}
-
-std::vector<std::string> &Channel::get_opUsers() {return (_opUsers);}
-
-time_t	Channel::get_creationTime() const {return (_creationTime);}
-
-std::vector<User>	&Channel::get_inviteList() {return (_inviteList);}
-
-/* ************************************************************************** */
-
 void	Channel::set_ChannelUser(User &user) {_chanUsers.push_back(user);}
 
 void	Channel::unset_ChannelUser(User& user) {
@@ -77,8 +59,6 @@ void	Channel::unset_ChannelUser(User& user) {
 	}
 	return;
 }
-
-void	Channel::set_ChannelTopic(std::string topic) {_topic = topic;}
 
 void	Channel::set_opChannel(std::string user) {_opUsers.push_back(user);}
 
@@ -102,6 +82,8 @@ void	Channel::set_inviteOnly(void) {_inviteonly = true;}
 
 void	Channel::unset_inviteOnly(void) {_inviteonly = false;}
 
+void	Channel::set_ChannelTopic(std::string topic) {_topic = topic;}
+
 void	Channel::set_optopic(void) {_optopic = true;}
 
 void	Channel::unset_optopic(void) {_optopic = false;}
@@ -122,6 +104,24 @@ void	Channel::delete_inviteList(void) {_inviteList.clear();}
 
 /* ************************************************************************** */
 
+std::string	Channel::get_ChannelName() const {return (_nameChannel);}
+
+std::vector<User>	&Channel::get_ChannelUser() {return (_chanUsers);}
+
+std::vector<std::string> &Channel::get_opUsers() {return (_opUsers);}
+
+std::string	Channel::get_ChannelTopic() const {return (_topic);}
+
+time_t	Channel::get_creationTime() const {return (_creationTime);}
+
+std::string Channel::get_ChannelKey() const {return (_pass);}
+
+long	Channel::get_limitUser() const {return (_limitUser);}
+
+std::vector<User>	&Channel::get_inviteList() {return (_inviteList);}
+
+/* ************************************************************************** */
+
 bool	Channel::is_opChannel(std::string user) {
 	for (std::vector<std::string>::iterator it = _opUsers.begin(); it != _opUsers.end(); ++it) {
 		if (*it == user)
@@ -129,18 +129,6 @@ bool	Channel::is_opChannel(std::string user) {
 	}
 	return (false);
 }
-
-// bool	Channel::is_ValidKey(std::vector<std::string> key, int i) {
-// 	if (key.empty() || key.size() < (unsigned long)i)
-// 		return (false);
-// 	if (key[i] == _pass)
-// 		return (true);
-// 	return (false);
-
-// 	// (void)key;
-// 	// (void)i;
-// 	// return (true);
-// }
 
 bool	Channel::is_ValidKey(std::string key) {
 	if (key.empty())
@@ -180,15 +168,7 @@ bool	Channel::is_InInviteList(User &user) {
 
 /* ************************************************************************** */
 
-std::string	print_Names(std::string nickname, Channel &channel) {
-	std::vector<std::string> user_list = channel.get_opUsers();
-	std::string names = "";
-	for (std::vector<std::string>::iterator it = user_list.begin(); it != user_list.end(); ++it) {
-		if (*it == nickname)
-			names += "@";
-	}
-	return (names);
-}
+
 
 void	Channel::sendMsg(User &user, std::string message, int code) {
 	std::string msg;
