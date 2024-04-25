@@ -32,6 +32,9 @@ std::string RPL_MYINFO(Server &server, User &user);                    // 004
 
 std::string RPL_CHANNELMODEIS(User &user, Channel &chan);              // 324
 void displayInfosChannel(Server &server, User &user, Channel &channel);
+std::string RPL_WHOISUSER(User &user, User &whois);                    // 311
+std::string RPL_WHOISSERVER(User &user, User &whois, Server &server);                  // 312
+std::string RPL_ENDOFWHOIS(User &user, User &whois);                   // 318
 std::string RPL_CREATIONTIME(User &user, Channel &channel);            // 329
 std::string RPL_NOTOPIC(User &user, Channel &channel);                 // 331
 std::string RPL_TOPIC(User &user, Channel &channel);                   // 332

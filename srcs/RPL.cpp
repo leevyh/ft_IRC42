@@ -14,7 +14,7 @@ void displayWelcome(Server &server, User &user) {
 std::string RPL_WELCOME(Server &server, User &user) {
 	return ("001 " + user.get_nickname() + " :Welcome to the "
 			+ server.get_networkname() + " Network, " + user.get_nickname()
-			+ "!~" + user.get_username() + "@" + user.get_ip() + ".ip");
+			+ "!~" + user.get_username() + "@" + user.get_ip());
 }
 
 std::string RPL_YOURHOST(Server &server, User &user) {
@@ -45,16 +45,45 @@ void	displayInfosChannel(Server &server, User &user, Channel &channel) {
 }
 
 std::string RPL_WHOISUSER(User &user, User &whois) {
-	return ("311 " + user.get_username() + " " + whois.get_nickname() + " " + whois.get_username() + " " + whois.get_ip() + " * :" + whois.get_realname());
+	return ("311 " + user.get_nickname() + " " + whois.get_nickname() + " ~" + whois.get_username() + " " + whois.get_ip() + ".ip * :" + whois.get_realname());
 }
 
 std::string RPL_WHOISSERVER(User &user, User &whois, Server &server) {
-	return ("312 " + user.get_username() + " " + whois.get_nickname() + " " + server.get_networkname() + " :Server Info");
+	return ("312 " + user.get_nickname() + " " + whois.get_nickname() + " " + server.get_networkname() + " : Server Info");
 }
 
 std::string RPL_ENDOFWHOIS(User &user, User &whois) {
-	return ("318 " + user.get_username() + " " + whois.get_nickname() + " :End of /WHOIS list");
+	return ("318 " + user.get_nickname() + " " + whois.get_nickname() + " :End of /WHOIS list.");
 }
+
+std::string RPL_CHANNELMODEIS(User &user, Channel &chan) {
+	std::string modes = "+";
+	std::vector<std::string> modeparams;
+	if (chan.is_opTopic())
+		modes += 't';
+	if (chan.is_inviteOnly())
+		modes += 'i';
+	if (chan.get_limitUser() != -1) {
+		modes += 'l';
+		std::string number;
+		std::stringstream strstream;
+		strstream << chan.get_limitUser();
+		strstream >> number;
+		modeparams.push_back(number);
+	}
+	if (!chan.get_ChannelKey().empty()) {
+		modes += 'k';
+		modeparams.push_back(chan.get_ChannelKey());
+	}
+	for (std::vector<std::string>::iterator it = modeparams.begin(); it != modeparams.end(); ++it)
+		modes += ' ' + *it;
+	std::cout << "modes = " << modes << std::endl;
+		return ("324 " + user.get_nickname() + " " + chan.get_ChannelName() + " " + modes);
+
+}
+
+
+
 
 std::string RPL_CREATIONTIME(User &user, Channel &channel) {
 	time_t	creationTime = channel.get_creationTime();
