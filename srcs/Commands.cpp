@@ -125,6 +125,55 @@ void Commands::user(Server &server, User &user, std::vector<std::string> &arg) {
 Command Example:   QUIT :Gone to have lunch         ; Client exiting from the network
 Message Example:  :dan-!d@localhost QUIT :Quit: Bye for now!
 					; dan- is exiting the network with the message: "Quit: Bye for now!" */
+// void Commands::quit(Server &server, User &user, std::vector<std::string> &arg) {
+// 	int nb_arg = 0;
+// 	std::string msg_send = "Quit: ";
+// 	for (std::vector<std::string>::iterator it = arg.begin(); it != arg.end(); ++it) {
+// 		nb_arg++;
+// 	}
+// 	if (nb_arg > 2 && arg[1][0] != ':')
+// 		server.sendMsg(user, ERR_NEEDMOREPARAMS(user, "QUIT"), 1);
+// 	if (nb_arg > 1) {
+// 		if (arg[1][0] == ':') {
+// 			msg_send += arg[1].erase(0, 1) + " ";
+// 			for (size_t i = 2; i < arg.size(); i++)
+// 				msg_send += arg[i] + " ";
+// 		}
+// 		else
+// 			msg_send += arg[1];
+// 	}
+// 	std::vector<std::map<std::string, Channel>::iterator> channel_list;
+// 	if (!server.get_channels().empty()) {
+// 		for (std::vector<Channel>::iterator it = server.get_channels().begin(); it != server.get_channels().end(); ++it) {
+// 			if (it->is_UserInChannel(user)) {
+// 				it->unset_ChannelUser(user);
+// 				if (it->get_ChannelUser().empty())
+// 					server.remove_channelList(*it);
+// 				else {
+// 					std::vector<User> user_list = it->get_ChannelUser();
+// 					//DISPLAY LIST OF USER IN CHANNEL
+// 					for (std::vector<User>::iterator ita = user_list.begin(); ita != user_list.end(); ++ita) {
+// 						std::cout << "ita->get_fd(): " << ita->get_fd() << std::endl;
+// 						std::cout << "ita->get_nickname(): " << ita->get_nickname() << std::endl;
+// 					}
+// 					std::string final_message = user.get_nickname() + "!~" + user.get_username() + "@" + user.get_ip() + ".ip QUIT :" + msg_send;
+// 					it->sendMsg(user, final_message, 1);
+// 				}
+// 			}
+// 		}
+// 	}
+// 	// for (std::vector<std::map<std::string, Channel>::iterator>::iterator it = channel_list.begin(); it != channel_list.end(); ++it)
+// 	// 	server.get_channels().erase((*it)->first);															// MODIF VECTOR
+// 	//Display all channels always active
+// 	for (std::vector<Channel>::iterator it = server.get_channels().begin(); it != server.get_channels().end(); ++it) {
+// 		std::cout << it->get_ChannelName() << std::endl;
+// 	}
+// 	user.set_authenticated(false);
+// 	user.set_status(false);
+// 	std::cout << "QUIT a coder" << std::endl;
+// }
+
+
 void Commands::quit(Server &server, User &user, std::vector<std::string> &arg) {
 	int nb_arg = 0;
 	std::string msg_send = "Quit: ";
@@ -133,8 +182,10 @@ void Commands::quit(Server &server, User &user, std::vector<std::string> &arg) {
 	}
 	if (nb_arg > 2 && arg[1][0] != ':')
 		server.sendMsg(user, ERR_NEEDMOREPARAMS(user, "QUIT"), 1);
-	if (nb_arg > 1) {
-		if (arg[1][0] == ':') {
+	if (nb_arg > 1)
+	{
+		if (arg[1][0] == ':')
+		{
 			msg_send += arg[1].erase(0, 1) + " ";
 			for (size_t i = 2; i < arg.size(); i++)
 				msg_send += arg[i] + " ";
@@ -142,17 +193,24 @@ void Commands::quit(Server &server, User &user, std::vector<std::string> &arg) {
 		else
 			msg_send += arg[1];
 	}
-	std::vector<std::map<std::string, Channel>::iterator> channel_list;
-	if (!server.get_channels().empty()) {
-		for (std::vector<Channel>::iterator it = server.get_channels().begin(); it != server.get_channels().end(); ++it) {
-			if (it->is_UserInChannel(user)) {
+	std::vector<std::vector<Channel>::iterator> channel_list;
+	if (!server.get_channels().empty())
+	{
+		for (std::vector<Channel>::iterator it = server.get_channels().begin(); it != server.get_channels().end(); ++it)
+		{
+			std::cout << "user.get_nickname(): " << user.get_nickname() << std::endl;
+			if (it->is_UserInChannel(user))
+			{
+				std::cout << "user removed from channel: " << user.get_nickname() << std::endl;
 				it->unset_ChannelUser(user);
 				if (it->get_ChannelUser().empty())
-					server.remove_channelList(*it);
-				else {
+					channel_list.push_back(it);
+				else
+				{
 					std::vector<User> user_list = it->get_ChannelUser();
 					//DISPLAY LIST OF USER IN CHANNEL
-					for (std::vector<User>::iterator ita = user_list.begin(); ita != user_list.end(); ++ita) {
+					for (std::vector<User>::iterator ita = user_list.begin(); ita != user_list.end(); ++ita)
+					{
 						std::cout << "ita->get_fd(): " << ita->get_fd() << std::endl;
 						std::cout << "ita->get_nickname(): " << ita->get_nickname() << std::endl;
 					}
@@ -162,16 +220,19 @@ void Commands::quit(Server &server, User &user, std::vector<std::string> &arg) {
 			}
 		}
 	}
-	// for (std::vector<std::map<std::string, Channel>::iterator>::iterator it = channel_list.begin(); it != channel_list.end(); ++it)
-	// 	server.get_channels().erase((*it)->first);															// MODIF VECTOR
+	for (std::vector<std::vector<Channel>::iterator>::iterator it = channel_list.begin(); it != channel_list.end(); ++it)
+		server.get_channels().erase((*it));
 	//Display all channels always active
-	for (std::vector<Channel>::iterator it = server.get_channels().begin(); it != server.get_channels().end(); ++it) {
+	for (std::vector<Channel>::iterator it = server.get_channels().begin(); it != server.get_channels().end(); ++it)
+	{
 		std::cout << it->get_ChannelName() << std::endl;
 	}
 	user.set_authenticated(false);
 	user.set_status(false);
 	std::cout << "QUIT a coder" << std::endl;
 }
+
+
 
 /* --------------------------------------------------TOPIC-------------------------------------------------- */
 
