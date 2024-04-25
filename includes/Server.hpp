@@ -38,11 +38,11 @@ class Server {
 		void get_New_Client_Message(void);
 		void sendMsg(User &user, std::string message, int code) const;
 		void disconnect(User &user);
-		void timeout_disconnect(User &user);
+		// void timeout_disconnect(User &user);
 		bool is_onServer(std::string to_find);
-		void	add_channelList(Channel &channel);
-		void	remove_channelList(Channel& channel);
-		void	delete_channelList(void);
+		void add_channelList(Channel &channel);
+		void remove_channelList(Channel& channel);
+		void delete_channelList(void);
 
 
 	private:

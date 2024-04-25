@@ -52,6 +52,10 @@ std::string RPL_WHOISSERVER(User &user, User &whois, Server &server) {
 	return ("312 " + user.get_nickname() + " " + whois.get_nickname() + " " + server.get_networkname() + " : Server Info");
 }
 
+std::string RPL_ENDOFWHO(User &user, Channel &channel) {
+	return ("315 " + user.get_nickname() + " " + channel.get_ChannelName() + " :End of WHO list");
+}
+
 std::string RPL_ENDOFWHOIS(User &user, User &whois) {
 	return ("318 " + user.get_nickname() + " " + whois.get_nickname() + " :End of /WHOIS list.");
 }
@@ -111,6 +115,11 @@ void	displayInvite(Server &server, User &user, Channel &channel, std::string to_
 
 std::string RPL_INVITING(User &user, Channel &channel, std::string to_invite) {
 	return ("341 " + user.get_nickname() + " " + to_invite + " " + channel.get_ChannelName());
+}
+
+std::string RPL_WHOREPLY(Server &server, User &user, Channel &channel) {
+	return ("352 " + user.get_nickname() + " " + channel.get_ChannelName() + " " + user.get_username() + " " \
+	+ user.get_ip() + ".ip " + server.get_networkname() + " " + user.get_nickname() + " H@ :0 " + user.get_realname());
 }
 
 std::string RPL_NAMES(User &user, Channel &channel) {

@@ -34,12 +34,14 @@ std::string RPL_CHANNELMODEIS(User &user, Channel &chan);              // 324
 void displayInfosChannel(Server &server, User &user, Channel &channel);
 std::string RPL_WHOISUSER(User &user, User &whois);                    // 311
 std::string RPL_WHOISSERVER(User &user, User &whois, Server &server);  // 312
+std::string RPL_ENDOFWHO(User &user, Channel &channel);                // 315
 std::string RPL_ENDOFWHOIS(User &user, User &whois);                   // 318
 std::string RPL_CREATIONTIME(User &user, Channel &channel);            // 329
 std::string RPL_NOTOPIC(User &user, Channel &channel);                 // 331
 std::string RPL_TOPIC(User &user, Channel &channel);                   // 332
 void displayInvite(Server &server, User &user, Channel &channel, std::string to_invite);
 std::string RPL_INVITING(User &user, Channel &channel, std::string to_invite); //341
+std::string RPL_WHOREPLY(Server &server, User &user, Channel &channel) ; //352
 std::string RPL_NAMES(User &user, Channel &channel);                   // 353
 std::string RPL_ENDOFNAMES(User &user, Channel &channel);              // 366
 std::string RPL_ENDOFBANLIST(User &user, Channel &channel);            // 368
