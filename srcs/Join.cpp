@@ -7,9 +7,7 @@ short is_Authorize(Server &server, User &user, Channel &channel, std::string key
 		return (2);
 	if (channel.get_limitUser() > -1 && channel.get_ChannelUser().size() >= (unsigned long)channel.get_limitUser())
 		return (3);
-	if (channel.is_inviteOnly())
-		// for (std::vector<User>::iterator it = _inviteList.begin(); it != _inviteList.end(); ++it) {
-		// if (it->get_nickname() == user.get_nickname()) {)
+	if (channel.is_inviteOnly() && !channel.is_InInviteList(user))
 		return (4);
 	return (1);
 }

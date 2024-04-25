@@ -164,7 +164,7 @@ bool	Channel::is_inviteOnly(void) {
 	return (false);
 }
 
-bool	Channel::is_optopic(void) {
+bool	Channel::is_opTopic(void) {
 	if (_optopic == true)
 		return (true);
 	return (false);

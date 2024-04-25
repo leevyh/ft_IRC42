@@ -237,7 +237,7 @@ void Commands::quit(Server &server, User &user, std::vector<std::string> &arg) {
 void	edit_Topic(Server &server, User &user, std::vector<std::string> &arg, Channel &chan)
 {
 	if (arg[1] == chan.get_ChannelName()) {
-		if (chan.is_opChannel(user.get_nickname()) || chan.is_optopic() == false) {
+		if (chan.is_opChannel(user.get_nickname()) || chan.is_opTopic() == false) {
 			std::string topic = remove_OneChar(':', arg, 2);
 			chan.set_ChannelTopic(topic);
 			for (std::vector<User>::iterator it = chan.get_ChannelUser().begin(); \

@@ -97,8 +97,8 @@ void	unset_mode(Server &server, User &user, Channel &chan, std::vector<std::stri
 }
 
 void Commands::mode(Server &server, User &user, std::vector<std::string> &arg) {
-	if (arg.size() < 3)																// RPL_CHANNELMODEIS ?
-		return;
+//	if (arg.size() < 3)																// RPL_CHANNELMODEIS ?
+//		return;
 	if (arg.size() == 3 && arg[1] == user.get_nickname() && arg[2] == "+i"){
 		std::string msg = user.get_nickname() + " MODE " + user.get_nickname() + " :+iH";
 		server.sendMsg(user, msg, 2);
@@ -106,7 +106,10 @@ void Commands::mode(Server &server, User &user, std::vector<std::string> &arg) {
 	for (std::vector<Channel>::iterator it = server.get_channels().begin(); 
 		it != server.get_channels().end(); ++it) {
 		if (arg.size() == 2 && it->get_ChannelName() == arg[1])
+		{
+			std::cout << "MODE " << arg[1] << std::endl;
 			return (server.sendMsg(user, RPL_CHANNELMODEIS(user, *it), 1));
+		}
 		if (arg.size() == 3 && it->get_ChannelName() == arg[1] && arg[2] == "b")
 			return (server.sendMsg(user, RPL_ENDOFBANLIST(user, *it), 1));
 		if (it->get_ChannelName() == arg[1]) {

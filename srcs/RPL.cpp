@@ -82,9 +82,6 @@ std::string RPL_CHANNELMODEIS(User &user, Channel &chan) {
 
 }
 
-
-
-
 std::string RPL_CREATIONTIME(User &user, Channel &channel) {
 	time_t	creationTime = channel.get_creationTime();
 	std::stringstream ss;
@@ -222,41 +219,6 @@ std::string ERR_BADCHANMASK(std::string channel_mask) {
 
 std::string ERR_CHANOPRIVSNEEDED(User &user, Channel &chan) {
 	return ("482 " + user.get_nickname() + " " + chan.get_ChannelName() + " :You're not channel operator");
-}
-
-// RPL_CHANNELMODEIS (324) 
-//   "<client> <channel> <modestring> <mode arguments>..."
-// Sent to a client to inform them of the currently-set modes of a channel. 
-// <channel> is the name of the channel. <modestring> and <mode arguments> are a 
-// mode string and the mode arguments (delimited as separate parameters) as 
-// defined in the MODE message description.
-// Parameters: <channel> *( ( "-" / "+" ) *<modes> *<modeparams>
-// If <modeparams> is not given, the RPL_CHANNELMODEIS (324) numeric is returned.
-
-std::string RPL_CHANNELMODEIS(User &user, Channel &chan) {
-	std::string modes = "+";
-	std::vector<std::string> modeparams;
-	if (chan.is_opTopic())
-		modes += 't';
-	if (chan.is_inviteOnly())
-		modes += 'i';
-	if (chan.get_limitUser() != -1) {
-		modes += 'l';
-		std::string number;
-		std::stringstream strstream;
-		strstream << chan.get_limitUser();
-		strstream >> number;
-		modeparams.push_back(number);
-	}
-	if (!chan.get_ChannelKey().empty()) {
-		modes += 'k';
-		modeparams.push_back(chan.get_ChannelKey());
-	}
-	for (std::vector<std::string>::iterator it = modeparams.begin(); it != modeparams.end(); ++it)
-		modes += " " + *it;
-
-	return ("324 " + user.get_nickname() + " " + chan.get_ChannelName() + " " + modes);
-
 }
 
 /* ************************************************************************** */
