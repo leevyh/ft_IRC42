@@ -13,7 +13,7 @@ void displayWelcome(Server &server, User &user) {
 std::string RPL_WELCOME(Server &server, User &user) {
 	return ("001 " + user.get_nickname() + " :Welcome to the "
 			+ server.get_networkname() + " Network, " + user.get_nickname()
-			+ "!~" + user.get_username() + "@" + user.get_ip() + ".ip");
+			+ "!~" + user.get_username() + "@" + user.get_ip());
 }
 
 std::string RPL_YOURHOST(Server &server, User &user) {
@@ -33,25 +33,70 @@ std::string RPL_MYINFO(Server &server, User &user) {
 /* ************************************************************************** */
 
 void	displayInfosChannel(Server &server, User &user, Channel &channel) {
-//	server.sendMsg(user, RPL_JOIN(user, channel), 1);
+	for (std::vector<User>::iterator it = channel.get_ChannelUser().begin(); \
+		it != channel.get_ChannelUser().end(); ++it) {
+		server.sendMsg(*it, RPL_JOIN(user, channel), 2);
+	}
 	server.sendMsg(user, RPL_NAMES(user, channel), 1);
 	server.sendMsg(user, RPL_ENDOFNAMES(user, channel), 1);
 	server.sendMsg(user, RPL_CREATIONTIME(user, channel), 1);
+
+}
+
+std::string RPL_WHOISUSER(User &user, User &whois) {
+	return ("311 " + user.get_nickname() + " " + whois.get_nickname() + " ~" + whois.get_username() + " " + whois.get_ip() + ".ip * :" + whois.get_realname());
+}
+
+std::string RPL_WHOISSERVER(User &user, User &whois, Server &server) {
+	return ("312 " + user.get_nickname() + " " + whois.get_nickname() + " " + server.get_networkname() + " : Server Info");
+}
+
+std::string RPL_ENDOFWHO(User &user, Channel &channel) {
+	return ("315 " + user.get_nickname() + " " + channel.get_ChannelName() + " :End of WHO list");
+}
+
+std::string RPL_ENDOFWHOIS(User &user, User &whois) {
+	return ("318 " + user.get_nickname() + " " + whois.get_nickname() + " :End of /WHOIS list.");
+}
+
+std::string RPL_CHANNELMODEIS(User &user, Channel &chan) {
+	std::string modes = "+";
+	std::vector<std::string> modeparams;
+	if (chan.is_opTopic())
+		modes += 't';
+	if (chan.is_inviteOnly())
+		modes += 'i';
+	if (chan.get_limitUser() != -1) {
+		modes += 'l';
+		std::string number;
+		std::stringstream strstream;
+		strstream << chan.get_limitUser();
+		strstream >> number;
+		modeparams.push_back(number);
+	}
+	if (!chan.get_ChannelKey().empty()) {
+		modes += 'k';
+		modeparams.push_back(chan.get_ChannelKey());
+	}
+	for (std::vector<std::string>::iterator it = modeparams.begin(); it != modeparams.end(); ++it)
+		modes += ' ' + *it;
+	return ("324 " + user.get_nickname() + " " + chan.get_ChannelName() + " " + modes);
+
 }
 
 std::string RPL_CREATIONTIME(User &user, Channel &channel) {
 	time_t	creationTime = channel.get_creationTime();
 	std::stringstream ss;
 	ss << creationTime;
-	return ("329 " + user.get_username() + " " + channel.get_ChannelName() + " " + ss.str());
+	return ("329 " + user.get_nickname() + " " + channel.get_ChannelName() + " " + ss.str());
 }
 
 std::string RPL_NOTOPIC(User &user, Channel &channel) {
-	return ("331 " + user.get_username() + " " + channel.get_ChannelName() + " :" + channel.get_ChannelTopic());
+	return ("331 " + user.get_nickname() + " " + channel.get_ChannelName() + " :" + channel.get_ChannelTopic());
 }
 
 std::string RPL_TOPIC(User &user, Channel &channel) {
-	return ("332 " + user.get_username() + " " + channel.get_ChannelName() + " :" + channel.get_ChannelTopic());
+	return ("332 " + user.get_nickname() + " " + channel.get_ChannelName() + " :" + channel.get_ChannelTopic());
 }
 
 void	displayInvite(Server &server, User &user, Channel &channel, std::string to_invite) {
@@ -62,46 +107,45 @@ void	displayInvite(Server &server, User &user, Channel &channel, std::string to_
 	for (std::map<int, User>::iterator it = server.get_clientmap().begin();
 		it != server.get_clientmap().end(); ++it)
 		if (it->second.get_nickname() == to_invite) {
-			channel.set_inviteList(it->second);
+			channel.add_inviteList(it->second);
 			server.sendMsg(it->second, msg, 2);
 		}
 }
 
-// Sent to a client as a reply to the INVITE command when used with no parameter, to indicate a channel the client was invited to.
-std::string RPL_INVITELIST(User &user, Channel &channel) {
-	return ("336 " + user.get_username() + " " + channel.get_ChannelName());
-}
-
-// Sent as a reply to the INVITE command when used with no parameter, this numeric indicates the end of invitations a client received.
-std::string RPL_ENDOFINVITELIST(User &user) {
-	return ("337 " + user.get_username() + " :End of /INVITE list");
-}
-
 std::string RPL_INVITING(User &user, Channel &channel, std::string to_invite) {
-	return ("341 " + user.get_username() + " " + to_invite + " " + channel.get_ChannelName());
+	return ("341 " + user.get_nickname() + " " + to_invite + " " + channel.get_ChannelName());
+}
+
+std::string RPL_WHOREPLY(Server &server, User &user, Channel &channel) {
+	return ("352 " + user.get_nickname() + " " + channel.get_ChannelName() + " " + user.get_username() + " " \
+	+ user.get_ip() + ".ip " + server.get_networkname() + " " + user.get_nickname() + " H@ :0 " + user.get_realname());
 }
 
 std::string RPL_NAMES(User &user, Channel &channel) {
 	std::string names = "";
-	std::vector<User> users = channel.get_UserChannel();
+	std::vector<User> users = channel.get_ChannelUser();
 	for (std::vector<User>::iterator it = users.begin(); it != users.end(); ++it) {
 		names += print_Names(it->get_nickname(), channel) + it->get_nickname() + " ";
 	}
-	return ("353 " + user.get_username() + " = " + channel.get_ChannelName() + " :" + names);
+	return ("353 " + user.get_nickname() + " = " + channel.get_ChannelName() + " :" + names);
 }
 
 std::string RPL_ENDOFNAMES(User &user, Channel &channel) {
-	return ("366 " + user.get_username() + " " + channel.get_ChannelName() + " :End of /NAMES list");
+	return ("366 " + user.get_nickname() + " " + channel.get_ChannelName() + " :End of /NAMES list");
+}
+
+std::string RPL_ENDOFBANLIST(User &user, Channel &channel) {
+	return ("368 " + user.get_nickname() + " " + channel.get_ChannelName() + " :End of channel ban list");
 }
 
 /* ************************************************************************** */
 
 std::string ERR_NOSUCHNICK(User &user, std::string nickname) {
-	return ("401 " + user.get_username() + " " + nickname + " :No suck nick/channel");
+	return ("401 " + user.get_nickname() + " " + nickname + " :No suck nick/channel");
 }
 
 std::string ERR_NOSUCHSERVER(User &user, std::string server_name) {
-	return ("402 " + user.get_username() + " " + server_name + " :No such server");
+	return ("402 " + user.get_nickname() + " " + server_name + " :No such server");
 }
 
 std::string ERR_NOSUCHCHANNEL(User &user, std::string channel) {
@@ -109,23 +153,23 @@ std::string ERR_NOSUCHCHANNEL(User &user, std::string channel) {
 }
 
 std::string ERR_CANNOTSENDTOCHAN(User &user, std::string channel) {
-	return ("404 " + user.get_username() + " " + channel + " :Cannot send to channel");
+	return ("404 " + user.get_nickname() + " " + channel + " :Cannot send to channel");
 }
 
 std::string ERR_NOORIGIN(User &user) {
-	return ("409 " + user.get_username() + ":No origin specified");
+	return ("409 " + user.get_nickname() + ":No origin specified");
 }
 
 std::string ERR_NORECIPIENT(User &user, std::string command) {
-	return ("411 " + user.get_username() + " :No recipient given (" + command + ")");
+	return ("411 " + user.get_nickname() + " :No recipient given (" + command + ")");
 }
 
 std::string ERR_NOTEXTTOSEND(User &user) {
-	return ("412 " + user.get_username() + " :No text to send");
+	return ("412 " + user.get_nickname() + " :No text to send");
 }
 
 std::string ERR_UNKNOWNCOMMAND(User &user, std::string command) {
-	return ("421 " + user.get_username() + " " + command + " :Unknown command");
+	return ("421 " + user.get_nickname() + " " + command + " :Unknown command");
 }
 
 std::string ERR_NONICKNAMEGIVEN(std::string name) {
@@ -137,39 +181,43 @@ std::string ERR_ERRONEUSNICKNAME(std::string name) {
 }
 
 std::string ERR_NICKNAMEINUSE(std::string name) {
-	return ("433 " + name + " :Nickname is already in use");
+	return ("433 * " + name + " :Nickname is already in use");
 }
 
 std::string ERR_USERNOTINCHANNEL(User &user, std::string nick, Channel& chan) {
-	return ("441 " + user.get_username() + " " + nick + " " + chan.get_ChannelName() + " :They aren't on that channel");
+	return ("441 " + user.get_nickname() + " " + nick + " " + chan.get_ChannelName() + " :They aren't on that channel");
 }
 
 std::string ERR_NOTONCHANNEL(User &user, Channel &chan) {
-	return ("442 " + user.get_username() + " " + chan.get_ChannelName() + " :You're not on that channel");
+	return ("442 " + user.get_nickname() + " " + chan.get_ChannelName() + " :You're not on that channel");
 }
 
 std::string ERR_USERONCHANNEL(User &user, std::string nick, Channel &chan) {
-	return ("443 " + user.get_username() + " " + nick + " " + chan.get_ChannelName() + " :is already on channel");
+	return ("443 " + user.get_nickname() + " " + nick + " " + chan.get_ChannelName() + " :is already on channel");
 }
 
 std::string ERR_NEEDMOREPARAMS(User &user, std::string command) {
-	return ("461 " + user.get_username() + " " + command + " :Not enough parameters");
+	return ("461 " + user.get_nickname() + " " + command + " :Not enough parameters");
 }
 
 std::string ERR_ALREADYREGISTRED(User &user) {
-	return ("462 " + user.get_username() + " :You may not reregister");
+	return ("462 " + user.get_nickname() + " :You may not reregister");
+}
+
+std::string ERR_CHANNELISFULL(User &user, Channel &channel) {
+	return ("471 " + user.get_nickname() + " " + channel.get_ChannelName() + " :Cannot join channel (+l)");
 }
 
 std::string ERR_UNKNOWNMODE(User &user, std::string modechar) {
-	return ("472 " + user.get_username() + " " + modechar + " :is unknown mode char to me");
+	return ("472 " + user.get_nickname() + " " + modechar + " :is unknown mode char to me");
 }
 
 std::string ERR_INVITEONLYCHAN(User &user, Channel &channel) {
-	return ("473 " + user.get_username() + " " + channel.get_ChannelName() + " :Cannot join channel (+i)");
+	return ("473 " + user.get_nickname() + " " + channel.get_ChannelName() + " :Cannot join channel (+i)");
 }
 
 std::string ERR_BADCHANNELKEY(User &user, Channel &channel) {
-	return ("475 " + user.get_username() + " " + channel.get_ChannelName() + " :Cannot join channel (+k)");
+	return ("475 " + user.get_nickname() + " " + channel.get_ChannelName() + " :Cannot join channel (+k)");
 }
 
 std::string ERR_BADCHANMASK(std::string channel_mask) {
@@ -177,22 +225,8 @@ std::string ERR_BADCHANMASK(std::string channel_mask) {
 }
 
 std::string ERR_CHANOPRIVSNEEDED(User &user, Channel &chan) {
-	return ("482 " + user.get_username() + " " + chan.get_ChannelName() + " :You're not channel operator");
+	return ("482 " + user.get_nickname() + " " + chan.get_ChannelName() + " :You're not channel operator");
 }
-
-// RPL_CHANNELMODEIS (324) 
-//   "<client> <channel> <modestring> <mode arguments>..."
-// Sent to a client to inform them of the currently-set modes of a channel. 
-// <channel> is the name of the channel. <modestring> and <mode arguments> are a 
-// mode string and the mode arguments (delimited as separate parameters) as 
-// defined in the MODE message description.
-
-// std::string RPL_CHANNELMODEIS(User &user, Channel &chan) {
-// 	return ("324 " + user.get_username() + " " + chan.get_ChannelName() + );
-// }
-
-// Parameters: <channel> *( ( "-" / "+" ) *<modes> *<modeparams>
-// If <modeparams> is not given, the RPL_CHANNELMODEIS (324) numeric is returned.
 
 /* ************************************************************************** */
 
@@ -218,8 +252,7 @@ std::string RPL_PRIVMSG(User &user, std::string recipient, std::string message) 
 	return (rpl + " PRIVMSG " + recipient + " :" + message);
 }
 
-std::string RPL_PART(User &user, Channel &channel, std::string part_message, int code)
-{
+std::string RPL_PART(User &user, Channel &channel, std::string part_message, int code) {
 	std::string msg = user.get_nickname() + "!~" + user.get_username() + "@" + user.get_ip() + ".ip";
 	if (code == 1)
 		return (msg + " PART " + channel.get_ChannelName());
@@ -231,4 +264,17 @@ std::string RPL_INVITE(User &user, std::string to_invite, Channel &channel) {
 	std::string rpl = "NOTICE @" + channel.get_ChannelName() + " :" + user.get_username() +
 	" invited " + to_invite + " into channel " + channel.get_ChannelName();
 	return (rpl);
+}
+
+std::string RPL_KICK(User &user, Channel &channel, std::string to_kick, std::string kick_message) {
+	std::string msg = user.get_nickname() + "!~" + user.get_username() + "@" + user.get_ip() + ".ip";
+	if (kick_message.empty())
+		return (msg + " KICK " + channel.get_ChannelName() + " " + to_kick + " :" + user.get_nickname());
+	else
+		return (msg + " KICK " + channel.get_ChannelName() + " " + to_kick + " :" + kick_message);
+}
+
+std::string RPL_QUIT(User &user, std::string quit_message) {
+	std::string msg = user.get_nickname() + "!~" + user.get_username() + "@" + user.get_ip() + ".ip";
+	return (msg + " QUIT :" + quit_message);
 }

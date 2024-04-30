@@ -1,7 +1,6 @@
 #include "User.hpp"
 
-User::User() : _fd() {
-}
+User::User() : _fd() {}
 
 User::User(const int fd) : _fd(fd) {
 	this->_nickname = "";
@@ -11,9 +10,7 @@ User::User(const int fd) : _fd(fd) {
 	this->_authenticated = false;
 }
 
-User::~User() {
-//	close(this->_fd);
-}
+User::~User() {}
 
 User::User(const User &src) {
 	*this = src;
@@ -24,6 +21,9 @@ User &User::operator=(const User &rhs) {
 		this->_nickname = rhs._nickname;
 		this->_username = rhs._username;
 		this->_realname = rhs._realname;
+		this->_password = rhs._password;
+		this->_ip = rhs._ip;
+		this->_port = rhs._port;
 		this->_status = true;
 		this->_authenticated = false;
 		this->_fd = rhs._fd;
@@ -69,6 +69,10 @@ void User::set_ip(const std::string &ip) {
 	this->_ip = ip;
 }
 
+void User::set_port(unsigned short &port) {
+	this->_port = port;
+}
+
 void User::set_lastping(const int &ping) {
 	this->_lastping = ping;
 }
@@ -93,6 +97,10 @@ const std::string &User::get_password(void) const {
 
 const std::string &User::get_ip(void) const {
 	return (this->_ip);
+}
+
+unsigned short &User::get_port(void) {
+	return (this->_port);
 }
 
 int User::get_fd(void) const {
@@ -126,13 +134,10 @@ void User::receive(Server &server) {
 	static int i = 0;
 	while (pos != std::string::npos) {
 		i++;
-		// std::cout << "i: " << i << std::endl;
 		std::string line = _buffer.substr(0, pos);
-		// std::cout << "line: " << line << std::endl;
 		if (line.size()) {
 			parseClientMessage(server, line);
 			line.clear();
-//			return ;
 		}
 		_buffer.erase(0, _buffer.find("\n") + 1);
 		pos = _buffer.find("\r\n");
@@ -144,7 +149,7 @@ void User::receive(Server &server) {
 
 std::vector<std::string> splitcmd(std::string line) {
 	std::vector<std::string> cmd;
-	char *arg = strtok((char *) line.c_str(), "\r\n "); // /!\ La string ne doit pas être constante avec utilisation de strtok
+	char *arg = strtok((char *) line.c_str(), "\r\n ");
 	while (arg != NULL && !line.empty()) {
 		cmd.push_back(arg);
 		arg = strtok(NULL, "\r\n ");

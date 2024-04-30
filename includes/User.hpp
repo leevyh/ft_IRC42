@@ -7,14 +7,6 @@
 
 class Server;
 class Commands;
-/* Each user is distinguished from other users by a unique nickname
-having a maximum length of nine (9) characters.  See the protocol
-grammar rules (section 2.3.1) for what may and may not be used in a
-nickname.
-
-While the maximum length is limited to nine characters, clients
-SHOULD accept longer strings as they may become used in future
-evolutions of the protocol. */
 class User {
 	private:
 		std::string _nickname;
@@ -22,6 +14,7 @@ class User {
 		std::string _realname;
 		std::string _password;
 		std::string _ip;
+		unsigned short _port;
 		bool _status;				// connected or not (/connect)
 		bool _authenticated;		// authenticated or not (PASS + NICK + USER)
 		int _fd;
@@ -41,6 +34,7 @@ class User {
 		void set_ip(const std::string &ip);
 		void set_status(bool status);
 		void set_authenticated(bool status);
+		void set_port(unsigned short &port);
 		void set_lastping(const int &ping);
 // GETTERS
 		const std::string &get_nickname(void) const;
@@ -48,17 +42,16 @@ class User {
 		const std::string &get_realname(void) const;
 		const std::string &get_password(void) const;
 		const std::string &get_ip(void) const;
+		unsigned short &get_port(void);
 		bool get_status(void) const;
 		bool get_authenticated(void) const;
 		int get_fd(void) const;
 // FUNCTIONS
-		void joinBuffer(const char *buffer); // char * ou std::string ??
+		void joinBuffer(const char *buffer);
 		void receive(Server &server);
 		void parseClientMessage(Server &server, std::string line);
 		void authentication(Server &server, Commands &cmd, std::vector<std::string> arg);
 };
 std::ostream &operator<<(std::ostream &o, const User &src);
-std::vector<std::string> splitcmd(std::string line);
 
-// nick ::=  <any characters except NUL, CR, LF, chantype character, and SPACE> <possibly empty sequence of any characters except NUL, CR, LF, and SPACE>
-// user ::=  <sequence of any characters except NUL, CR, LF, and SPACE>
+std::vector<std::string> splitcmd(std::string line);

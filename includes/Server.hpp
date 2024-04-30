@@ -10,6 +10,7 @@
 #include <fcntl.h>
 #include <vector>
 #include <map>
+#include <limits.h>
 #include <poll.h>
 #include "IRC.hpp"
 
@@ -29,6 +30,7 @@ class Server {
 		std::string get_networkname(void) const;
 		std::vector<pollfd> get_fds(void) const;
 		std::map<int, User> &get_clientmap();
+		std::vector<Channel> &get_channels(void);
 // FUNCTIONS
 		void init_serv(void);
 		void start_serv(void);
@@ -36,9 +38,12 @@ class Server {
 		void get_New_Client_Message(void);
 		void sendMsg(User &user, std::string message, int code) const;
 		void disconnect(User &user);
-		void timeout_disconnect(User &user);
-		std::map<std::string, Channel> &get_channels(void);
+		// void timeout_disconnect(User &user);
 		bool is_onServer(std::string to_find);
+		void add_channelList(Channel &channel);
+		void remove_channelList(Channel& channel);
+		void delete_channelList(void);
+
 
 	private:
 		struct sockaddr_in _server_addr;
@@ -48,5 +53,6 @@ class Server {
 		std::string _networkname;
 		std::vector<pollfd> _pollfdmap;
 		std::map<int, User> _clientmap;
-		std::map<std::string, Channel> _channels;
+		std::vector<Channel> _channels;
+
 };
