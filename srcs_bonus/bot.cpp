@@ -6,18 +6,24 @@
 /*   By: lazanett <lazanett@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/25 15:22:43 by lazanett          #+#    #+#             */
-/*   Updated: 2024/04/30 17:02:53 by lazanett         ###   ########.fr       */
+/*   Updated: 2024/05/01 16:30:20 by lazanett         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "bot.hpp"
+#include "../includes/IRC.hpp"
+#include <sstream>
 
 int	main(int ac, char **av)
 {
-	if (ac != 2)
-		return 1;
-	Bot bot;
-	bot.init_bot();
+	try {
+		check_args_bonus(ac, av);
+		Bot bot;
+		bot.init_bot();
+	}
+	catch (const std::exception& e) {
+		std::cerr << e.what() << std::endl;
+	}
 	return 0;
 }
 
@@ -28,6 +34,8 @@ Bot::Bot(void) {
 	_signal_value = false;
 	_port = 6667;
 	_serverIP = "127.0.0.1";
+	_nickname = "bot";
+	_username = "bot";
 }
 
 Bot::~Bot(void) {
@@ -50,22 +58,50 @@ void Bot::init_bot() {
 	serverAddress.sin_family = AF_INET;
 	serverAddress.sin_port = htons(_port);
 	serverAddress.sin_addr.s_addr = INADDR_ANY;
-	if (connect(_clientSocket, (struct sockaddr*)&serverAddress, sizeof(serverAddress)) == -1) {
+	if (connect(_clientSocket, (struct sockaddr*)&serverAddress, sizeof(serverAddress)) == -1) { //Voir connection sur un poste distant
 		std::cerr << "Error : the bot isn't connect" << std::endl;
 		close(_clientSocket);
 		exit(1);
 	}
-	// send(_clientSocket, "bot connected", 14 , 0);
+
+	send(_clientSocket, "NICK bot C3PO\r\n", 8, 0);
+	send(_clientSocket, "PASS coucou\r\n", 8, 0);
 	
-	send(_clientSocket, "CAP LS\r\n", 8, 0);
-	send(_clientSocket, "PASS coucou\r\n", 13 , 0);
-	send(_clientSocket, "NICK bot\r\n", 10 , 0);
-	send(_clientSocket, "USER bot bot localhost :Bot Bot\r\n", 33 , 0);
-	send(_clientSocket, "bot connected\r\n", 15 , 0);
-	sleep(2);
+	// //char *tmp = "PASS ";
+	// char *tmp2 = strcat("PASS ",_pass);
+	// const char *tmp3 = strcat(tmp2, "\r\n");
+	// //char *temp = "NICK ";
+	// char *temp2 = strcat("NICK ", _nickname);
+	// const char *temp3 = strcat(temp2, "\r\n");
+	// // char *t = "USER";
+	// char *t2 = strcat("USER ", _username);
+	// const char *t3 = strcat(t2, "\r\n");
+	// send(_clientSocket, "CAP LS\r\n", 8, 0);
+	// send(_clientSocket, tmp3, strlen(tmp3) , 0);
+	// send(_clientSocket, temp3, strlen(temp3) , 0);
+	// send(_clientSocket, t3, strlen(t3) , 0);
+	// send(_clientSocket, "JOIN #test\r\n", 12 , 0);
+	// send(_clientSocket, "PRIVMSG #test :bleu\r\n", 23 , 0);
+
+	sleep(100);
 	send(_clientSocket, "QUIT :leaving\r\n", 15 , 0);
 	sleep(2);
 	close(_clientSocket);// fermer la connexion
+}
+
+void Bot::check_args_bonus(int argc, char **argv) {
+	if (argc == 3) {
+		for (int i = 0; argv[1][i]; i++) {
+			if (!isdigit(argv[1][i]))
+				throw except("Port must be a number");
+		}
+		long port = strtol(argv[1], NULL, 10);
+		if (port < 1024 || port > 65535)
+			throw except("Port must be between 1024 and 65535");
+	}
+	else 
+		throw except("Usage: ./ircserv <port> <password>");
+	_pass = argv[3];
 }
 
 // void Server::start_serv(void) {
@@ -142,7 +178,8 @@ void Bot::bot_command(std::string command) {
 		case 'I':
 			funcPtr = &Bot::info;
 			break;
-	
+		//qui est connecter sur le serveur
+		//quels channels sont deja creer et qui ya dedans
 	}
 	(this->*funcPtr)();
 }
@@ -151,6 +188,6 @@ void Bot::bot_command(std::string command) {
 
 //===================================GETTERS====================================//
 
-void Bot::set_nickname(const std::string &nickname) {
-	this->_nickname = nickname;
-}
+// void Bot::set_nickname(char * &nickname) {
+// 	this->_nickname = nickname;
+// }

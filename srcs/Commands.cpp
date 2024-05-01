@@ -73,6 +73,10 @@ void Commands::pass(Server &server, User &user, std::vector<std::string> &arg) {
 void Commands::nick(Server &server, User &user, std::vector<std::string> &arg) {
 	if (arg[1].empty())
 		return (server.sendMsg(user, ERR_NONICKNAMEGIVEN(arg[1]), 1));
+	// if (arg.size() == 3 && arg[1] == "bot" && arg[2] == "C3PO") {
+	// 	//annex otentifie bot;
+	// 	user.set_authenticated(true);
+	// }
 	if (arg[1].find_first_not_of("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789[]\\\\`_^{|}-") \
 		!= std::string::npos)
 		return (server.sendMsg(user, ERR_ERRONEUSNICKNAME(arg[1]), 1));

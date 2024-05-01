@@ -6,7 +6,7 @@
 /*   By: lazanett <lazanett@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/30 11:17:56 by lazanett          #+#    #+#             */
-/*   Updated: 2024/04/30 16:25:48 by lazanett         ###   ########.fr       */
+/*   Updated: 2024/05/01 16:06:47 by lazanett         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,10 +31,11 @@ class Bot {
 		Bot();
 		~Bot();
 // GETTERS
-		void set_nickname(const std::string &nickname);
+		void set_nickname(char * &nickname);
 
 // FUNCTIONS
 		void init_bot();
+		void check_args_bonus(int argc, char **argv);
 		void sendMsg(Bot &bot, std::string message, int code) const;
 		void bot_command(std::string command);
 		void info(void);
@@ -46,5 +47,7 @@ class Bot {
 		const char			*_serverIP;
 		long				_port;
 		int					_clientSocket;
-		std::string			_nickname;
+		const char				*_nickname;
+		const char				*_username;
+		char				_pass;
 };
