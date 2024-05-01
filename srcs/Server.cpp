@@ -199,9 +199,13 @@ void Server::get_New_Client_Message(void) {
 }
 
 void Server::disconnect(User &user) {
-	std::cout << "\033[38;2;160;100;100mClient on socket: " << user.get_fd() << " has been disconnected" << std::endl;
-	std::cout << "User address: " << user.get_ip() << std::endl;
-	std::cout << "User port: " << user.get_port() << std::endl;
+	std::cout << std::endl << "	\033[38;2;160;100;100m New logout" << std::endl;
+
+	std::cout << std::endl << "  New logout on fd: " << user.get_fd() << std::endl;
+	std::cout << "  User port: " << user.get_port() << std::endl;
+	std::cout << "  User IP: " << user.get_ip() << std::endl << std::endl;
+	std::cout << "	End of connection" << std::endl << std::endl;
+	std::cout << "\033[38;2;160;160;160m\\********************************/" << std::endl;
 	std::vector<pollfd>::iterator it = std::find_if(_pollfdmap.begin(), _pollfdmap.end(), IsClientFDPredicate(user.get_fd()));
 	if (it != _pollfdmap.end()) {
 		_pollfdmap.erase(it);
