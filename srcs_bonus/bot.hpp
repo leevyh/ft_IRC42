@@ -6,7 +6,7 @@
 /*   By: lazanett <lazanett@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/30 11:17:56 by lazanett          #+#    #+#             */
-/*   Updated: 2024/05/03 16:26:02 by lazanett         ###   ########.fr       */
+/*   Updated: 2024/05/03 18:44:13 by lazanett         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -56,10 +56,14 @@ class Bot {
 		const char			*_serverIP;
 		long				_port;
 		int					_clientSocket;
-		const char				*_nickname;
-		const char				*_username;
-		std::string _pass;
+		const char			*_nickname;
+		const char			*_username;
+		std::string			_pass;
+		std::string			_requestor;
 };
 
 void check_args_bonus(int argc, char **argv);
-std::vector<std::string> split_arg(std::string buffer);
+std::vector<std::string>	split(const std::string& str, char del);
+std::vector<std::string>	split_space(const std::string& str);
+std::vector<std::string>	split_pre_requestor(const std::string& str);
+std::vector<std::string>	split_requestor(const std::string& str);

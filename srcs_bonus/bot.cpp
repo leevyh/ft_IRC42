@@ -6,7 +6,7 @@
 /*   By: lazanett <lazanett@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/25 15:22:43 by lazanett          #+#    #+#             */
-/*   Updated: 2024/05/03 17:32:50 by lazanett         ###   ########.fr       */
+/*   Updated: 2024/05/03 18:48:39 by lazanett         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -83,10 +83,25 @@ void Bot::init_bot(bool signal_value_bot) {
 			buffer[bytesRead] = '\0';
 			std::string buffer_tmp;
 			buffer_tmp.append(buffer);
-			std::cout << "RECEPTION" << std::endl;
-			std::cout << "LINE " << buffer_tmp;
-			if (buffer_tmp.find("PRIVMSG"))
-				send(_clientSocket, "PRIVMSG lazanett :J'ai bien recu ton message\r\n", 46, 0);
+			std::cout << "LINE = " <<  buffer_tmp << std::endl;
+			std::size_t found = buffer_tmp.find("PRIVMSG");
+			if (found != std::string::npos)
+			{
+				std::vector<std::string> argument = split_space(buffer_tmp);
+				for (const auto& elem : argument) {
+					std::cout << elem << std::endl;
+				}
+				if (!argument.empty()) {
+					std::string firstElement = argument[0];
+					std::cout << "First element: " << firstElement << std::endl;
+					std::vector<std::string> pre_requestor = split_pre_requestor(argument[0]);
+					std::cout << "pre_requestor " << pre_requestor[0] << std::endl;
+					std::vector<std::string> requestor = split_requestor(pre_requestor[0]);
+					std::cout << "Requestor : " << requestor[0] << std::endl;
+					
+				}
+			}
+			// 	send(_clientSocket, "PRIVMSG lazanett :J'ai bien recu ton message\r\n", 46, 0);
 			// bot_command(command);
 			memset(buffer, 0, 512);
 		}
@@ -99,7 +114,7 @@ void Bot::init_bot(bool signal_value_bot) {
 
 std::vector<std::string>	split_space(const std::string& str) {
 	std::vector<std::string> channels_result;
-	std::string delimiter = " ";
+	std::string del = " ";
 	char *args = strtok((char *)str.c_str(), " ");
 	while (args != NULL) {
 		channels_result.push_back(args);
@@ -107,6 +122,30 @@ std::vector<std::string>	split_space(const std::string& str) {
 	}
 	return (channels_result);
 }
+
+std::vector<std::string>	split_pre_requestor(const std::string& str) {
+	std::vector<std::string> channels_result;
+	std::string del = ":";
+	char *args = strtok((char *)str.c_str(), ":");
+	while (args != NULL) {
+		channels_result.push_back(args);
+		args = strtok(NULL, ":");
+	}
+	return (channels_result);
+}
+
+std::vector<std::string>	split_requestor(const std::string& str) {
+	std::vector<std::string> channels_result;
+	std::string del = "!";
+	char *args = strtok((char *)str.c_str(), "!");
+	while (args != NULL) {
+		channels_result.push_back(args);
+		args = strtok(NULL, "!");
+	}
+	return (channels_result);
+}
+
+
 
 std::vector<std::string> split_arg(std::string buffer)
 {
