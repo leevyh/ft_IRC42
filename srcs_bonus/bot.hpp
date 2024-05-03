@@ -6,7 +6,7 @@
 /*   By: lazanett <lazanett@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/30 11:17:56 by lazanett          #+#    #+#             */
-/*   Updated: 2024/05/01 16:06:47 by lazanett         ###   ########.fr       */
+/*   Updated: 2024/05/03 16:26:02 by lazanett         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,21 +24,30 @@
 #include <map>
 #include <poll.h>
 
+class User;
+class Commands;
+class Channel;
+class Server;
 class Bot {
 
 	public:
 	
 		Bot();
+		Bot(char **av);
 		~Bot();
 // GETTERS
 		void set_nickname(char * &nickname);
 
 // FUNCTIONS
-		void init_bot();
-		void check_args_bonus(int argc, char **argv);
+		void init_bot(bool signal_value);
 		void sendMsg(Bot &bot, std::string message, int code) const;
-		void bot_command(std::string command);
-		void info(void);
+		
+		void signalHandler(int signal);
+		//COMMAND BOT
+		void bot_command(std::vector<std::string> command);
+		void man(Server &server, User &user);
+		void connexion(Server &server, User &user, Channel chan, std::string channelname);
+		void list(Server &server, User &user);
 
 	private:
 
@@ -49,5 +58,8 @@ class Bot {
 		int					_clientSocket;
 		const char				*_nickname;
 		const char				*_username;
-		char				_pass;
+		std::string _pass;
 };
+
+void check_args_bonus(int argc, char **argv);
+std::vector<std::string> split_arg(std::string buffer);
