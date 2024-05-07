@@ -6,7 +6,7 @@
 /*   By: lazanett <lazanett@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/30 11:17:56 by lazanett          #+#    #+#             */
-/*   Updated: 2024/05/07 17:54:49 by lazanett         ###   ########.fr       */
+/*   Updated: 2024/05/07 19:46:22 by lazanett         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,10 +48,9 @@ class Bot {
 		void man();
 		void chifoumi(std::vector<std::string> arg);
 		void advantage(std::vector<std::string> arg, std::string choice_bot);
-		void connexion(Server &server, User &user, Channel chan, std::string channelname);
-		void list(Server &server, User &user);
+		void number(std::vector<std::string> arg);
 		int Validcommand(std::vector<std::string> arg);
-
+		int	legit_num(std::vector<std::string> arg);
 	private:
 
 		struct sockaddr_in	_server_addr;
@@ -68,6 +67,7 @@ class Bot {
 		int					_n_arg;
 		int					_flag_chifoumi;
 		std::string			_choice_bot;
+		std::string			_num;
 };
 
 void check_args_bonus(int argc, char **argv);
@@ -78,3 +78,4 @@ std::vector<std::string>	split_requestor(const std::string& str);
 std::string choice();
 void	random_tab(std::vector<std::string>& tab);
 void sendPrivMsg(int clientSocket, const std::string& recipient, const std::string& message);
+long long	ft_atoi(std::string nptr);

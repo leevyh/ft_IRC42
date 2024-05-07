@@ -6,7 +6,7 @@
 /*   By: lazanett <lazanett@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/25 15:22:43 by lazanett          #+#    #+#             */
-/*   Updated: 2024/05/07 18:27:08 by lazanett         ###   ########.fr       */
+/*   Updated: 2024/05/07 20:15:02 by lazanett         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -224,7 +224,7 @@ int	Bot::Validcommand(std::vector<std::string> arg)
 {
 	if (!arg.empty())
 	{
-		if (arg[0] == "Man\r\n" || arg[0] ==  "Chifoumi")
+		if (arg[0] == "Man\r\n" || arg[0] ==  "Chifoumi" || arg[0] ==  "Number")
 			return 0;
 		return 1;
 	}
@@ -240,7 +240,7 @@ void Bot::bot_command(std::string command) {
 		// 	std::cout << i << args[i] << std::endl;
 		// }
 		if (Validcommand(args) == 1) {
-			std::string error = "PRIVMSG " + _requestor + " :" + "Error : Command Unknow || Try [Man] or [Chifoumi] or [List] or [Server]\r\n";
+			std::string error = "PRIVMSG " + _requestor + " :" + "Error : Unknow Command || Try [Man] or [Chifoumi + option] or [Number + num]\r\n";
 			send(_clientSocket, error.c_str(), error.length(), 0);
 			return;
 		}
@@ -257,13 +257,87 @@ void Bot::bot_command(std::string command) {
 					send(_clientSocket, msg.c_str(), msg.length(), 0);
 				}
 				break;
+			case 'N':
+				if (!args.empty() && args.size() == 2)
+				{
+					std::cout << "fin legit num" << std::endl;
+					number(args);
+				}
+				else
+				{
+					std::string msg = "PRIVMSG " + _requestor + " :" + "Error : [Number] need more parameter\r\n";
+					send(_clientSocket, msg.c_str(), msg.length(), 0);
+				}
+				break;
 		}
 	}
 }
 
+int	Bot::legit_num(std::vector<std::string> arg)
+{
+	if (arg[1][0] == '+' || arg[1][0] == '-')
+		_num = arg[1].substr(1);
+	else
+		_num = arg[1];
+	std::cout << "temp" << _num << std::endl;
+	while (_num.size() >= 2 && _num.substr(_num.size() - 2) == "\r\n") {
+		_num.erase(_num.size() - 2);
+	}
+	for (char c : _num) {
+		if (!std::isdigit(c))
+			return 0;
+	}
+	return 1;
+}
+
+void	Bot::number(std::vector<std::string> arg)
+{
+	if (legit_num(arg) == 1)
+	{
+		std::cout << "_num = " << ft_atoi(_num) << " | _num " << _num <<  std::endl;
+		if (ft_atoi(_num) >= -2147483647 && ft_atoi(_num) <= 2147483647)
+		{
+			int max = 2147483647;
+			int min = -2147483647;
+			srand(time(0));
+			long long num_bot = min + static_cast<long long>(std::rand()) % (max - min + 1);
+			std::cout <<  "num_bot = " << num_bot << std::endl;
+			std::string msg = "PRIVMSG " + _requestor + " :" + "bot is choosing his number\r\n";
+			send(_clientSocket, msg.c_str(), msg.length(), 0);
+			std::this_thread::sleep_for(std::chrono::seconds(2));
+			
+		}
+	}
+	
+}
+
+long long	ft_atoi(std::string nptr)
+{
+	long	n;
+	int		i;
+	int		signe;
+
+	i = 0;
+	signe = 1;
+	n = 0;
+	while ((nptr[i] >= 9 && nptr[i] <= 13) || nptr[i] == 32)
+		i++;
+	if (nptr[i] == '-' || nptr[i] == '+')
+	{
+		if (nptr[i] == '-')
+			signe *= -1;
+		i++;
+	}
+	while (nptr[i] >= '0' && nptr[i] <= '9')
+	{
+		n = (n * 10) + nptr[i] - '0';
+		i++;
+	}
+	return (n * signe);
+}
+
 void	Bot::chifoumi(std::vector<std::string> arg)
 {
-	_flag_chifoumi = 1;
 	if (arg[1] == "paper\r\n" || arg[1] == "scissors\r\n" || arg[1] == "rock\r\n")
 	{
 		std::string msg = "PRIVMSG " + _requestor + " :" + "bot is choosing...\r\n";
