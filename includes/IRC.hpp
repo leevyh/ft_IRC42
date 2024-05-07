@@ -54,7 +54,7 @@ std::string ERR_NOORIGIN(User &user);                                  // 409
 std::string ERR_NORECIPIENT(User &user, std::string command);          // 411
 std::string ERR_NOTEXTTOSEND(User &user);                              // 412
 std::string ERR_UNKNOWNCOMMAND(User &user, std::string command);       // 421
-std::string ERR_NONICKNAMEGIVEN(std::string error);                    // 431
+std::string ERR_NONICKNAMEGIVEN();                    // 431
 std::string ERR_ERRONEUSNICKNAME(std::string name);                    // 432
 std::string ERR_NICKNAMEINUSE(std::string name);                       // 433
 std::string ERR_USERNOTINCHANNEL(User &user, std::string nick, Channel& chan); // 441
@@ -62,6 +62,7 @@ std::string ERR_NOTONCHANNEL(User &user, Channel &chan);               // 442
 std::string ERR_USERONCHANNEL(User &user, std::string to_join, Channel &chan); // 443
 std::string ERR_NEEDMOREPARAMS(User &user, std::string command);       // 461
 std::string ERR_ALREADYREGISTRED(User &user);                          // 462
+std::string ERR_PASSWDMISMATCH(User &user);
 std::string ERR_CHANNELISFULL(User &user, Channel &channel);           // 471
 std::string ERR_UNKNOWNMODE(User &user, std::string modechar);         // 472
 std::string ERR_INVITEONLYCHAN(User &user, Channel &channel);          // 473

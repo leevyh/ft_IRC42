@@ -24,8 +24,8 @@ User &User::operator=(const User &rhs) {
 		this->_password = rhs._password;
 		this->_ip = rhs._ip;
 		this->_port = rhs._port;
-		this->_status = true;
-		this->_authenticated = false;
+		this->_status = true; // ? rhs._status ?
+		this->_authenticated = false; // ? rhs._authenticated ?
 		this->_fd = rhs._fd;
 	}
 	return (*this);
@@ -136,6 +136,7 @@ void User::receive(Server &server) {
 		i++;
 		std::string line = _buffer.substr(0, pos);
 		if (line.size()) {
+			std::cout << "Line : " << line << std::endl;
 			parseClientMessage(server, line);
 			line.clear();
 		}
