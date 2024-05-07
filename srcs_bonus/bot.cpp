@@ -6,14 +6,21 @@
 /*   By: lazanett <lazanett@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/25 15:22:43 by lazanett          #+#    #+#             */
-/*   Updated: 2024/05/07 11:59:51 by lazanett         ###   ########.fr       */
+/*   Updated: 2024/05/07 18:27:08 by lazanett         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "bot.hpp"
 #include "../includes/IRC.hpp"
 #include "../includes/Channel.hpp"
-#include <sstream>
+#include <iostream>
+#include <string>
+#include <vector>
+#include <random>
+#include <algorithm>
+#include <iostream>
+#include <thread>
+#include <chrono>
 
 bool signal_value_bot = false;
 
@@ -42,6 +49,7 @@ Bot::Bot(char **av) {
 	_nickname = "bot";
 	_username = "bot";
 	_pass = av[2];
+	_flag_chifoumi = 0;
 }
 
 Bot::~Bot(void) {}
@@ -83,26 +91,29 @@ void Bot::init_bot(bool signal_value_bot) {
 			buffer[bytesRead] = '\0';
 			std::string buffer_tmp;
 			buffer_tmp.append(buffer);
-			std::cout << "LINE = " <<  buffer_tmp << std::endl;
+			// std::cout << "LINE = " <<  buffer_tmp << std::endl;
 			std::size_t found = buffer_tmp.find("PRIVMSG");
 			if (found != std::string::npos)
 			{
 				std::vector<std::string> argument = split_space(buffer_tmp);
-				for (const auto& elem : argument) {
-					std::cout << elem << std::endl;
-				}
 				if (!argument.empty()) {
-					std::string firstElement = argument[0];
-					std::cout << "First element: " << firstElement << std::endl;
 					std::vector<std::string> pre_requestor = split_pre_requestor(argument[0]);
-					std::cout << "pre_requestor " << pre_requestor[0] << std::endl;
-					std::vector<std::string> requestor = split_requestor(pre_requestor[0]);
-					std::cout << "Requestor : " << requestor[0] << std::endl;
-					std::cout << "decoup argument 3 " << argument[3] << std::endl;
-					_msg = argument[3].substr(1);
-					std::cout << "msg = " << _msg << std::endl;
+					if (!pre_requestor.empty() || !pre_requestor[0].empty()) {
+						std::vector<std::string> requestor = split_requestor(pre_requestor[0]);
+						if (!requestor.empty() || !requestor[0].empty()) {
+							_requestor = requestor[0];
+							_msg = argument[3].substr(1);
+							if (argument.size() > 3)
+							{
+								for (size_t i = 4; i < argument.size(); ++i) {
+									_msg += " " + argument[i];
+								}
+							}
+							//std::cout << "msg = " << _msg << std::endl;
+							bot_command(_msg);
+						}
+					}
 				}
-				
 			}
 			// 	send(_clientSocket, "PRIVMSG lazanett :J'ai bien recu ton message\r\n", 46, 0);
 			// bot_command(command);
@@ -148,8 +159,6 @@ std::vector<std::string>	split_requestor(const std::string& str) {
 	return (channels_result);
 }
 
-
-
 std::vector<std::string> split_arg(std::string buffer)
 {
 	std::vector<std::string> TabArgument;
@@ -161,9 +170,6 @@ std::vector<std::string> split_arg(std::string buffer)
 	}
 	return TabArgument;
 }
-
-
-
 
 void check_args_bonus(int argc, char **argv) {
 	if (argc == 3) {
@@ -180,117 +186,157 @@ void check_args_bonus(int argc, char **argv) {
 		throw except("Usage: ./ircserv <port> <password>");
 }
 
-// void	Bot::connexion(Server &server, User &user, Channel chan, std::string channelname) {
-// void	Bot::connexion(Server &server, User &user, Channel chan, std::string channelname) {
+void sendPrivMsg(int clientSocket, const std::string& recipient, const std::string& message) {
+	std::string pv_msg = "PRIVMSG " + recipient + " :" + message + "\r\n";
+	send(clientSocket, pv_msg.c_str(), pv_msg.length(), 0);
+}
 
-// 	int flag = 0;
-// 	if (!server.get_channels().empty()) {
-// 		for (std::vector<Channel>::iterator it = server.get_channels().begin(); \
-// 			it != server.get_channels().end(); ++it) {
-// 			if (channelname == it->get_ChannelName())
-// 				flag = 1;
-// 			else
-// 				continue;
-// 		}
-// 		if (flag)
-// 		{
-// 			std::string msg = "Users connectes in the" + chan.get_ChannelName() + "channel :";
-// 			for (std::vector<User>::iterator it = chan.get_ChannelUser().begin(); 
-// 				it != chan.get_ChannelUser().end(); ++it) {
-// 					msg += " " + it->get_username();
-// 			}
-// 			server.sendMsg(user, msg, 2);
-// 		}
-// 		server.sendMsg(user, ERR_NOSUCHCHANNEL(user, channelname), 2);
-// 	}
-// 	else
-// 		server.sendMsg(user, "No channels on the Server", 2);
-// }
+void	Bot::man() {
 
-// void	Bot::man(Server &server, User &user) {
+	std::vector<std::string> lines = {
+	"THIS IS A COMMAND LIST THAT YOU CAN USE ON IRC",
+	"/nick + [new nickname] == rename nickname on the server",
+	"/msg + [nickname] + [MESSAGE] == send a message to someone",
+	"/part + [channel's name] + [message of what you're leaving](opt) == leave a channel",
+	"/join #[channel's name] == join a channel",
+	"/topic + [channel's topic desciption]",
+	"/invite + [nickname] == add a user in a channel",
+	"/kick + [nickname] == kick a channel user out",
+	"[MODE] == modify channel settings",
+	"/mode +l == add a limit of users",
+	"/mode -l == delete the limit",
+	"/mode +i == add the possibility of invite users",
+	"/mode -i == remove the invitation option",
+	"/mode +k == add a key for the channel",
+	"/mode -k == remove the key",
+	"/mode +o + [nickname] == give operator rights for the channel",
+	"/mode -o + [nickname] == remove rights for the channel",
+	"/mode +t + [nickname] == channel's topic is accessible to channel's user",
+	"/mode -t + [nickname] == channel's topic is accessible only for channel's operator",
+	};
 
-// 	std::string msg = "THIS IS A COMMAND LIST THAT YOU CAN USE ON IRC\n\n";
-// 	msg += "/nick + [new nickname] == rename nickname on the server\n";
-// 	msg += "/msg + [nickname] + [MESSAGE] == send a message to someone\n";
-// 	msg += "/part + [channel's name] + [message of what you're leaving](opt) == leave a channel\n";
-// 	msg += "/join #[channel's name] == join a channel\n";
-// 	msg += "/topic + [channel's topic desciption]\n";
-// 	msg += "/invite + [nickname] == add a user in a channel\n\n";
-// 	msg += "/kick + [nickname] == kick a channel user out\n";
-// 	msg += "[MODE] == modify channel settings\n";
-// 	msg += "/mode +l == add a limit of users\n";
-// 	msg += "/mode -l == delete the limit\n";
-// 	msg += "/mode +i == add the possibility of invite users\n";
-// 	msg += "/mode -i == remove the invitation option\n";
-// 	msg += "/mode +k == add a key for the channel\n";
-// 	msg += "/mode -k == remove the key\n";
-// 	msg += "/mode +o + [nickname] == give opertor rights for the channel\n";
-// 	msg += "/mode -o + [nickname] == remove rights for the channel\n";
-// 	msg += "/mode +t + [nickname] == channel's topic is accessible to channel's user\n";
-// 	msg += "/mode -t + [nickname] == channel's topic is accessible only for channel's operator\n";
-// 	server.sendMsg(user, msg, 2);
-// }
+	for (const std::string& line : lines) {
+		sendPrivMsg(_clientSocket, _requestor, line);
+	}
+}
 
-// void Bot::list(Server &server, User &user)
-// {
-// 	if (!server.get_channels().empty()) {
-// 		std::string msg = "Channels's list on the server :\n";
-// 		for (std::vector<Channel>::iterator it = server.get_channels().begin(); \
-// 			it != server.get_channels().end(); ++it) {
-// 				msg += it->get_ChannelName() + " : ";
-// 				std::vector<User> user_list = it->get_ChannelUser();
-// 				for (std::vector<User>::iterator ita = user_list.begin(); ita != user_list.end(); ++ita) {
-// 					msg += ita->get_username() + ".";
-// 				}
-// 				msg += "\n";
-// 		}
-// 		server.sendMsg(user, msg, 2);
-// 	}
-// 	else
-// 	{
-		
-// 		server.sendMsg(user, "No channels on the Server", 2);
-// 	}
+int	Bot::Validcommand(std::vector<std::string> arg)
+{
+	if (!arg.empty())
+	{
+		if (arg[0] == "Man\r\n" || arg[0] ==  "Chifoumi")
+			return 0;
+		return 1;
+	}
+	return 1;
+}
+void Bot::bot_command(std::string command) {
 
-// }
+	if (!command.empty())
+	{
+		std::vector<std::string> args = split_space(command); 
+		// for (size_t i = 0; i < args.size(); i++)
+		// {
+		// 	std::cout << i << args[i] << std::endl;
+		// }
+		if (Validcommand(args) == 1) {
+			std::string error = "PRIVMSG " + _requestor + " :" + "Error : Command Unknow || Try [Man] or [Chifoumi] or [List] or [Server]\r\n";
+			send(_clientSocket, error.c_str(), error.length(), 0);
+			return;
+		}
+		switch (args[0][0]) {
+			case 'M':
+				man();
+				break;
+			case 'C':
+				if (!args.empty() && args.size() == 2)
+					chifoumi(args);
+				else
+				{
+					std::string msg = "PRIVMSG " + _requestor + " :" + "Error : [Chifoumi] need more parameter\r\n";
+					send(_clientSocket, msg.c_str(), msg.length(), 0);
+				}
+				break;
+		}
+	}
+}
 
-// int	Validcommand(std::string command)
-// {
-// 	if (command == "Man" || command ==  "Connexion" || command == "List" || command == "Server")
-// 		return 0;
-// 	return 1;
-// }
-// void Bot::bot_command(std::vector<std::string> command) {
+void	Bot::chifoumi(std::vector<std::string> arg)
+{
+	_flag_chifoumi = 1;
+	if (arg[1] == "paper\r\n" || arg[1] == "scissors\r\n" || arg[1] == "rock\r\n")
+	{
+		std::string msg = "PRIVMSG " + _requestor + " :" + "bot is choosing...\r\n";
+		send(_clientSocket, msg.c_str(), msg.length(), 0);
+		std::this_thread::sleep_for(std::chrono::seconds(2));
+		std::string msg1 = "PRIVMSG " + _requestor + " :" + "CHI...\r\n";
+		send(_clientSocket, msg1.c_str(), msg1.length(), 0);
+		std::this_thread::sleep_for(std::chrono::seconds(1));
+		std::string msg2 = "PRIVMSG " + _requestor + " :" + "FOU...\r\n";
+		send(_clientSocket, msg2.c_str(), msg2.length(), 0);
+		std::this_thread::sleep_for(std::chrono::seconds(1));
+		std::string msg3 = "PRIVMSG " + _requestor + " :" + "MI...\r\n";
+		send(_clientSocket, msg3.c_str(), msg3.length(), 0);
+		std::this_thread::sleep_for(std::chrono::seconds(1));
+		_choice_bot = choice() + "\r\n";
+		srand(time(0));
+		advantage(arg, _choice_bot);
+		if (_n_arg == _n_choice_bot)
+		{
+			std::string msg = "PRIVMSG " + _requestor + " :" + "EQUALITY : both of you choose " + _choice_bot + "\r\n" ;
+			send(_clientSocket, msg.c_str(), msg.length(), 0);
+		}
+		else if (_n_arg < _n_choice_bot)
+		{
+			std::string msg = "PRIVMSG " + _requestor + " :" + "LOSER : bot had chosen " + _choice_bot + "\r\n";
+			send(_clientSocket, msg.c_str(), msg.length(), 0);
+		}
+		else if (_n_arg > _n_choice_bot)
+		{
+			std::string msg = "PRIVMSG " + _requestor + " :" + "VICTORY : bot had chosen " + _choice_bot + "\r\n";
+			send(_clientSocket, msg.c_str(), msg.length(), 0);
+		}
+	}
+	else
+	{
+		std::string msg = "PRIVMSG " + _requestor + " :" + "Error : need a valid parameter ; Try [rock] or [paper] or [scissors]\r\n";
+		send(_clientSocket, msg.c_str(), msg.length(), 0);
+	}
+	
+}
 
-// 	void	(Bot::*funcPtr)();
+void	Bot::advantage(std::vector<std::string> arg, std::string choice_bot)
+{
+	_n_arg = 0;
+	_n_choice_bot = 0;
+	if (arg[1] == _choice_bot)
+	{
+		_n_arg = 1;
+		_n_choice_bot = 1;
+	}
+	else if (arg[1] != _choice_bot && (((arg[1] == "paper\r\n") && (_choice_bot == "scissors\r\n")) || ((arg[1] == "scissors\r\n") && (_choice_bot == "rock\r\n")) || ((arg[1] == "rock\r\n") && (_choice_bot == "paper\r\n"))))
+		_n_choice_bot = 1;
+	else if (arg[1] != _choice_bot && (((arg[1] == "scissors\r\n") && (_choice_bot == "paper\r\n")) || ((arg[1] == "rock\r\n") && (_choice_bot == "scissors\r\n")) || ((arg[1] == "paper\r\n") && (_choice_bot == "rock\r\n"))))
+		_n_arg = 1;
+}
 
-// 	if (Validcommand(command[2]) == 1) {
-// 		std::cout << "Error : Command Unknow" << std::endl << "Try [Man] or [Connexion] or [List] or [Server]" << std::endl;
-// 		return;
-// 	}
-// 	switch (command[2][0]) {
-// 		case 'I': // INFO
-// 			funcPtr = &Bot::man(&server, &user);
-// 			break;
-// 		case 'C': //CONNEXION + Channelsname
-// 			if (command[3].empty()) {
-// 				std::cout << "Error : required channel" << std::endl;
-// 				funcPtr = NULL;
-// 			}
-// 			else {
-// 				funcPtr = &Bot::connexion(&server,  &user, chan, command[3]);
-// 			}
-// 			break;
-// 		case 'L'://LIST
-// 			funcPtr = &Bot::list(&server, &user);
-// 			break;
-// 		case 'S'
-// 		//qui est connecter sur le serveur
-// 		//quels channels sont deja creer
-// 	}
-// 	(this->*funcPtr)();
-// }
+std::string choice() {
 
+	std::vector<std::string> op = {"paper", "scissors", "rock"};
+	random_tab(op);
+	return (op[0]);
+}
+
+void	random_tab(std::vector<std::string>& tab) {
+	
+	int n = tab.size();
+	for (int i = n - 1; i > 0; --i) {
+		int j = rand() % (i + 1);
+		std::string temp = tab[i];
+		tab[i] = tab[j];
+		tab[j] = temp;
+	}
+}
 
 
 //===================================GETTERS====================================//
