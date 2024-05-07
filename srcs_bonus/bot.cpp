@@ -6,7 +6,7 @@
 /*   By: lazanett <lazanett@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/25 15:22:43 by lazanett          #+#    #+#             */
-/*   Updated: 2024/05/03 18:48:39 by lazanett         ###   ########.fr       */
+/*   Updated: 2024/05/07 11:59:51 by lazanett         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -98,8 +98,11 @@ void Bot::init_bot(bool signal_value_bot) {
 					std::cout << "pre_requestor " << pre_requestor[0] << std::endl;
 					std::vector<std::string> requestor = split_requestor(pre_requestor[0]);
 					std::cout << "Requestor : " << requestor[0] << std::endl;
-					
+					std::cout << "decoup argument 3 " << argument[3] << std::endl;
+					_msg = argument[3].substr(1);
+					std::cout << "msg = " << _msg << std::endl;
 				}
+				
 			}
 			// 	send(_clientSocket, "PRIVMSG lazanett :J'ai bien recu ton message\r\n", 46, 0);
 			// bot_command(command);

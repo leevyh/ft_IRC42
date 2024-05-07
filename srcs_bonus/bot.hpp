@@ -6,7 +6,7 @@
 /*   By: lazanett <lazanett@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/30 11:17:56 by lazanett          #+#    #+#             */
-/*   Updated: 2024/05/03 18:44:13 by lazanett         ###   ########.fr       */
+/*   Updated: 2024/05/07 11:57:30 by lazanett         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -60,6 +60,7 @@ class Bot {
 		const char			*_username;
 		std::string			_pass;
 		std::string			_requestor;
+		std::string			_msg;
 };
 
 void check_args_bonus(int argc, char **argv);
