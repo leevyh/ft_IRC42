@@ -6,12 +6,13 @@
 /*   By: lazanett <lazanett@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/30 11:17:56 by lazanett          #+#    #+#             */
-/*   Updated: 2024/05/08 16:03:27 by lazanett         ###   ########.fr       */
+/*   Updated: 2024/05/08 17:25:36 by lazanett         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
 
+#include "../includes/IRC.hpp"
 #include <iostream>
 #include <string>
 #include <cstdlib>
@@ -23,6 +24,12 @@
 #include <vector>
 #include <map>
 #include <poll.h>
+#include <random>
+#include <algorithm>
+#include <thread>
+#include <chrono>
+#include <csignal>
+#include <exception>
 
 class User;
 class Commands;
@@ -37,9 +44,9 @@ class Bot {
 		~Bot();
 // GETTERS
 		void set_nickname(char * &nickname);
-
+		int	get_fd() const;
 // FUNCTIONS
-		void init_bot(bool signal_value);
+		void init_bot();
 		void sendMsg(Bot &bot, std::string message, int code) const;
 		
 		void signalHandler(int signal);
@@ -55,13 +62,14 @@ class Bot {
 		void gessnum(std::string command);
 		void tips();
 		void number();
+		int	connexion();
 
 
 
 	private:
 
 		struct sockaddr_in	_server_addr;
-		bool				_signal_value;
+		bool				_signal_value_bot;
 		const char			*_serverIP;
 		long				_port;
 		int					_clientSocket;
@@ -90,3 +98,4 @@ std::string choice();
 void	random_tab(std::vector<std::string>& tab);
 void sendPrivMsg(int clientSocket, const std::string& recipient, const std::string& message);
 long long	ft_atoi(std::string nptr);
+void signal_send(int signum);

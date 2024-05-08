@@ -6,31 +6,22 @@
 /*   By: lazanett <lazanett@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/25 15:22:43 by lazanett          #+#    #+#             */
-/*   Updated: 2024/05/08 16:07:49 by lazanett         ###   ########.fr       */
+/*   Updated: 2024/05/08 17:32:57 by lazanett         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "bot.hpp"
-#include "../includes/IRC.hpp"
-#include "../includes/Channel.hpp"
-#include <iostream>
-#include <string>
-#include <vector>
-#include <random>
-#include <algorithm>
-#include <iostream>
-#include <thread>
-#include <chrono>
-#include <string>
 
 bool signal_value_bot = false;
+int	client_socket_global = 0;
 
 int	main(int ac, char **av)
 {
 	try {
 		check_args_bonus(ac, av);
+		// std::signal(SIGINT, &signal_send);
 		Bot bot(av);
-		bot.init_bot(signal_value_bot);
+		bot.init_bot();
 	}
 	catch (const std::exception& e) {
 		std::cerr << e.what() << std::endl;
@@ -38,13 +29,12 @@ int	main(int ac, char **av)
 	return 0;
 }
 
-
-//==========================CONSTRUCTOR/DESTRUCTOR===========================//
+//=========================================CONSTRUCTOR/DESTRUCTOR=================================================//
 Bot::Bot() {}
 
 Bot::Bot(char **av) {
 
-	_signal_value = false;
+	// _signal_value_bot = false;
 	_port = 6667;
 	_serverIP = "127.0.0.1";
 	_nickname = "bot";
@@ -58,144 +48,136 @@ Bot::Bot(char **av) {
 
 Bot::~Bot(void) {}
 
-//===============================FUNCTION==================================//
+//=================================================FUNCTION=====================================================//
 
-void Bot::init_bot(bool signal_value_bot) {
-
-	char buffer[1024];
-
+int	Bot::connexion()
+{
 	_clientSocket = socket(AF_INET, SOCK_STREAM, 0);
+	client_socket_global = _clientSocket;
 	if (_clientSocket == -1) {
 		std::cerr << "Error creating socket" << std::endl;
 		close(_clientSocket);
-		exit(1);
+		return 1;
 	}
 	sockaddr_in serverAddress;
 	serverAddress.sin_family = AF_INET;
 	serverAddress.sin_port = htons(_port);
 	serverAddress.sin_addr.s_addr = INADDR_ANY;
-	if (connect(_clientSocket, (struct sockaddr*)&serverAddress, sizeof(serverAddress)) == -1) { //Voir connection sur un poste distant
+	if (connect(_clientSocket, (struct sockaddr*)&serverAddress, sizeof(serverAddress)) == -1) {
 		std::cerr << "Error : the bot isn't connect" << std::endl;
 		close(_clientSocket);
-		exit(1);
+		return 1;
 	}
 	send(_clientSocket, "CAP LS\r\n", 8, 0);
 	std::string pass = "PASS " + _pass + "\r\n";
 	send(_clientSocket, "NICK bot\r\n", 10, 0);
 	send(_clientSocket, pass.c_str(), pass.length(), 0);
 	send(_clientSocket, "USER bot bot localhost :bot bot\r\n", 33, 0);
-	while (!signal_value_bot)
+	return 0;
+}
+
+void Bot::init_bot() {
+
+	char buffer[1024];
+
+	if (connexion() == 0)
 	{
-		ssize_t bytesRead = recv(_clientSocket, buffer, sizeof(buffer) - 1, 0);
-		if (bytesRead < 1) {
-			memset(buffer, 0, 512);
-			signal_value_bot = true;
-			break;
-		}
-		else {
-			buffer[bytesRead] = '\0';
-			std::string buffer_tmp;
-			buffer_tmp.append(buffer);
-			// std::cout << "LINE = " <<  buffer_tmp << std::endl;
-			std::size_t found = buffer_tmp.find("PRIVMSG");
-			if (found != std::string::npos)
-			{
-				std::vector<std::string> argument = split_space(buffer_tmp);
-				if (!argument.empty()) {
-					std::vector<std::string> pre_requestor = split_pre_requestor(argument[0]);
-					if (!pre_requestor.empty() || !pre_requestor[0].empty()) {
-						std::vector<std::string> requestor = split_requestor(pre_requestor[0]);
-						if (!requestor.empty() || !requestor[0].empty()) {
-							_requestor = requestor[0];
-							_msg = argument[3].substr(1);
-							if (argument.size() > 3)
-							{
-								for (size_t i = 4; i < argument.size(); ++i) {
-									_msg += " " + argument[i];
+		if (std::signal(SIGINT, signal_send) == SIG_ERR){};
+		// try
+		while (!(signal_value_bot))
+		{
+			std::signal(SIGINT, &signal_send);
+			ssize_t bytesRead = recv(_clientSocket, buffer, sizeof(buffer) - 1, 0);
+			std::cout << "BytesRead :" << bytesRead << std::endl;
+			if (bytesRead < 1) {
+				memset(buffer, 0, 512);
+				signal_value_bot = true;
+				break;
+			}
+			else {
+				buffer[bytesRead] = '\0';
+				std::string buffer_tmp;
+				buffer_tmp.append(buffer);
+				std::size_t found = buffer_tmp.find("PRIVMSG");
+				if (found != std::string::npos)
+				{
+					std::vector<std::string> argument = split_space(buffer_tmp);
+					if (!argument.empty()) {
+						std::vector<std::string> pre_requestor = split_pre_requestor(argument[0]);
+						if (!pre_requestor.empty() || !pre_requestor[0].empty()) {
+							std::vector<std::string> requestor = split_requestor(pre_requestor[0]);
+							if (!requestor.empty() || !requestor[0].empty()) {
+								_requestor = requestor[0];
+								_msg = argument[3].substr(1);
+								if (argument.size() > 3)
+								{
+									for (size_t i = 4; i < argument.size(); ++i) {
+										_msg += " " + argument[i];
+									}
 								}
+								if (_flag_num)
+									gessnum(_msg);
+								else
+									bot_command(_msg);
+								
 							}
-							if (_flag_num)
-								gessnum(_msg);
-							else
-								bot_command(_msg);
-							
 						}
 					}
 				}
+				memset(buffer, 0, 512);
 			}
-			memset(buffer, 0, 512);
 		}
 	}
-	sleep(10);
-	send(_clientSocket, "QUIT :leaving\r\n", 15 , 0);
-	sleep(2);
-	close(_clientSocket);// fermer la connexion
+	else
+		exit(0);
 }
 
-std::vector<std::string>	split_space(const std::string& str) {
-	std::vector<std::string> channels_result;
-	std::string del = " ";
-	char *args = strtok((char *)str.c_str(), " ");
-	while (args != NULL) {
-		channels_result.push_back(args);
-		args = strtok(NULL, " ");
-	}
-	return (channels_result);
-}
+//==============================================COMMANDS========================================================//
 
-std::vector<std::string>	split_pre_requestor(const std::string& str) {
-	std::vector<std::string> channels_result;
-	std::string del = ":";
-	char *args = strtok((char *)str.c_str(), ":");
-	while (args != NULL) {
-		channels_result.push_back(args);
-		args = strtok(NULL, ":");
-	}
-	return (channels_result);
-}
-
-std::vector<std::string>	split_requestor(const std::string& str) {
-	std::vector<std::string> channels_result;
-	std::string del = "!";
-	char *args = strtok((char *)str.c_str(), "!");
-	while (args != NULL) {
-		channels_result.push_back(args);
-		args = strtok(NULL, "!");
-	}
-	return (channels_result);
-}
-
-std::vector<std::string> split_arg(std::string buffer)
+int	Bot::Validcommand(std::vector<std::string> arg)
 {
-	std::vector<std::string> TabArgument;
-	char *arg = strtok((char *)buffer.c_str(), "\r\n");
-	while (arg == NULL && !buffer.empty())
+	if (!arg.empty())
 	{
-		TabArgument.push_back(arg);
-		arg = strtok(NULL, "\r\n");
+		if (arg[0] == "Man\r\n" || arg[0] ==  "Chifoumi" || arg[0] == "Number\r\n")
+			return 0;
+		return 1;
 	}
-	return TabArgument;
+	return 1;
 }
+void Bot::bot_command(std::string command) {
 
-void check_args_bonus(int argc, char **argv) {
-	if (argc == 3) {
-		for (int i = 0; argv[1][i]; i++) {
-			if (!isdigit(argv[1][i]))
-				throw except("Port must be a number");
+	if (!command.empty())
+	{
+		std::vector<std::string> args = split_space(command); 
+		if (Validcommand(args) == 1) {
+			std::string error = "PRIVMSG " + _requestor + " :" + "Error : try [Man] or [Chifoumi + option] or [Number]\r\n";
+			send(_clientSocket, error.c_str(), error.length(), 0);
+			return;
 		}
-		long port = strtol(argv[1], NULL, 10);
-		if (port < 1024 || port > 65535)
-			throw except("Port must be between 1024 and 65535");
+		switch (args[0][0]) {
+			case 'M':
+				man();
+				break;
+			case 'C':
+				if (!args.empty() && args.size() == 2)
+					chifoumi(args);
+				else
+				{
+					std::string msg = "PRIVMSG " + _requestor + " :" + "Error : [Chifoumi] need more parameter\r\n";
+					send(_clientSocket, msg.c_str(), msg.length(), 0);
+				}
+				break;
+			case 'N':
+				_flag_num = 1;
+				get_random_num();
+				_it = 0;
+				_t = 0;
+				break;
+		}
 	}
-	
-	else 
-		throw except("Usage: ./ircserv <port> <password>");
 }
 
-void sendPrivMsg(int clientSocket, const std::string& recipient, const std::string& message) {
-	std::string pv_msg = "PRIVMSG " + recipient + " :" + message + "\r\n";
-	send(clientSocket, pv_msg.c_str(), pv_msg.length(), 0);
-}
+//===========================================MAN===========================================================//
 
 void	Bot::man() {
 
@@ -226,52 +208,12 @@ void	Bot::man() {
 	}
 }
 
-int	Bot::Validcommand(std::vector<std::string> arg)
-{
-	if (!arg.empty())
-	{
-		if (arg[0] == "Man\r\n" || arg[0] ==  "Chifoumi" || arg[0] == "Number\r\n")
-			return 0;
-		return 1;
-	}
-	return 1;
+void sendPrivMsg(int clientSocket, const std::string& recipient, const std::string& message) {
+	std::string pv_msg = "PRIVMSG " + recipient + " :" + message + "\r\n";
+	send(clientSocket, pv_msg.c_str(), pv_msg.length(), 0);
 }
-void Bot::bot_command(std::string command) {
 
-	if (!command.empty())
-	{
-		std::vector<std::string> args = split_space(command); 
-		// for (size_t i = 0; i < args.size(); i++)
-		// {
-		// 	std::cout << i << args[i] << std::endl;
-		// }
-		if (Validcommand(args) == 1) {
-			std::string error = "PRIVMSG " + _requestor + " :" + "Error : Unknow Command || Try [Man] or [Chifoumi + option] or [Number]\r\n";
-			send(_clientSocket, error.c_str(), error.length(), 0);
-			return;
-		}
-		switch (args[0][0]) {
-			case 'M':
-				man();
-				break;
-			case 'C':
-				if (!args.empty() && args.size() == 2)
-					chifoumi(args);
-				else
-				{
-					std::string msg = "PRIVMSG " + _requestor + " :" + "Error : [Chifoumi] need more parameter\r\n";
-					send(_clientSocket, msg.c_str(), msg.length(), 0);
-				}
-				break;
-			case 'N':
-				_flag_num = 1;
-				get_random_num();
-				_it = 0;
-				std::cout << "fin legit num" << std::endl;
-				break;
-		}
-	}
-}
+//===============================================NUMBER===========================================================//
 
 int	Bot::legit_num(std::vector<std::string> arg)
 {
@@ -352,6 +294,7 @@ void	Bot::number()
 		}
 	}
 }
+
 void	Bot::tips()
 {
 	if (_t == 0)
@@ -407,10 +350,9 @@ void	Bot::get_random_num()
 	long long min = 0;
 	std::srand(std::time(0));
 	_num_bot = min + static_cast<long long>(std::rand()) % (max - min + 1);
-	std::cout <<  "num_bot = " << _num_bot << std::endl;
 	std::string msg = "PRIVMSG " + _requestor + " :" + "bot is choosing his number between 0 and 1000\r\n";
 	send(_clientSocket, msg.c_str(), msg.length(), 0);
-	std::string use = "PRIVMSG " + _requestor + " :" + "You can use [Stop] or [Number] or [Tips]\r\n";
+	std::string use = "PRIVMSG " + _requestor + " :" + "bot has chosen: you can use [Stop] or [Number] or [Tips]\r\n";
 	send(_clientSocket, use.c_str(), use.length(), 0);
 	std::this_thread::sleep_for(std::chrono::seconds(2));
 }
@@ -433,6 +375,8 @@ long long	ft_atoi(std::string nptr)
 	}
 	return (n * signe);
 }
+
+//===========================================CHIFOUMI===========================================================//
 
 void	Bot::chifoumi(std::vector<std::string> arg)
 {
@@ -511,8 +455,76 @@ void	random_tab(std::vector<std::string>& tab) {
 }
 
 
-//===================================GETTERS====================================//
+//===========================================UTILS===========================================================//
 
-// void Bot::set_nickname(char * &nickname) {
-// 	this->_nickname = nickname;
-// }
+std::vector<std::string>	split_space(const std::string& str) {
+	std::vector<std::string> channels_result;
+	std::string del = " ";
+	char *args = strtok((char *)str.c_str(), " ");
+	while (args != NULL) {
+		channels_result.push_back(args);
+		args = strtok(NULL, " ");
+	}
+	return (channels_result);
+}
+
+std::vector<std::string>	split_pre_requestor(const std::string& str) {
+	std::vector<std::string> channels_result;
+	std::string del = ":";
+	char *args = strtok((char *)str.c_str(), ":");
+	while (args != NULL) {
+		channels_result.push_back(args);
+		args = strtok(NULL, ":");
+	}
+	return (channels_result);
+}
+
+std::vector<std::string>	split_requestor(const std::string& str) {
+	std::vector<std::string> channels_result;
+	std::string del = "!";
+	char *args = strtok((char *)str.c_str(), "!");
+	while (args != NULL) {
+		channels_result.push_back(args);
+		args = strtok(NULL, "!");
+	}
+	return (channels_result);
+}
+
+std::vector<std::string> split_arg(std::string buffer)
+{
+	std::vector<std::string> TabArgument;
+	char *arg = strtok((char *)buffer.c_str(), "\r\n");
+	while (arg == NULL && !buffer.empty())
+	{
+		TabArgument.push_back(arg);
+		arg = strtok(NULL, "\r\n");
+	}
+	return TabArgument;
+}
+
+void check_args_bonus(int argc, char **argv) {
+	if (argc == 3) {
+		for (int i = 0; argv[1][i]; i++) {
+			if (!isdigit(argv[1][i]))
+				throw except("Port must be a number");
+		}
+		long port = strtol(argv[1], NULL, 10);
+		if (port < 1024 || port > 65535)
+			throw except("Port must be between 1024 and 65535");
+	}
+	
+	else 
+		throw except("Usage: ./a.out <port> <password>");
+}
+
+int	Bot::get_fd() const
+{
+	return _clientSocket;
+}
+
+void signal_send(int signum) {
+	(void) signum;
+	signal_value_bot = true;
+	send(client_socket_global, "QUIT :leaving\r\n", 15 , 0);
+	close(client_socket_global);
+}
