@@ -6,7 +6,7 @@
 /*   By: lazanett <lazanett@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/30 11:17:56 by lazanett          #+#    #+#             */
-/*   Updated: 2024/05/07 19:46:22 by lazanett         ###   ########.fr       */
+/*   Updated: 2024/05/08 16:03:27 by lazanett         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,6 +51,13 @@ class Bot {
 		void number(std::vector<std::string> arg);
 		int Validcommand(std::vector<std::string> arg);
 		int	legit_num(std::vector<std::string> arg);
+		void get_random_num();
+		void gessnum(std::string command);
+		void tips();
+		void number();
+
+
+
 	private:
 
 		struct sockaddr_in	_server_addr;
@@ -65,9 +72,13 @@ class Bot {
 		std::string			_msg;
 		int					_n_choice_bot;
 		int					_n_arg;
-		int					_flag_chifoumi;
+		int					_flag_num;
 		std::string			_choice_bot;
 		std::string			_num;
+		long long			_num_bot;
+		int					_it;
+		int					_it_left;
+		long long			_t;
 };
 
 void check_args_bonus(int argc, char **argv);

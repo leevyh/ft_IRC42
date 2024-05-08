@@ -6,7 +6,7 @@
 /*   By: lazanett <lazanett@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/25 15:22:43 by lazanett          #+#    #+#             */
-/*   Updated: 2024/05/07 20:15:02 by lazanett         ###   ########.fr       */
+/*   Updated: 2024/05/08 16:07:49 by lazanett         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,6 +21,7 @@
 #include <iostream>
 #include <thread>
 #include <chrono>
+#include <string>
 
 bool signal_value_bot = false;
 
@@ -49,7 +50,10 @@ Bot::Bot(char **av) {
 	_nickname = "bot";
 	_username = "bot";
 	_pass = av[2];
-	_flag_chifoumi = 0;
+	_flag_num = 0;
+	_it = 0;
+	_it_left = 10;
+	_t = 0;
 }
 
 Bot::~Bot(void) {}
@@ -84,6 +88,7 @@ void Bot::init_bot(bool signal_value_bot) {
 	{
 		ssize_t bytesRead = recv(_clientSocket, buffer, sizeof(buffer) - 1, 0);
 		if (bytesRead < 1) {
+			memset(buffer, 0, 512);
 			signal_value_bot = true;
 			break;
 		}
@@ -109,14 +114,15 @@ void Bot::init_bot(bool signal_value_bot) {
 									_msg += " " + argument[i];
 								}
 							}
-							//std::cout << "msg = " << _msg << std::endl;
-							bot_command(_msg);
+							if (_flag_num)
+								gessnum(_msg);
+							else
+								bot_command(_msg);
+							
 						}
 					}
 				}
 			}
-			// 	send(_clientSocket, "PRIVMSG lazanett :J'ai bien recu ton message\r\n", 46, 0);
-			// bot_command(command);
 			memset(buffer, 0, 512);
 		}
 	}
@@ -224,7 +230,7 @@ int	Bot::Validcommand(std::vector<std::string> arg)
 {
 	if (!arg.empty())
 	{
-		if (arg[0] == "Man\r\n" || arg[0] ==  "Chifoumi" || arg[0] ==  "Number")
+		if (arg[0] == "Man\r\n" || arg[0] ==  "Chifoumi" || arg[0] == "Number\r\n")
 			return 0;
 		return 1;
 	}
@@ -240,7 +246,7 @@ void Bot::bot_command(std::string command) {
 		// 	std::cout << i << args[i] << std::endl;
 		// }
 		if (Validcommand(args) == 1) {
-			std::string error = "PRIVMSG " + _requestor + " :" + "Error : Unknow Command || Try [Man] or [Chifoumi + option] or [Number + num]\r\n";
+			std::string error = "PRIVMSG " + _requestor + " :" + "Error : Unknow Command || Try [Man] or [Chifoumi + option] or [Number]\r\n";
 			send(_clientSocket, error.c_str(), error.length(), 0);
 			return;
 		}
@@ -258,16 +264,10 @@ void Bot::bot_command(std::string command) {
 				}
 				break;
 			case 'N':
-				if (!args.empty() && args.size() == 2)
-				{
-					std::cout << "fin legit num" << std::endl;
-					number(args);
-				}
-				else
-				{
-					std::string msg = "PRIVMSG " + _requestor + " :" + "Error : [Number] need more parameter\r\n";
-					send(_clientSocket, msg.c_str(), msg.length(), 0);
-				}
+				_flag_num = 1;
+				get_random_num();
+				_it = 0;
+				std::cout << "fin legit num" << std::endl;
 				break;
 		}
 	}
@@ -275,11 +275,7 @@ void Bot::bot_command(std::string command) {
 
 int	Bot::legit_num(std::vector<std::string> arg)
 {
-	if (arg[1][0] == '+' || arg[1][0] == '-')
-		_num = arg[1].substr(1);
-	else
-		_num = arg[1];
-	std::cout << "temp" << _num << std::endl;
+	_num = arg[0];
 	while (_num.size() >= 2 && _num.substr(_num.size() - 2) == "\r\n") {
 		_num.erase(_num.size() - 2);
 	}
@@ -287,28 +283,136 @@ int	Bot::legit_num(std::vector<std::string> arg)
 		if (!std::isdigit(c))
 			return 0;
 	}
+	if (!(ft_atoi(_num) >= 0 && ft_atoi(_num) <= 1000 && _num.size() <= 4))
+		return 0;
 	return 1;
 }
 
-void	Bot::number(std::vector<std::string> arg)
+void Bot::gessnum(std::string command)
 {
-	if (legit_num(arg) == 1)
+	std::vector<std::string> args = split_space(command);
+	if (!args.empty() && args.size() == 1)
 	{
-		std::cout << "_num = " << ft_atoi(_num) << " | _num " << _num <<  std::endl;
-		if (ft_atoi(_num) >= -2147483647 && ft_atoi(_num) <= 2147483647)
+		if (args[0] == "Stop\r\n")
 		{
-			int max = 2147483647;
-			int min = -2147483647;
-			srand(time(0));
-			long long num_bot = min + static_cast<long long>(std::rand()) % (max - min + 1);
-			std::cout <<  "num_bot = " << num_bot << std::endl;
-			std::string msg = "PRIVMSG " + _requestor + " :" + "bot is choosing his number\r\n";
+			_flag_num = 0;
+			_it = 0;
+			_it_left = 10;
+			_t = 0;
+			std::string msg = "PRIVMSG " + _requestor + " :" + "Bye Bye \r\n";
 			send(_clientSocket, msg.c_str(), msg.length(), 0);
-			std::this_thread::sleep_for(std::chrono::seconds(2));
-			
+		}
+		else if (legit_num(args) == 1)
+			number();
+		else if (args[0] == "Tips\r\n")
+		{
+			tips();
+			_t++;
 		}
 	}
-	
+}
+
+void	Bot::number()
+{
+	if (ft_atoi(_num) == _num_bot && _it_left != 0)
+	{
+		_flag_num = 0;
+		_it = 0;
+		_it_left = 10;
+		_t = 0;
+		auto n = std::to_string(_num_bot);
+		std::string msg = "PRIVMSG " + _requestor + " :" + "CONGRATULATIONS: the bot's number was " + n + "\r\n";
+		send(_clientSocket, msg.c_str(), msg.length(), 0);
+	}
+	else if (ft_atoi(_num) != _num_bot && _it_left != 0)
+	{
+		_it++;
+		_it_left = 10 - _it;
+		
+		if (_it_left == 0)
+		{
+			_flag_num = 0;
+			_it = 0;
+			_it_left = 10;
+			_t = 0;
+			auto n = std::to_string(_num_bot);
+			std::string msg = "PRIVMSG " + _requestor + " :" + "You can't try again, the number was " + n + ". Bye bye\r\n";
+			send(_clientSocket, msg.c_str(), msg.length(), 0);
+		}
+		else
+		{
+			std::string clue;
+			if (ft_atoi(_num) > _num_bot)
+				clue = " the number is lower, ";
+			else
+				clue = " the number is upper, ";
+			auto left = std::to_string(_it_left);
+			std::string msg = "PRIVMSG " + _requestor + " :" + "Try again: " + clue + left + " tries left, enter [Tips] for hints\r\n";
+			send(_clientSocket, msg.c_str(), msg.length(), 0);
+		}
+	}
+}
+void	Bot::tips()
+{
+	if (_t == 0)
+	{
+		std::string hint;
+		if (_num_bot >= 0 && _num_bot <= 500)
+			hint = "The number is between 0 and 500";
+		else if (_num_bot >= 501 && _num_bot <= 1000)
+			hint = "The number is between 501 and 1000";
+		std::string msg = "PRIVMSG " + _requestor + " :" + "Tips: " + hint + "\r\n";
+		send(_clientSocket, msg.c_str(), msg.length(), 0);
+		
+	}
+	else if (_t == 1)
+	{
+		std::string hint;
+		if (_num_bot % 2 == 0)
+			hint = "The number is even";
+		else if (_num_bot % 2 != 0)
+			hint = "The number is odd";
+		std::string msg = "PRIVMSG " + _requestor + " :" + "Tips: " + hint + "\r\n";
+		send(_clientSocket, msg.c_str(), msg.length(), 0);
+	}
+	else if (_t == 2)
+	{
+		auto hint = std::to_string(_num_bot);
+		int size = hint.size();
+		auto h = std::to_string(size);
+		std::string msg = "PRIVMSG " + _requestor + " :" + "Tips: the number have " + h + " digits\r\n";
+		send(_clientSocket, msg.c_str(), msg.length(), 0);
+		
+	}
+	else if (_t == 3)
+	{
+		auto h = std::to_string(_num_bot);
+		if (h.size() > 0)
+		{
+			char hint = h[0];
+			std::string msg = "PRIVMSG " + _requestor + " :" + "Tips: the first digit of the number is " + hint + "\r\n";
+			send(_clientSocket, msg.c_str(), msg.length(), 0);
+		}
+	}
+	else if (_t > 3)
+	{
+		std::string msg = "PRIVMSG " + _requestor + " :" + "You have already 4 tips\r\n";
+		send(_clientSocket, msg.c_str(), msg.length(), 0);
+	}
+}
+
+void	Bot::get_random_num()
+{
+	long long max = 1000;
+	long long min = 0;
+	std::srand(std::time(0));
+	_num_bot = min + static_cast<long long>(std::rand()) % (max - min + 1);
+	std::cout <<  "num_bot = " << _num_bot << std::endl;
+	std::string msg = "PRIVMSG " + _requestor + " :" + "bot is choosing his number between 0 and 1000\r\n";
+	send(_clientSocket, msg.c_str(), msg.length(), 0);
+	std::string use = "PRIVMSG " + _requestor + " :" + "You can use [Stop] or [Number] or [Tips]\r\n";
+	send(_clientSocket, use.c_str(), use.length(), 0);
+	std::this_thread::sleep_for(std::chrono::seconds(2));
 }
 
 long long	ft_atoi(std::string nptr)
@@ -322,12 +426,6 @@ long long	ft_atoi(std::string nptr)
 	n = 0;
 	while ((nptr[i] >= 9 && nptr[i] <= 13) || nptr[i] == 32)
 		i++;
-	if (nptr[i] == '-' || nptr[i] == '+')
-	{
-		if (nptr[i] == '-')
-			signe *= -1;
-		i++;
-	}
 	while (nptr[i] >= '0' && nptr[i] <= '9')
 	{
 		n = (n * 10) + nptr[i] - '0';
