@@ -52,9 +52,9 @@ void Commands::capls(Server &server, User &user, std::vector<std::string> &arg) 
 void Commands::pass(Server &server, User &user, std::vector<std::string> &arg) {
 	if (user.get_authenticated() == true)
 		return (server.sendMsg(user, ERR_ALREADYREGISTRED(user), 1));
-	if (arg[1].empty()) {
+//	if (arg[1].empty()) {
+	if (arg.size() == 1) {
 		server.sendMsg(user, ERR_NEEDMOREPARAMS(user, "PASS"), 1);
-		server.disconnect(user);
 		return;
 	}
 	if (arg[1] == server.get_Password()) {
@@ -64,23 +64,22 @@ void Commands::pass(Server &server, User &user, std::vector<std::string> &arg) {
 		}
 		return (server.sendMsg(user, ERR_ALREADYREGISTRED(user), 1));
 	}
-	server.sendMsg(user, ERR_NEEDMOREPARAMS(user, "PASS"), 1);
-	server.disconnect(user);
-	return;
+	else {
+		server.sendMsg(user, ERR_PASSWDMISMATCH(user), 1);
+		return;
+	}
 }
 
 /* Command NICK | Parameters: <nickname> */
 void Commands::nick(Server &server, User &user, std::vector<std::string> &arg) {
-	if (arg[1].empty())
-		return (server.sendMsg(user, ERR_NONICKNAMEGIVEN(arg[1]), 1));
-	// if (arg.size() == 3 && arg[1] == "bot" && arg[2] == "C3PO") {
-	// 	//annex otentifie bot;
-	// 	user.set_authenticated(true);
-	// }
+	if (arg.size() == 1)
+	{
+		server.sendMsg(user, ERR_NONICKNAMEGIVEN(), 1);
+		return;
+	}
 	if (arg[1].find_first_not_of("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789[]\\\\`_^{|}-") \
 		!= std::string::npos)
 		return (server.sendMsg(user, ERR_ERRONEUSNICKNAME(arg[1]), 1));
-	std::map<int, User> users = server.get_clientmap();
 	int code = 0;
 	for(std::map<int, User>::iterator it = server.get_clientmap().begin(); \
 		it != server.get_clientmap().end(); ++it) {
@@ -126,13 +125,16 @@ void Commands::user(Server &server, User &user, std::vector<std::string> &arg) {
 /* Command: JOIN | Parameters: ( <channel> *( "," <channel> ) [ <key> *( "," <key> ) ] ) / "0" */
 void Commands::join(Server &server, User &user, std::vector<std::string> &arg) {
 	std::vector<std::string> channels;
+	if (arg.size() < 2)
+		return (server.sendMsg(user, ERR_NEEDMOREPARAMS(user, "JOIN"), 1));
 	channels = split(arg[1]);
-	std::string msg_send;
 	short authorized = 0;
 	if (check_channelName(server, user, channels) == -6969)
 		return;
 	for(size_t i = 0; i < channels.size(); i++) {
+		std::cout << "channel empty" << server.get_channels().empty() << std::endl;
 		if (!(server.get_channels().empty())) {
+			std::cout <<"Debug to check get_channels_empty" << std::endl;
 			authorized = 0;
 			for (std::vector<Channel>::iterator it = server.get_channels().begin(); \
 				it != server.get_channels().end(); ++it) {
@@ -173,7 +175,7 @@ void Commands::invite(Server &server, User &user, std::vector<std::string> &arg)
 		return (server.sendMsg(user, ERR_NEEDMOREPARAMS(user, arg[0]), 1));
 	if (!arg[1].empty() && server.is_onServer(arg[1]) == false)
 		return (server.sendMsg(user, ERR_NOSUCHNICK(user, arg[1]), 1));
-	for (std::vector<Channel>::iterator itc = server.get_channels().begin(); 
+	for (std::vector<Channel>::iterator itc = server.get_channels().begin();
 		itc != server.get_channels().end(); ++itc) {
 		if (itc->get_ChannelName() == arg[2]) {
 			if (itc->is_UserInChannel(user)) {
@@ -232,6 +234,10 @@ void Commands::kick(Server &server, User &user, std::vector<std::string> &arg) {
 
 /* Command: PART | Parameters: <channel> *( "," <channel> ) [ <Part Message> ] */
 void Commands::part(Server &server, User &user, std::vector<std::string> &arg) {
+	if (arg.size() < 2) {
+		server.sendMsg(user, ERR_NEEDMOREPARAMS(user, "PART"), 1);
+		return;
+	}
 	std::vector<std::string> channels;
 	channels = split(arg[1]);
 	std::string part_msg;
@@ -239,7 +245,6 @@ void Commands::part(Server &server, User &user, std::vector<std::string> &arg) {
 	int j = 0;
 	if (arg.size() >= 3) {
 		part_msg = remove_OneChar(':', arg, 2);
-		std::cout << "part_msg: " << part_msg << std::endl;
 		code = 2;
 	}
 	else if (arg.size() == 2) {

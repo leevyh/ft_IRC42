@@ -157,7 +157,7 @@ std::string ERR_CANNOTSENDTOCHAN(User &user, std::string channel) {
 }
 
 std::string ERR_NOORIGIN(User &user) {
-	return ("409 " + user.get_nickname() + ":No origin specified");
+	return ("409 " + user.get_nickname() + " :No origin specified");
 }
 
 std::string ERR_NORECIPIENT(User &user, std::string command) {
@@ -172,8 +172,8 @@ std::string ERR_UNKNOWNCOMMAND(User &user, std::string command) {
 	return ("421 " + user.get_nickname() + " " + command + " :Unknown command");
 }
 
-std::string ERR_NONICKNAMEGIVEN(std::string name) {
-	return ("431 " + name + " :No nickname given");
+std::string ERR_NONICKNAMEGIVEN() {
+	return ("431 :No nickname given");
 }
 
 std::string ERR_ERRONEUSNICKNAME(std::string name) {
@@ -202,6 +202,10 @@ std::string ERR_NEEDMOREPARAMS(User &user, std::string command) {
 
 std::string ERR_ALREADYREGISTRED(User &user) {
 	return ("462 " + user.get_nickname() + " :You may not reregister");
+}
+
+std::string ERR_PASSWDMISMATCH(User &user) {
+	return ("464 " + user.get_nickname() + " :Password incorrect");
 }
 
 std::string ERR_CHANNELISFULL(User &user, Channel &channel) {

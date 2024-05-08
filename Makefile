@@ -7,7 +7,7 @@ PATH_INCLUDE = includes
 
 
 CXX = c++ -std=c++98
-CXXFLAGS = -Wall -Wextra -Werror -g3
+CXXFLAGS = -Wall -Wextra -Werror -g3 -fno-omit-frame-pointer -Og
 
 
 HDRS = $(PATH_INCLUDE)/IRC.hpp \
