@@ -136,7 +136,7 @@ void User::receive(Server &server) {
 		i++;
 		std::string line = _buffer.substr(0, pos);
 		if (line.size()) {
-			std::cout << "Line : " << line << std::endl;
+			std::cout << "line :" << line << std::endl;////
 			parseClientMessage(server, line);
 			line.clear();
 		}
@@ -191,6 +191,8 @@ void User::authentication(Server &server, Commands &cmd, std::vector<std::string
 void User::parseClientMessage(Server &server, std::string line) {
 	std::vector<std::string> splited_cmd = splitcmd(line);
 	Commands cmd;
+	// if (arg[1] == 'bot' && arg[2] == pass)
+	// 	_authenticated = true;
 	if (get_authenticated() == true)
 		cmd.getcommand(server, *this, splited_cmd);
 	else

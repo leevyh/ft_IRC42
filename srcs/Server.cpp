@@ -227,12 +227,12 @@ void Server::disconnect(User &user) {
 void Server::sendMsg(User &user, std::string message, int code) const {
 	std::string msg;
 	switch (code) {
-		case 1:
+		case 1: // Message au User avec nom du server
 			msg = ":" + this->get_networkname() + " " + message + "\r\n";
 			if (send(user.get_fd(), msg.c_str(), msg.length(), 0) == -1)
 				std::perror("send:");
 			break;
-		case 2:
+		case 2: // Message au User sans nom du server
 			msg = ":" + message + "\r\n";
 			if (send(user.get_fd(), msg.c_str(), msg.length(), 0) == -1)
 				std::perror("send:");
