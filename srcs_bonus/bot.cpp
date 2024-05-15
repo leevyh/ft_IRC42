@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   bot.cpp                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: lazanett <lazanett@student.42.fr>          +#+  +:+       +#+        */
+/*   By: lkoletzk <lkoletzk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/25 15:22:43 by lazanett          #+#    #+#             */
-/*   Updated: 2024/05/08 17:32:57 by lazanett         ###   ########.fr       */
+/*   Updated: 2024/05/15 16:36:49 by lkoletzk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,13 +33,13 @@ int	main(int ac, char **av)
 Bot::Bot() {}
 
 Bot::Bot(char **av) {
-
+	(void)av;
 	// _signal_value_bot = false;
 	_port = 6667;
 	_serverIP = "127.0.0.1";
 	_nickname = "bot";
 	_username = "bot";
-	_pass = av[2];
+	_pass = "xdh57ar4?STWE%Y!";
 	_flag_num = 0;
 	_it = 0;
 	_it_left = 10;
@@ -64,15 +64,15 @@ int	Bot::connexion()
 	serverAddress.sin_port = htons(_port);
 	serverAddress.sin_addr.s_addr = INADDR_ANY;
 	if (connect(_clientSocket, (struct sockaddr*)&serverAddress, sizeof(serverAddress)) == -1) {
-		std::cerr << "Error : the bot isn't connect" << std::endl;
+		std::cerr << "Error : the bot isn't connected." << std::endl;
 		close(_clientSocket);
 		return 1;
 	}
-	send(_clientSocket, "CAP LS\r\n", 8, 0);
+	send(_clientSocket, "@initialisation\r\n", 17, 0);
 	std::string pass = "PASS " + _pass + "\r\n";
-	send(_clientSocket, "NICK bot\r\n", 10, 0);
 	send(_clientSocket, pass.c_str(), pass.length(), 0);
-	send(_clientSocket, "USER bot bot localhost :bot bot\r\n", 33, 0);
+	// send(_clientSocket, "NICK bot\r\n", 10, 0);
+	// send(_clientSocket, "USER bot bot localhost :bot bot\r\n", 33, 0);
 	return 0;
 }
 
@@ -88,7 +88,7 @@ void Bot::init_bot() {
 		{
 			std::signal(SIGINT, &signal_send);
 			ssize_t bytesRead = recv(_clientSocket, buffer, sizeof(buffer) - 1, 0);
-			std::cout << "BytesRead :" << bytesRead << std::endl;
+			// std::cout << "BytesRead :" << bytesRead << std::endl;
 			if (bytesRead < 1) {
 				memset(buffer, 0, 512);
 				signal_value_bot = true;
@@ -136,14 +136,14 @@ void Bot::init_bot() {
 
 int	Bot::Validcommand(std::vector<std::string> arg)
 {
-	if (!arg.empty())
-	{
+	if (!arg.empty()) {
 		if (arg[0] == "Man\r\n" || arg[0] ==  "Chifoumi" || arg[0] == "Number\r\n")
 			return 0;
 		return 1;
 	}
 	return 1;
 }
+
 void Bot::bot_command(std::string command) {
 
 	if (!command.empty())
@@ -161,8 +161,7 @@ void Bot::bot_command(std::string command) {
 			case 'C':
 				if (!args.empty() && args.size() == 2)
 					chifoumi(args);
-				else
-				{
+				else {
 					std::string msg = "PRIVMSG " + _requestor + " :" + "Error : [Chifoumi] need more parameter\r\n";
 					send(_clientSocket, msg.c_str(), msg.length(), 0);
 				}
@@ -517,10 +516,7 @@ void check_args_bonus(int argc, char **argv) {
 		throw except("Usage: ./a.out <port> <password>");
 }
 
-int	Bot::get_fd() const
-{
-	return _clientSocket;
-}
+int	Bot::get_fd() const {return _clientSocket;}
 
 void signal_send(int signum) {
 	(void) signum;

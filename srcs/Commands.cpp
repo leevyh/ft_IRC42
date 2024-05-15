@@ -52,9 +52,20 @@ void Commands::capls(Server &server, User &user, std::vector<std::string> &arg) 
 void Commands::pass(Server &server, User &user, std::vector<std::string> &arg) {
 	if (user.get_authenticated() == true)
 		return (server.sendMsg(user, ERR_ALREADYREGISTRED(user), 1));
-//	if (arg[1].empty()) {
 	if (arg.size() == 1) {
 		server.sendMsg(user, ERR_NEEDMOREPARAMS(user, "PASS"), 1);
+		return;
+	}
+	if (server.get_bot_auth() == true ) {					// BOT
+		if (arg[1] == server.get_BOTPassword()) {
+			user.set_password(arg[1]);
+			user.set_nickname("bot");
+			user.set_username("bot");
+			user.set_realname("bot");
+		}
+		else
+			server.sendMsg(user, "Sorry, wrong password to connect as a BOT.", 1);
+		server.set_bot_auth(false);
 		return;
 	}
 	if (arg[1] == server.get_Password()) {
@@ -72,19 +83,19 @@ void Commands::pass(Server &server, User &user, std::vector<std::string> &arg) {
 
 /* Command NICK | Parameters: <nickname> */
 void Commands::nick(Server &server, User &user, std::vector<std::string> &arg) {
-	if (arg.size() == 1)
-	{
+	if (arg.size() == 1) {
 		server.sendMsg(user, ERR_NONICKNAMEGIVEN(), 1);
 		return;
 	}
+	if (arg[1] == "bot")										// BOT
+		return (server.sendMsg(user, "The nickname 'bot' is already reserved for our BOT.", 1));
 	if (arg[1].find_first_not_of("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789[]\\\\`_^{|}-") \
 		!= std::string::npos)
 		return (server.sendMsg(user, ERR_ERRONEUSNICKNAME(arg[1]), 1));
 	int code = 0;
 	for(std::map<int, User>::iterator it = server.get_clientmap().begin(); \
 		it != server.get_clientmap().end(); ++it) {
-		if (arg[1] == it->second.get_nickname())
-		{
+		if (arg[1] == it->second.get_nickname()) {
 			server.sendMsg(user, ERR_NICKNAMEINUSE(arg[1]), 1);
 			code = 1;
 		}

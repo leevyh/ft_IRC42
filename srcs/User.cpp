@@ -24,8 +24,8 @@ User &User::operator=(const User &rhs) {
 		this->_password = rhs._password;
 		this->_ip = rhs._ip;
 		this->_port = rhs._port;
-		this->_status = true; // ? rhs._status ?
-		this->_authenticated = false; // ? rhs._authenticated ?
+		this->_status = rhs._status;
+		this->_authenticated = rhs._authenticated;
 		this->_fd = rhs._fd;
 	}
 	return (*this);
@@ -136,7 +136,7 @@ void User::receive(Server &server) {
 		i++;
 		std::string line = _buffer.substr(0, pos);
 		if (line.size()) {
-			std::cout << "line :" << line << std::endl;////
+			// std::cout << "line :" << line << std::endl;						//// DEBUG
 			parseClientMessage(server, line);
 			line.clear();
 		}
@@ -160,6 +160,8 @@ std::vector<std::string> splitcmd(std::string line) {
 
 void User::authentication(Server &server, Commands &cmd, std::vector<std::string> arg) {
 	if (!arg.empty()) {
+		if (arg[0] ==  "@initialisation" && server.get_botStatus() == false)			// BOT
+			server.set_bot_auth(true);
 		std::string cmds[] = {"PASS", "NICK", "USER", "CAP"};
 		int i = 0;
 		while (i < 4 && cmds[i].compare(arg[0]))
@@ -191,8 +193,6 @@ void User::authentication(Server &server, Commands &cmd, std::vector<std::string
 void User::parseClientMessage(Server &server, std::string line) {
 	std::vector<std::string> splited_cmd = splitcmd(line);
 	Commands cmd;
-	// if (arg[1] == 'bot' && arg[2] == pass)
-	// 	_authenticated = true;
 	if (get_authenticated() == true)
 		cmd.getcommand(server, *this, splited_cmd);
 	else

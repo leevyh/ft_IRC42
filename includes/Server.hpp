@@ -28,9 +28,12 @@ class Server {
 		long get_Port(void) const;
 		std::string get_Password(void) const;
 		std::string get_networkname(void) const;
-		std::vector<pollfd> get_fds(void) const;
 		std::map<int, User> &get_clientmap();
 		std::vector<Channel> &get_channels(void);
+		bool get_botStatus(void);
+		void set_bot_auth(bool status);
+		bool get_bot_auth(void);
+		std::string get_BOTPassword(void) const;
 // FUNCTIONS
 		void init_serv(void);
 		void start_serv(void);
@@ -38,12 +41,10 @@ class Server {
 		void get_New_Client_Message(void);
 		void sendMsg(User &user, std::string message, int code) const;
 		void disconnect(User &user);
-		// void timeout_disconnect(User &user);
 		bool is_onServer(std::string to_find);
 		void add_channelList(Channel &channel);
 		void remove_channelList(Channel& channel);
 		void delete_channelList(void);
-
 
 	private:
 		struct sockaddr_in _server_addr;
@@ -54,5 +55,7 @@ class Server {
 		std::vector<pollfd> _pollfdmap;
 		std::map<int, User> _clientmap;
 		std::vector<Channel> _channels;
-
+		bool _bot;
+		bool _bot_auth;
+		std::string _BOTpassword;
 };

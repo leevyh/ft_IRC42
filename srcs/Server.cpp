@@ -10,11 +10,17 @@ Server::Server() {
 	_password = "default";
 	_nb_of_users = 0;
 	_networkname = "IRC_DE_LA_MORT";
+	_bot = false;
+	_BOTpassword = "xdh57ar4?STWE%Y!";
+	_bot_auth = false;
 }
 
 Server::Server(long port, std::string password) : _port(port), _password(password) {
 	_nb_of_users = 0;
 	_networkname = "IRC_DE_LA_MORT";
+	_bot = false;
+	_BOTpassword = "xdh57ar4?STWE%Y!";
+	_bot_auth = false;
 }
 
 Server::~Server() {
@@ -39,6 +45,9 @@ Server &Server::operator=(Server const &rhs) {
 		_pollfdmap = rhs._pollfdmap;
 		_clientmap = rhs._clientmap;
 		_channels = rhs._channels;
+		_bot = rhs._bot;
+		_bot_auth = rhs._bot_auth;
+		_BOTpassword = rhs._BOTpassword;
 	}
 	return (*this);
 }
@@ -79,6 +88,14 @@ std::string Server::get_networkname(void) const {return (_networkname);}
 std::map<int, User> &Server::get_clientmap(void) {return (_clientmap);}
 
 std::vector<Channel> &Server::get_channels(void) {return (_channels);}
+
+bool Server::get_botStatus(void) {return (_bot);}
+
+void Server::set_bot_auth(bool status) {_bot_auth = status;}
+
+bool Server::get_bot_auth(void) {return(_bot_auth);}
+
+std::string Server::get_BOTPassword(void) const {return (_BOTpassword);}
 
 /* ************************************************************************** */
 
@@ -137,7 +154,6 @@ void Server::new_Connection_Client(void) {
 	struct sockaddr_in user_addr;
 	socklen_t user_addr_len = sizeof(user_addr);
 	int client_socket;
-
 
 	/* ACCEPT CONNECTION + ERR HANDLING */
 	client_socket = accept(_pollfdmap[0].fd, (struct sockaddr *) &user_addr, &user_addr_len);
