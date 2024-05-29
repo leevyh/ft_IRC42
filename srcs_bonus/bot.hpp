@@ -6,7 +6,7 @@
 /*   By: lazanett <lazanett@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/30 11:17:56 by lazanett          #+#    #+#             */
-/*   Updated: 2024/05/29 16:15:29 by lazanett         ###   ########.fr       */
+/*   Updated: 2024/05/29 16:24:53 by lazanett         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,7 +49,7 @@ class Bot {
 		void bot_command(std::string command);
 		void man();
 		void chifoumi(std::vector<std::string> arg);
-		void advantage(std::vector<std::string> arg, std::string choice_bot);
+		void advantage(std::vector<std::string> arg);
 		void number(std::vector<std::string> arg);
 		int Validcommand(std::vector<std::string> arg);
 		int	legit_num(std::vector<std::string> arg);

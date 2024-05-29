@@ -6,7 +6,7 @@
 /*   By: lazanett <lazanett@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/25 15:22:43 by lazanett          #+#    #+#             */
-/*   Updated: 2024/05/29 15:42:04 by lazanett         ###   ########.fr       */
+/*   Updated: 2024/05/29 16:24:41 by lazanett         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -422,7 +422,7 @@ void	Bot::chifoumi(std::vector<std::string> arg)
 		sleep(1); //new
 		_choice_bot = choice() + "\r\n";
 		srand(time(0));
-		advantage(arg, _choice_bot);
+		advantage(arg);
 		if (_n_arg == _n_choice_bot)
 		{
 			std::string msg = "PRIVMSG " + _requestor + " :" + "EQUALITY : both of you choose " + _choice_bot + "\r\n" ;
@@ -447,7 +447,7 @@ void	Bot::chifoumi(std::vector<std::string> arg)
 	
 }
 
-void	Bot::advantage(std::vector<std::string> arg, std::string choice_bot)
+void	Bot::advantage(std::vector<std::string> arg)
 {
 	_n_arg = 0;
 	_n_choice_bot = 0;
