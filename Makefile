@@ -25,8 +25,7 @@ SRCS = $(PATH_SRCS)/main.cpp \
 		$(PATH_SRCS)/Channel.cpp \
 		$(PATH_SRCS)/Mode.cpp
 
-SRCS_BONUS = $(PATH_SRCS_BONUS)/bot.cpp \
-			 $(PATH_SRCS_BONUS)/main_bonus.cpp \
+SRCS_BONUS = $(PATH_SRCS_BONUS)/bot.cpp
 
 OBJ_DIR = .objs
 OBJ_DIR_BONUS = .objs_bonus
@@ -49,8 +48,9 @@ bonus: $(NAME_BONUS)
 $(NAME): $(OBJS)
 	$(CXX) $(CXXFLAGS) -o $(NAME) $(OBJS)
 	@echo "\n Mandatory compilation: OK\n"
-$(NAME_BONUS) : $(OBJ_BONUS)
-	$(CXX) $(CXXFLAGS) -o $(NAME_BONUS) $(OBJS) $(OBJ_BONUS)
+$(NAME_BONUS) : $(OBJS) $(OBJ_BONUS)
+	$(CXX) $(CXXFLAGS) -o $(NAME) $(OBJS)
+	$(CXX) $(CXXFLAGS) -o $(NAME_BONUS) $(OBJ_BONUS)
 	@echo "\n Compilation Bonus OK\n"
 
 %.o: %.cpp
