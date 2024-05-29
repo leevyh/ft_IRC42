@@ -136,7 +136,6 @@ void User::receive(Server &server) {
 		i++;
 		std::string line = _buffer.substr(0, pos);
 		if (line.size()) {
-			// std::cout << "line :" << line << std::endl;						//// DEBUG
 			parseClientMessage(server, line);
 			line.clear();
 		}

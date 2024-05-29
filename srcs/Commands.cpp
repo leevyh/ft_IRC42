@@ -143,9 +143,7 @@ void Commands::join(Server &server, User &user, std::vector<std::string> &arg) {
 	if (check_channelName(server, user, channels) == -6969)
 		return;
 	for(size_t i = 0; i < channels.size(); i++) {
-		std::cout << "channel empty" << server.get_channels().empty() << std::endl;
 		if (!(server.get_channels().empty())) {
-			std::cout <<"Debug to check get_channels_empty" << std::endl;
 			authorized = 0;
 			for (std::vector<Channel>::iterator it = server.get_channels().begin(); \
 				it != server.get_channels().end(); ++it) {
@@ -224,7 +222,6 @@ void Commands::kick(Server &server, User &user, std::vector<std::string> &arg) {
 				else {
 					for (std::vector<User>::iterator itu = itc->get_ChannelUser().begin(); \
 						itu != itc->get_ChannelUser().end(); ++itu) {
-						std::cout << "Present: " << itu->get_nickname() << std::endl;
 						if (itu->get_nickname() == arg[2]) {
 							itc->sendMsg(user, RPL_KICK(user, *itc, arg[2], kick_msg), 1);
 							itc->remove_inviteList(*itu);

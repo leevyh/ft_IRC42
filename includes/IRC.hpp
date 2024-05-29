@@ -2,7 +2,6 @@
 
 #include <iostream>
 #include <string>
-// #include <Server.hpp>
 #include <csignal>
 #include <cstdlib>
 #include <cstring>
@@ -96,9 +95,9 @@ struct IsClientFDPredicate {
 #include <exception>
 class except : public std::exception {
 	public:
-		except( const char* msg ) { _msg = msg; };
+		except( const char* msg ) {_msg = msg;};
 		virtual ~except() throw() {};
-		virtual const char * what() const throw() {return this->_msg.c_str(); };
+		virtual const char * what() const throw() {return this->_msg.c_str();};
 	private:
 		std::string _msg;
 };

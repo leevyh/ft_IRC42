@@ -190,6 +190,5 @@ void	Channel::sendMsg(User &user, std::string message, int code) {
 
 void	Channel::creationTime(void) {
 	time_t now = time(NULL);
-	std::cout << "timestamp: " << now << std::endl;
 	_creationTime = now;
 }

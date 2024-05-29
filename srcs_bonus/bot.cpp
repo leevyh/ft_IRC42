@@ -6,7 +6,7 @@
 /*   By: lkoletzk <lkoletzk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/25 15:22:43 by lazanett          #+#    #+#             */
-/*   Updated: 2024/05/15 16:36:49 by lkoletzk         ###   ########.fr       */
+/*   Updated: 2024/05/29 15:14:14 by lkoletzk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,7 +19,6 @@ int	main(int ac, char **av)
 {
 	try {
 		check_args_bonus(ac, av);
-		// std::signal(SIGINT, &signal_send);
 		Bot bot(av);
 		bot.init_bot();
 	}
@@ -34,7 +33,6 @@ Bot::Bot() {}
 
 Bot::Bot(char **av) {
 	(void)av;
-	// _signal_value_bot = false;
 	_port = 6667;
 	_serverIP = "127.0.0.1";
 	_nickname = "bot";
@@ -71,8 +69,6 @@ int	Bot::connexion()
 	send(_clientSocket, "@initialisation\r\n", 17, 0);
 	std::string pass = "PASS " + _pass + "\r\n";
 	send(_clientSocket, pass.c_str(), pass.length(), 0);
-	// send(_clientSocket, "NICK bot\r\n", 10, 0);
-	// send(_clientSocket, "USER bot bot localhost :bot bot\r\n", 33, 0);
 	return 0;
 }
 
@@ -88,7 +84,6 @@ void Bot::init_bot() {
 		{
 			std::signal(SIGINT, &signal_send);
 			ssize_t bytesRead = recv(_clientSocket, buffer, sizeof(buffer) - 1, 0);
-			// std::cout << "BytesRead :" << bytesRead << std::endl;
 			if (bytesRead < 1) {
 				memset(buffer, 0, 512);
 				signal_value_bot = true;

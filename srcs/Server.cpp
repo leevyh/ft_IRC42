@@ -9,7 +9,7 @@ Server::Server() {
 	_port = 6667;
 	_password = "default";
 	_nb_of_users = 0;
-	_networkname = "IRC_DE_LA_MORT";
+	_networkname = "IRC";
 	_bot = false;
 	_BOTpassword = "xdh57ar4?STWE%Y!";
 	_bot_auth = false;
@@ -17,7 +17,7 @@ Server::Server() {
 
 Server::Server(long port, std::string password) : _port(port), _password(password) {
 	_nb_of_users = 0;
-	_networkname = "IRC_DE_LA_MORT";
+	_networkname = "IRC";
 	_bot = false;
 	_BOTpassword = "xdh57ar4?STWE%Y!";
 	_bot_auth = false;
@@ -57,7 +57,6 @@ Server &Server::operator=(Server const &rhs) {
 void	Server::add_channelList(Channel &channel) {_channels.push_back(channel);}
 
 void	Server::remove_channelList(Channel& channel) {
-std::cout << "remove_channelList: " << channel.get_ChannelName() << std::endl;
 	for (std::vector<Channel>::iterator it = _channels.begin(); it != _channels.end(); ++it) {
 		if (it->get_ChannelName() == channel.get_ChannelName()) {
 			_channels.erase(it);
