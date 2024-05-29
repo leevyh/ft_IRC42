@@ -6,7 +6,7 @@
 /*   By: lazanett <lazanett@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/30 11:17:56 by lazanett          #+#    #+#             */
-/*   Updated: 2024/05/08 17:25:36 by lazanett         ###   ########.fr       */
+/*   Updated: 2024/05/29 16:15:29 by lazanett         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,17 +24,12 @@
 #include <vector>
 #include <map>
 #include <poll.h>
-#include <random>
+#include <cstdlib>
+#include <ctime>
 #include <algorithm>
-#include <thread>
-#include <chrono>
 #include <csignal>
-#include <exception>
+#include <sstream>
 
-class User;
-class Commands;
-class Channel;
-class Server;
 class Bot {
 
 	public:
@@ -95,7 +90,7 @@ std::vector<std::string>	split_space(const std::string& str);
 std::vector<std::string>	split_pre_requestor(const std::string& str);
 std::vector<std::string>	split_requestor(const std::string& str);
 std::string choice();
-void	random_tab(std::vector<std::string>& tab);
+void shuffle(const char** array, int size);
 void sendPrivMsg(int clientSocket, const std::string& recipient, const std::string& message);
 long long	ft_atoi(std::string nptr);
 void signal_send(int signum);
