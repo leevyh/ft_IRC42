@@ -6,7 +6,7 @@
 /*   By: lazanett <lazanett@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/25 15:22:43 by lazanett          #+#    #+#             */
-/*   Updated: 2024/05/08 17:32:57 by lazanett         ###   ########.fr       */
+/*   Updated: 2024/05/29 15:42:04 by lazanett         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,13 +33,13 @@ int	main(int ac, char **av)
 Bot::Bot() {}
 
 Bot::Bot(char **av) {
-
+	(void)av;
 	// _signal_value_bot = false;
 	_port = 6667;
 	_serverIP = "127.0.0.1";
 	_nickname = "bot";
 	_username = "bot";
-	_pass = av[2];
+	_pass = "xdh57ar4?STWE%Y!";
 	_flag_num = 0;
 	_it = 0;
 	_it_left = 10;
@@ -64,15 +64,15 @@ int	Bot::connexion()
 	serverAddress.sin_port = htons(_port);
 	serverAddress.sin_addr.s_addr = INADDR_ANY;
 	if (connect(_clientSocket, (struct sockaddr*)&serverAddress, sizeof(serverAddress)) == -1) {
-		std::cerr << "Error : the bot isn't connect" << std::endl;
+		std::cerr << "Error : the bot isn't connected." << std::endl;
 		close(_clientSocket);
 		return 1;
 	}
-	send(_clientSocket, "CAP LS\r\n", 8, 0);
+	send(_clientSocket, "@initialisation\r\n", 17, 0);
 	std::string pass = "PASS " + _pass + "\r\n";
-	send(_clientSocket, "NICK bot\r\n", 10, 0);
 	send(_clientSocket, pass.c_str(), pass.length(), 0);
-	send(_clientSocket, "USER bot bot localhost :bot bot\r\n", 33, 0);
+	// send(_clientSocket, "NICK bot\r\n", 10, 0);
+	// send(_clientSocket, "USER bot bot localhost :bot bot\r\n", 33, 0);
 	return 0;
 }
 
@@ -88,7 +88,7 @@ void Bot::init_bot() {
 		{
 			std::signal(SIGINT, &signal_send);
 			ssize_t bytesRead = recv(_clientSocket, buffer, sizeof(buffer) - 1, 0);
-			std::cout << "BytesRead :" << bytesRead << std::endl;
+			// std::cout << "BytesRead :" << bytesRead << std::endl;
 			if (bytesRead < 1) {
 				memset(buffer, 0, 512);
 				signal_value_bot = true;
@@ -136,14 +136,14 @@ void Bot::init_bot() {
 
 int	Bot::Validcommand(std::vector<std::string> arg)
 {
-	if (!arg.empty())
-	{
+	if (!arg.empty()) {
 		if (arg[0] == "Man\r\n" || arg[0] ==  "Chifoumi" || arg[0] == "Number\r\n")
 			return 0;
 		return 1;
 	}
 	return 1;
 }
+
 void Bot::bot_command(std::string command) {
 
 	if (!command.empty())
@@ -161,8 +161,7 @@ void Bot::bot_command(std::string command) {
 			case 'C':
 				if (!args.empty() && args.size() == 2)
 					chifoumi(args);
-				else
-				{
+				else {
 					std::string msg = "PRIVMSG " + _requestor + " :" + "Error : [Chifoumi] need more parameter\r\n";
 					send(_clientSocket, msg.c_str(), msg.length(), 0);
 				}
@@ -179,32 +178,36 @@ void Bot::bot_command(std::string command) {
 
 //===========================================MAN===========================================================//
 
-void	Bot::man() {
-
-	std::vector<std::string> lines = {
-	"THIS IS A COMMAND LIST THAT YOU CAN USE ON IRC",
-	"/nick + [new nickname] == rename nickname on the server",
-	"/msg + [nickname] + [MESSAGE] == send a message to someone",
-	"/part + [channel's name] + [message of what you're leaving](opt) == leave a channel",
-	"/join #[channel's name] == join a channel",
-	"/topic + [channel's topic desciption]",
-	"/invite + [nickname] == add a user in a channel",
-	"/kick + [nickname] == kick a channel user out",
-	"[MODE] == modify channel settings",
-	"/mode +l == add a limit of users",
-	"/mode -l == delete the limit",
-	"/mode +i == add the possibility of invite users",
-	"/mode -i == remove the invitation option",
-	"/mode +k == add a key for the channel",
-	"/mode -k == remove the key",
-	"/mode +o + [nickname] == give operator rights for the channel",
-	"/mode -o + [nickname] == remove rights for the channel",
-	"/mode +t + [nickname] == channel's topic is accessible to channel's user",
-	"/mode -t + [nickname] == channel's topic is accessible only for channel's operator",
+void Bot::man() {
+	// Tableau fixe de chaînes de caractères
+	const std::string lines[] = {
+		"THIS IS A COMMAND LIST THAT YOU CAN USE ON IRC",
+		"/nick + [new nickname] == rename nickname on the server",
+		"/msg + [nickname] + [MESSAGE] == send a message to someone",
+		"/part + [channel's name] + [message of what you're leaving](opt) == leave a channel",
+		"/join #[channel's name] == join a channel",
+		"/topic + [channel's topic desciption]",
+		"/invite + [nickname] == add a user in a channel",
+		"/kick + [nickname] == kick a channel user out",
+		"[MODE] == modify channel settings",
+		"/mode +l == add a limit of users",
+		"/mode -l == delete the limit",
+		"/mode +i == add the possibility of invite users",
+		"/mode -i == remove the invitation option",
+		"/mode +k == add a key for the channel",
+		"/mode -k == remove the key",
+		"/mode +o + [nickname] == give operator rights for the channel",
+		"/mode -o + [nickname] == remove rights for the channel",
+		"/mode +t + [nickname] == channel's topic is accessible to channel's user",
+		"/mode -t + [nickname] == channel's topic is accessible only for channel's operator",
 	};
 
-	for (const std::string& line : lines) {
-		sendPrivMsg(_clientSocket, _requestor, line);
+	// Nombre d'éléments dans le tableau
+	const int numLines = sizeof(lines) / sizeof(lines[0]);
+
+	// Boucle pour envoyer chaque ligne comme un message privé
+	for (int i = 0; i < numLines; ++i) {
+		sendPrivMsg(_clientSocket, _requestor, lines[i]);
 	}
 }
 
@@ -221,8 +224,8 @@ int	Bot::legit_num(std::vector<std::string> arg)
 	while (_num.size() >= 2 && _num.substr(_num.size() - 2) == "\r\n") {
 		_num.erase(_num.size() - 2);
 	}
-	for (char c : _num) {
-		if (!std::isdigit(c))
+	for (std::string::size_type i = 0; i < _num.size(); ++i) {
+		if (!std::isdigit(_num[i]))
 			return 0;
 	}
 	if (!(ft_atoi(_num) >= 0 && ft_atoi(_num) <= 1000 && _num.size() <= 4))
@@ -262,7 +265,10 @@ void	Bot::number()
 		_it = 0;
 		_it_left = 10;
 		_t = 0;
-		auto n = std::to_string(_num_bot);
+		//auto n = std::to_string(_num_bot);
+		std::ostringstream oss;
+		oss << _num_bot;
+		std::string n = oss.str();
 		std::string msg = "PRIVMSG " + _requestor + " :" + "CONGRATULATIONS: the bot's number was " + n + "\r\n";
 		send(_clientSocket, msg.c_str(), msg.length(), 0);
 	}
@@ -277,7 +283,10 @@ void	Bot::number()
 			_it = 0;
 			_it_left = 10;
 			_t = 0;
-			auto n = std::to_string(_num_bot);
+			//auto n = std::to_string(_num_bot);
+			std::ostringstream oss;
+			oss << _num_bot;
+			std::string n = oss.str();
 			std::string msg = "PRIVMSG " + _requestor + " :" + "You can't try again, the number was " + n + ". Bye bye\r\n";
 			send(_clientSocket, msg.c_str(), msg.length(), 0);
 		}
@@ -288,7 +297,10 @@ void	Bot::number()
 				clue = " the number is lower, ";
 			else
 				clue = " the number is upper, ";
-			auto left = std::to_string(_it_left);
+			//auto left = std::to_string(_it_left);
+			std::ostringstream oss_left;
+			oss_left << _it_left;
+			std::string left = oss_left.str();
 			std::string msg = "PRIVMSG " + _requestor + " :" + "Try again: " + clue + left + " tries left, enter [Tips] for hints\r\n";
 			send(_clientSocket, msg.c_str(), msg.length(), 0);
 		}
@@ -320,16 +332,25 @@ void	Bot::tips()
 	}
 	else if (_t == 2)
 	{
-		auto hint = std::to_string(_num_bot);
+		//auto hint = std::to_string(_num_bot);
+		 std::ostringstream oss_hint;
+		oss_hint << _num_bot;
+		std::string hint = oss_hint.str();
 		int size = hint.size();
-		auto h = std::to_string(size);
+		//auto h = std::to_string(size);
+		std::ostringstream oss_size;
+		 oss_size << size;
+		std::string h = oss_size.str();
 		std::string msg = "PRIVMSG " + _requestor + " :" + "Tips: the number have " + h + " digits\r\n";
 		send(_clientSocket, msg.c_str(), msg.length(), 0);
 		
 	}
 	else if (_t == 3)
 	{
-		auto h = std::to_string(_num_bot);
+		//auto h = std::to_string(_num_bot);
+		std::ostringstream oss_hint;
+		oss_hint << _num_bot;
+		std::string h = oss_hint.str();
 		if (h.size() > 0)
 		{
 			char hint = h[0];
@@ -348,13 +369,14 @@ void	Bot::get_random_num()
 {
 	long long max = 1000;
 	long long min = 0;
-	std::srand(std::time(0));
+	std::srand(time(0));
 	_num_bot = min + static_cast<long long>(std::rand()) % (max - min + 1);
 	std::string msg = "PRIVMSG " + _requestor + " :" + "bot is choosing his number between 0 and 1000\r\n";
 	send(_clientSocket, msg.c_str(), msg.length(), 0);
 	std::string use = "PRIVMSG " + _requestor + " :" + "bot has chosen: you can use [Stop] or [Number] or [Tips]\r\n";
 	send(_clientSocket, use.c_str(), use.length(), 0);
-	std::this_thread::sleep_for(std::chrono::seconds(2));
+	//std::this_thread::sleep_for(std::chrono::seconds(2));
+	sleep(2);// new voir si ca marche
 }
 
 long long	ft_atoi(std::string nptr)
@@ -384,16 +406,20 @@ void	Bot::chifoumi(std::vector<std::string> arg)
 	{
 		std::string msg = "PRIVMSG " + _requestor + " :" + "bot is choosing...\r\n";
 		send(_clientSocket, msg.c_str(), msg.length(), 0);
-		std::this_thread::sleep_for(std::chrono::seconds(2));
+		//std::this_thread::sleep_for(std::chrono::seconds(2));
+		sleep(2);//new
 		std::string msg1 = "PRIVMSG " + _requestor + " :" + "CHI...\r\n";
 		send(_clientSocket, msg1.c_str(), msg1.length(), 0);
-		std::this_thread::sleep_for(std::chrono::seconds(1));
+		//std::this_thread::sleep_for(std::chrono::seconds(1));
+		sleep(1); //new
 		std::string msg2 = "PRIVMSG " + _requestor + " :" + "FOU...\r\n";
 		send(_clientSocket, msg2.c_str(), msg2.length(), 0);
-		std::this_thread::sleep_for(std::chrono::seconds(1));
+		//std::this_thread::sleep_for(std::chrono::seconds(1));
+		sleep(1); //new
 		std::string msg3 = "PRIVMSG " + _requestor + " :" + "MI...\r\n";
 		send(_clientSocket, msg3.c_str(), msg3.length(), 0);
-		std::this_thread::sleep_for(std::chrono::seconds(1));
+		//std::this_thread::sleep_for(std::chrono::seconds(1));
+		sleep(1); //new
 		_choice_bot = choice() + "\r\n";
 		srand(time(0));
 		advantage(arg, _choice_bot);
@@ -437,23 +463,21 @@ void	Bot::advantage(std::vector<std::string> arg, std::string choice_bot)
 }
 
 std::string choice() {
-
-	std::vector<std::string> op = {"paper", "scissors", "rock"};
-	random_tab(op);
-	return (op[0]);
+	const char* options[] = {"paper", "scissors", "rock"};
+	shuffle(options, 3);
+	return options[0];
 }
 
-void	random_tab(std::vector<std::string>& tab) {
-	
-	int n = tab.size();
-	for (int i = n - 1; i > 0; --i) {
-		int j = rand() % (i + 1);
-		std::string temp = tab[i];
-		tab[i] = tab[j];
-		tab[j] = temp;
+void shuffle(const char** array, int size) {
+
+	std::srand(time(0));
+	for (int i = size - 1; i > 0; --i) {
+		int j = std::rand() % (i + 1);
+		const char* temp = array[i];
+		array[i] = array[j];
+		array[j] = temp;
 	}
 }
-
 
 //===========================================UTILS===========================================================//
 
@@ -517,10 +541,7 @@ void check_args_bonus(int argc, char **argv) {
 		throw except("Usage: ./a.out <port> <password>");
 }
 
-int	Bot::get_fd() const
-{
-	return _clientSocket;
-}
+int	Bot::get_fd() const {return _clientSocket;}
 
 void signal_send(int signum) {
 	(void) signum;
