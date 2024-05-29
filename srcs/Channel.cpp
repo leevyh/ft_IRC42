@@ -51,7 +51,6 @@ std::ostream &operator<<(std::ostream &o, Channel &src) {
 void	Channel::set_ChannelUser(User &user) {_chanUsers.push_back(user);}
 
 void	Channel::unset_ChannelUser(User& user) {
-	std::cout << "unset_ChannelUser: " << user.get_nickname() << std::endl;
 	for (std::vector<User>::iterator it = _chanUsers.begin(); it != _chanUsers.end(); ++it) {
 		if (it->get_nickname() == user.get_nickname()) {
 			_chanUsers.erase(it);

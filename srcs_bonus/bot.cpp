@@ -19,7 +19,6 @@ int	main(int ac, char **av)
 {
 	try {
 		check_args_bonus(ac, av);
-		// std::signal(SIGINT, &signal_send);
 		Bot bot(av);
 		bot.init_bot();
 	}
@@ -71,8 +70,6 @@ int	Bot::connexion()
 	send(_clientSocket, "@initialisation\r\n", 17, 0);
 	std::string pass = "PASS " + _pass + "\r\n";
 	send(_clientSocket, pass.c_str(), pass.length(), 0);
-	// send(_clientSocket, "NICK bot\r\n", 10, 0);
-	// send(_clientSocket, "USER bot bot localhost :bot bot\r\n", 33, 0);
 	return 0;
 }
 
@@ -88,7 +85,6 @@ void Bot::init_bot() {
 		{
 			std::signal(SIGINT, &signal_send);
 			ssize_t bytesRead = recv(_clientSocket, buffer, sizeof(buffer) - 1, 0);
-			// std::cout << "BytesRead :" << bytesRead << std::endl;
 			if (bytesRead < 1) {
 				memset(buffer, 0, 512);
 				signal_value_bot = true;
@@ -162,7 +158,7 @@ void Bot::bot_command(std::string command) {
 				if (!args.empty() && args.size() == 2)
 					chifoumi(args);
 				else {
-					std::string msg = "PRIVMSG " + _requestor + " :" + "Error : [Chifoumi] need more parameter\r\n";
+					std::string msg = "PRIVMSG " + _requestor + " :" + "Error : usage: Chifoumi <choice>\r\n";
 					send(_clientSocket, msg.c_str(), msg.length(), 0);
 				}
 				break;
@@ -182,13 +178,13 @@ void Bot::man() {
 	// Tableau fixe de chaînes de caractères
 	const std::string lines[] = {
 		"THIS IS A COMMAND LIST THAT YOU CAN USE ON IRC",
-		"/nick + [new nickname] == rename nickname on the server",
-		"/msg + [nickname] + [MESSAGE] == send a message to someone",
-		"/part + [channel's name] + [message of what you're leaving](opt) == leave a channel",
-		"/join #[channel's name] == join a channel",
-		"/topic + [channel's topic desciption]",
-		"/invite + [nickname] == add a user in a channel",
-		"/kick + [nickname] == kick a channel user out",
+		"/nick + <new nickname> == rename nickname on the server",
+		"/msg + <nickname> + <MESSAGE> == send a message to someone",
+		"/part + [channel's name] + [message of what you're leaving] == leave a channel",
+		"/join #<channel's name> == join a channel",
+		"/topic + <channel's topic desciption>",
+		"/invite + <nickname> == add a user in a channel",
+		"/kick + <nickname> == kick a channel user out",
 		"[MODE] == modify channel settings",
 		"/mode +l == add a limit of users",
 		"/mode -l == delete the limit",
@@ -196,10 +192,10 @@ void Bot::man() {
 		"/mode -i == remove the invitation option",
 		"/mode +k == add a key for the channel",
 		"/mode -k == remove the key",
-		"/mode +o + [nickname] == give operator rights for the channel",
-		"/mode -o + [nickname] == remove rights for the channel",
-		"/mode +t + [nickname] == channel's topic is accessible to channel's user",
-		"/mode -t + [nickname] == channel's topic is accessible only for channel's operator",
+		"/mode +o + <nickname> == give operator rights for the channel",
+		"/mode -o + <nickname> == remove rights for the channel",
+		"/mode +t == channel's topic is accessible to channel's user",
+		"/mode -t == channel's topic is accessible only for channel's operator",
 	};
 
 	// Nombre d'éléments dans le tableau
@@ -375,8 +371,7 @@ void	Bot::get_random_num()
 	send(_clientSocket, msg.c_str(), msg.length(), 0);
 	std::string use = "PRIVMSG " + _requestor + " :" + "bot has chosen: you can use [Stop] or [Number] or [Tips]\r\n";
 	send(_clientSocket, use.c_str(), use.length(), 0);
-	//std::this_thread::sleep_for(std::chrono::seconds(2));
-	sleep(2);// new voir si ca marche
+	sleep(2);
 }
 
 long long	ft_atoi(std::string nptr)
@@ -406,20 +401,16 @@ void	Bot::chifoumi(std::vector<std::string> arg)
 	{
 		std::string msg = "PRIVMSG " + _requestor + " :" + "bot is choosing...\r\n";
 		send(_clientSocket, msg.c_str(), msg.length(), 0);
-		//std::this_thread::sleep_for(std::chrono::seconds(2));
-		sleep(2);//new
+		sleep(2);
 		std::string msg1 = "PRIVMSG " + _requestor + " :" + "CHI...\r\n";
 		send(_clientSocket, msg1.c_str(), msg1.length(), 0);
-		//std::this_thread::sleep_for(std::chrono::seconds(1));
-		sleep(1); //new
+		sleep(1);
 		std::string msg2 = "PRIVMSG " + _requestor + " :" + "FOU...\r\n";
 		send(_clientSocket, msg2.c_str(), msg2.length(), 0);
-		//std::this_thread::sleep_for(std::chrono::seconds(1));
-		sleep(1); //new
+		sleep(1);
 		std::string msg3 = "PRIVMSG " + _requestor + " :" + "MI...\r\n";
 		send(_clientSocket, msg3.c_str(), msg3.length(), 0);
-		//std::this_thread::sleep_for(std::chrono::seconds(1));
-		sleep(1); //new
+		sleep(1);
 		_choice_bot = choice() + "\r\n";
 		srand(time(0));
 		advantage(arg);
