@@ -27,7 +27,7 @@ std::string RPL_CREATED(User &user) {
 
 std::string RPL_MYINFO(Server &server, User &user) {
 	return ("004 " + user.get_nickname() + " " + server.get_networkname() + \
-	" v0.1 <available user modes: non> <available channel modes: itkol>");
+	" v0.1 <available user modes: none> <available channel modes: itkol>");
 }
 
 /* ************************************************************************** */
