@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   bot.cpp                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: lazanett <lazanett@student.42.fr>          +#+  +:+       +#+        */
+/*   By: lkoletzk <lkoletzk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/25 15:22:43 by lazanett          #+#    #+#             */
-/*   Updated: 2024/05/29 16:24:41 by lazanett         ###   ########.fr       */
+/*   Updated: 2024/05/30 12:04:16 by lkoletzk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,11 +15,10 @@
 bool signal_value_bot = false;
 int	client_socket_global = 0;
 
-int	main(int ac, char **av)
+int	main(void)
 {
 	try {
-		check_args_bonus(ac, av);
-		Bot bot(av);
+		Bot bot;
 		bot.init_bot();
 	}
 	catch (const std::exception& e) {
@@ -29,16 +28,8 @@ int	main(int ac, char **av)
 }
 
 //=========================================CONSTRUCTOR/DESTRUCTOR=================================================//
-Bot::Bot() {}
-
-Bot::Bot(char **av) {
-	(void)av;
-	// _signal_value_bot = false;
+Bot::Bot() {
 	_port = 6667;
-	_serverIP = "127.0.0.1";
-	_nickname = "bot";
-	_username = "bot";
-	_pass = "xdh57ar4?STWE%Y!";
 	_flag_num = 0;
 	_it = 0;
 	_it_left = 10;
@@ -68,7 +59,7 @@ int	Bot::connexion()
 		return 1;
 	}
 	send(_clientSocket, "@initialisation\r\n", 17, 0);
-	std::string pass = "PASS " + _pass + "\r\n";
+	std::string pass = "PASS xdh57ar4?STWE%Y!\r\n";
 	send(_clientSocket, pass.c_str(), pass.length(), 0);
 	return 0;
 }
@@ -529,10 +520,8 @@ void check_args_bonus(int argc, char **argv) {
 	}
 	
 	else 
-		throw except("Usage: ./a.out <port> <password>");
+		throw except("Usage: ./bot");
 }
-
-int	Bot::get_fd() const {return _clientSocket;}
 
 void signal_send(int signum) {
 	(void) signum;

@@ -77,6 +77,7 @@ void Commands::pass(Server &server, User &user, std::vector<std::string> &arg) {
 	}
 	else {
 		server.sendMsg(user, ERR_PASSWDMISMATCH(user), 1);
+		user.set_status(false);
 		return;
 	}
 }
@@ -223,7 +224,7 @@ void Commands::kick(Server &server, User &user, std::vector<std::string> &arg) {
 					for (std::vector<User>::iterator itu = itc->get_ChannelUser().begin(); \
 						itu != itc->get_ChannelUser().end(); ++itu) {
 						if (itu->get_nickname() == arg[2]) {
-							itc->sendMsg(user, RPL_KICK(user, *itc, arg[2], kick_msg), 1);
+							itc->sendMsg(user, RPL_KICK(user, *itc, arg[2], kick_msg), 2);
 							itc->remove_inviteList(*itu);
 							itc->unset_ChannelUser(*itu);
 							if (itc->get_ChannelUser().empty())
@@ -275,6 +276,7 @@ void Commands::part(Server &server, User &user, std::vector<std::string> &arg) {
 					j = 1;
 					if (it->is_UserInChannel(user)) {
 						it->unset_ChannelUser(user);
+						it->remove_inviteList(user);
 						server.sendMsg(user, RPL_PART(user, *it, part_msg, code), 2);
 						if (it->get_ChannelUser().empty()) {
 							server.remove_channelList(*it);
@@ -322,6 +324,12 @@ void Commands::topic(Server &server, User &user, std::vector<std::string> &arg) 
 				it != server.get_channels().end(); ++it) {
 				if (arg[1] != it->get_ChannelName())
 					server.sendMsg(user, ERR_NOTONCHANNEL(user, *it), 1);
+				else {
+					if (it->get_ChannelTopic().empty())
+						server.sendMsg(user, RPL_NOTOPIC(user, *it), 1);
+					else
+						server.sendMsg(user, RPL_TOPIC(user, *it), 1);
+				}
 			}
 		}
 	}
@@ -355,7 +363,7 @@ void Commands::quit(Server &server, User &user, std::vector<std::string> &arg) {
 				if (it->get_ChannelUser().empty())
 					channel_list.push_back(it);
 				else
-					it->sendMsg(user, RPL_QUIT(user, msg_send), 1);
+					it->sendMsg(user, RPL_QUIT(user, msg_send), 2);
 			}
 		}
 	}

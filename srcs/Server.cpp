@@ -28,10 +28,10 @@ Server::~Server() {
 		disconnect(_clientmap.begin()->second);
 	}
 	_clientmap.clear();
-	for (std::vector<pollfd>::iterator it = _pollfdmap.begin(); it != _pollfdmap.end(); it++) {
+	for (std::vector<pollfd>::iterator it = _vectpoll.begin(); it != _vectpoll.end(); it++) {
 		close(it->fd);
 	}
-	_pollfdmap.clear();
+	_vectpoll.clear();
 }
 
 Server::Server(Server const &copy) {*this = copy;}
@@ -42,7 +42,7 @@ Server &Server::operator=(Server const &rhs) {
 		_nb_of_users = rhs._nb_of_users;
 		_password = rhs._password;
 		_networkname = rhs._networkname;
-		_pollfdmap = rhs._pollfdmap;
+		_vectpoll = rhs._vectpoll;
 		_clientmap = rhs._clientmap;
 		_channels = rhs._channels;
 		_bot = rhs._bot;
@@ -133,17 +133,17 @@ void Server::init_serv(void) {
 	std::cout << "\\********** SERVER LOG ***********/" << std::endl;
 
 	/* ADD SERVER SOCKET TO POLLFD */
-	_pollfdmap.push_back(pollfd());
-	_pollfdmap.back().fd = server_socket;
-	_pollfdmap.back().events = POLLIN;
+	_vectpoll.push_back(pollfd());
+	_vectpoll.back().fd = server_socket;
+	_vectpoll.back().events = POLLIN;
 }
 
 void Server::start_serv(void) {
-	if (poll(&_pollfdmap[0], _pollfdmap.size(), 2000) == -1) { // -1 means wait indefinitely, but we can change it to a timeout 1000000 for 1 second
+	if (poll(&_vectpoll[0], _vectpoll.size(), 2000) == -1) { // -1 means wait indefinitely, but we can change it to a timeout 1000000 for 1 second
 		if (signal_value == false)
 			throw except("poll exception");
 	}
-	if (_pollfdmap[0].revents == POLLIN)
+	if (_vectpoll[0].revents == POLLIN)
 		new_Connection_Client();
 	else
 		get_New_Client_Message();
@@ -155,7 +155,7 @@ void Server::new_Connection_Client(void) {
 	int client_socket;
 
 	/* ACCEPT CONNECTION + ERR HANDLING */
-	client_socket = accept(_pollfdmap[0].fd, (struct sockaddr *) &user_addr, &user_addr_len);
+	client_socket = accept(_vectpoll[0].fd, (struct sockaddr *) &user_addr, &user_addr_len);
 	if (client_socket == -1)
 		throw except("Error accepting connection");
 	if (fcntl(client_socket, F_SETFL, O_NONBLOCK) == -1)
@@ -175,34 +175,34 @@ void Server::new_Connection_Client(void) {
 	user.set_ip(inet_ntoa(user_addr.sin_addr));
 	user.set_port(port);
 	_clientmap[client_socket] = user;
-	_pollfdmap.push_back(pollfd());
-	_pollfdmap.back().fd = client_socket;
-	_pollfdmap.back().events = POLLIN;
+	_vectpoll.push_back(pollfd());
+	_vectpoll.back().fd = client_socket;
+	_vectpoll.back().events = POLLIN;
 	_nb_of_users++;
 }
 
 void Server::get_New_Client_Message(void) {
-	if (_nb_of_users != 0 && _pollfdmap.size() != 1) {
+	if (_nb_of_users != 0 && _vectpoll.size() != 1) {
 		std::vector<pollfd>::iterator it;
 		size_t i;
 		int j = 0;
-		for (i = 0; i < _pollfdmap.size(); i++) {
+		for (i = 0; i < _vectpoll.size(); i++) {
 			j++;
-			if (_pollfdmap[i].revents == POLLIN) {
+			if (_vectpoll[i].revents == POLLIN) {
 				char buf[1024];
-				ssize_t bytes = recv(_clientmap[_pollfdmap[i].fd].get_fd(), buf, 1024, 0);
+				ssize_t bytes = recv(_clientmap[_vectpoll[i].fd].get_fd(), buf, 1024, 0);
 				if (bytes <= 0) {
 					memset(buf, 0, 1024);
-					disconnect(_clientmap[_pollfdmap[i].fd]);
+					disconnect(_clientmap[_vectpoll[i].fd]);
 					return;
 				}
 				else {
 					buf[bytes] = '\0';
-					_clientmap[_pollfdmap[i].fd].joinBuffer(buf);
-					_clientmap[_pollfdmap[i].fd].receive(*this);
+					_clientmap[_vectpoll[i].fd].joinBuffer(buf);
+					_clientmap[_vectpoll[i].fd].receive(*this);
 					memset(buf, 0, 1024);
-					if (_clientmap[_pollfdmap[i].fd].get_status() == false) {
-						disconnect(_clientmap[_pollfdmap[i].fd]);
+					if (_clientmap[_vectpoll[i].fd].get_status() == false) {
+						disconnect(_clientmap[_vectpoll[i].fd]);
 					}
 				}
 			}
@@ -221,9 +221,9 @@ void Server::disconnect(User &user) {
 	std::cout << "  User IP: " << user.get_ip() << std::endl << std::endl;
 	std::cout << "	End of connection" << std::endl << std::endl;
 	std::cout << "\033[38;2;160;160;160m\\********************************/" << std::endl;
-	std::vector<pollfd>::iterator it = std::find_if(_pollfdmap.begin(), _pollfdmap.end(), IsClientFDPredicate(user.get_fd()));
-	if (it != _pollfdmap.end()) {
-		_pollfdmap.erase(it);
+	std::vector<pollfd>::iterator it = std::find_if(_vectpoll.begin(), _vectpoll.end(), IsClientFDPredicate(user.get_fd()));
+	if (it != _vectpoll.end()) {
+		_vectpoll.erase(it);
 	}
 	close(user.get_fd());
 	std::map<int, User>::iterator it_fd;

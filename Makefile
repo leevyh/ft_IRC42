@@ -72,5 +72,4 @@ re: fclean
 log: fclean
 	rm -f *.log
 
-
 .PHONY: all clean fclean re

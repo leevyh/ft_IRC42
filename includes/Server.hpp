@@ -52,7 +52,7 @@ class Server {
 		int _nb_of_users;
 		std::string _password;
 		std::string _networkname;
-		std::vector<pollfd> _pollfdmap;
+		std::vector<pollfd> _vectpoll;
 		std::map<int, User> _clientmap;
 		std::vector<Channel> _channels;
 		bool _bot;

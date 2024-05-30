@@ -5,12 +5,14 @@ Channel::Channel() {
 	_key = "";
 	_limitUser = -1;
 	_inviteOnly = false;
+	_opTopic = false;
 }
 
 Channel::Channel(std::string name) : _name(name) {
 	_key = "";
 	_limitUser = -1;
 	_inviteOnly = false;
+	_opTopic = false;
 }
 
 Channel::Channel(Channel const &copy) {*this = copy;}

@@ -92,7 +92,7 @@ std::string RPL_CREATIONTIME(User &user, Channel &channel) {
 }
 
 std::string RPL_NOTOPIC(User &user, Channel &channel) {
-	return ("331 " + user.get_nickname() + " " + channel.get_ChannelName() + " :" + channel.get_ChannelTopic());
+	return ("331 " + user.get_nickname() + " " + channel.get_ChannelName() + " :No topic is set");
 }
 
 std::string RPL_TOPIC(User &user, Channel &channel) {

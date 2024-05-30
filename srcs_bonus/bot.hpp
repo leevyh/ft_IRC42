@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   bot.hpp                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: lazanett <lazanett@student.42.fr>          +#+  +:+       +#+        */
+/*   By: lkoletzk <lkoletzk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/30 11:17:56 by lazanett          #+#    #+#             */
-/*   Updated: 2024/05/29 16:24:53 by lazanett         ###   ########.fr       */
+/*   Updated: 2024/05/30 12:06:47 by lkoletzk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,44 +33,29 @@
 class Bot {
 
 	public:
-	
 		Bot();
-		Bot(char **av);
 		~Bot();
-// GETTERS
-		void set_nickname(char * &nickname);
-		int	get_fd() const;
 // FUNCTIONS
 		void init_bot();
-		void sendMsg(Bot &bot, std::string message, int code) const;
-		
-		void signalHandler(int signal);
-		//COMMAND BOT
+		int	connexion();
+//COMMAND BOT
+		int Validcommand(std::vector<std::string> arg);
 		void bot_command(std::string command);
+	// Man 
 		void man();
+	// Chifoumi + <rock/paper/scisors>
 		void chifoumi(std::vector<std::string> arg);
 		void advantage(std::vector<std::string> arg);
-		void number(std::vector<std::string> arg);
-		int Validcommand(std::vector<std::string> arg);
-		int	legit_num(std::vector<std::string> arg);
+	// Number
+		void number();
 		void get_random_num();
+		int	legit_num(std::vector<std::string> arg);
 		void gessnum(std::string command);
 		void tips();
-		void number();
-		int	connexion();
-
-
 
 	private:
-
-		struct sockaddr_in	_server_addr;
-		bool				_signal_value_bot;
-		const char			*_serverIP;
 		long				_port;
 		int					_clientSocket;
-		const char			*_nickname;
-		const char			*_username;
-		std::string			_pass;
 		std::string			_requestor;
 		std::string			_msg;
 		int					_n_choice_bot;
@@ -85,7 +70,6 @@ class Bot {
 };
 
 void check_args_bonus(int argc, char **argv);
-std::vector<std::string>	split(const std::string& str, char del);
 std::vector<std::string>	split_space(const std::string& str);
 std::vector<std::string>	split_pre_requestor(const std::string& str);
 std::vector<std::string>	split_requestor(const std::string& str);
