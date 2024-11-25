@@ -1,40 +1,59 @@
-socket, close, setsockopt, getsockname,
-getprotobyname, gethostbyname, getaddrinfo,
-freeaddrinfo, bind, connect, listen, accept, htons,
-htonl, ntohs, ntohl, inet_addr, inet_ntoa, send,
-recv, signal, sigaction, lseek, fstat, fcntl, poll
-(or equivalent)
+<h1 align="center">
+  ft_IRC
+</h1>
+
+<h3 align="center">Internet Relay Chat</h3>
+
+<h4 align="center">The goal of this project is to reproduce the operation of an IRC server.<br>
+You will use a real IRC client to connect to your server and thus test it.<br>
+The Internet works thanks to many standards and protocols to allow interoperability between connected machines. It is always interesting to know this kind of thing.</a></h4>
+
+<p align="center">
+    <a href="https://github.com/leevyh/ft_IRC/search?l=python"> <img alt="Language: C++" src="https://img.shields.io/badge/language-C++-vert"></a>
+    <a href="https://projects.intra.42.fr/ft_irc/lkoletzk"> <img alt="Result: 125/100" src="https://img.shields.io/badge/result-125/100-brightgreen"></a>
+</p>
 
 
-Even if poll() is mentionned in the subject and the evaluation scale,
-you can use any equivalent such as select(), kqueue(), or epoll().
+<p align="center">
+  <a href="#introduction">Introduction</a> •
+  <a href="#how-to-use">How To Use</a> •
+  <a href="#description">Description</a>
+</p>
 
-Because you have to use non-blocking file descriptors, it is
-possible to use read/recv or write/send functions with no poll()
-(or equivalent), and your server wouldn’t be blocking.
-But it would consume more system resources.
-Thus, if you try to read/recv or write/send in any file descriptor
-without using poll() (or equivalent), your grade will be 0.
+## Introduction
 
 
-You must be able to :
-- authenticate, 
-- set a nickname, 
-- set a username, 
-- join a channel,
-- send and receive private messages using your reference client.
+### How To Use
 
-◦ All the messages sent from one client to a channel have to be forwarded to every other client that joined the channel.
+To clone and run this project, you'll need [Git](https://git-scm.com), [Clang](https://clang.llvm.org/) installed on your computer. From your command line:
 
-◦ You must have operators and regular users.
+```bash
+# Clone this repository via HTTPS
+$ git clone https://github.com/leevyh/ft_IRC
+# OR clone this repository via SSH
+$ git clone git@github.com:leevyh/ft_IRC.git
 
-◦ Then, you have to implement the commands that are specific to channel operators:
-	∗ KICK - Eject a client from the channel
-	∗ INVITE - Invite a client to a channel
-	∗ TOPIC - Change or view the channel topic
-	∗ MODE - Change the channel’s mode:
-		· i: Set/remove Invite-only channel
-		· t: Set/remove the restrictions of the TOPIC command to channel operators
-		· k: Set/remove the channel key (password)
-		· o: Give/take channel operator privilege
-		· l: Set/remove the user limit to channel
+# Go into the repository
+$ cd ft_irc/files
+
+# Fill the env variables
+$ vim env/
+
+# Make the project
+$ make
+
+# Run the program
+$ ./ircserv <port> <password>
+```
+
+## Description
+
+Internet Relay Chat or IRC is a text-based communication protocol on the Internet. It offers real-time messaging that can be either public or private. Users can exchange direct messages and join group channels. IRC clients connect to IRC servers in order to join channels. IRC servers are connected together to form a network.
+
+---
+<p align="center">
+    <a href="https://github.com/Leevyh"> <img alt="Made by Leevyh" src="https://img.shields.io/badge/made%20by-Leevyh-blue"></a>
+    <a href="https://github.com/Neoblacks"> <img alt="Made by Neoblacks" src="https://img.shields.io/badge/made%20by-Neoblacks-blue"></a>
+    <a href="https://github.com/Lazanett"> <img alt="Made by Lazanett" src="https://img.shields.io/badge/made%20by-Lazanett-blue"></a>
+    <a href="https://42.fr"><img alt="42 Website" src="https://img.shields.io/badge/website-42.fr-blue"></a>
+</p>
